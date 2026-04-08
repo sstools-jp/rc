@@ -511,7 +511,7 @@ type ResultCellProps = {
 };
 function ResultCell({ label, value, unit }: ResultCellProps) {
   return (
-    <article className="flex border-b border-slate-200 px-3 py-2 last:border-b-0">
+    <article className="flex border-b border-slate-200 px-3 py-1 last:border-b-0">
       <span className="flex-1">{label}</span>
       <div className="space-x-2 text-right font-mono">
         <span className="inline-block">{value}</span>
