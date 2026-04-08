@@ -300,6 +300,7 @@ function solveNeutralAxisAngleDeg(input: NeutralAxisSolverInput): NeutralAxisSol
   let bestObjective = Number.POSITIVE_INFINITY;
 
   // 反復計算により中立軸角度を求める
+  for (let iteration = 0; iteration < 14; iteration++) {
     const step = Math.pow(10, -iteration);
     for (let angle = start; angle < end; angle += step) {
       const objective = evaluateObjective({
