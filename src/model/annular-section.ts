@@ -74,6 +74,16 @@ export interface AnnularSectionResult {
 // 数値計算用の極小値（ゼロ判定用）
 const EPSILON = 1e-9;
 
+// ラジアン変換のヘルパー
+function degToRad(deg: number): number {
+  return deg * (Math.PI / 180);
+}
+
+// 角度変換のヘルパー
+function radToDeg(rad: number): number {
+  return rad * (180 / Math.PI);
+}
+
 // 円環断面の計算クラス
 export class AnnularSectionCalculator {
   private readonly input: AnnularSectionInput;
@@ -292,11 +302,11 @@ function solveNeutralAxisAngleDeg(input: NeutralAxisSolverInput): NeutralAxisSol
   const momentKNmm = momentKNm * 1000;
   const beta = axialKN === 0 ? Number.POSITIVE_INFINITY : momentKNmm / (axialKN * outerRadiusMm);
 
-  const xMin = Math.acos(alphaValue) * (180 / Math.PI);
-  const xMax = Math.acos(-alphaValue) * (180 / Math.PI);
-  let start = xMin;
-  let end = xMax;
-  let bestAngle = (xMin + xMax) / 2;
+  const xMinDeg = radToDeg(Math.acos(alphaValue));
+  const xMaxDeg = radToDeg(Math.acos(-alphaValue));
+  let start = xMinDeg;
+  let end = xMaxDeg;
+  let bestAngleDeg = (xMinDeg + xMaxDeg) / 2;
   let bestObjective = Number.POSITIVE_INFINITY;
 
   // 反復計算により中立軸角度を求める
@@ -316,22 +326,22 @@ function solveNeutralAxisAngleDeg(input: NeutralAxisSolverInput): NeutralAxisSol
       // 目的関数の値が最小となる角度を更新
       if (Number.isFinite(objective) && objective < bestObjective) {
         bestObjective = objective;
-        bestAngle = angle;
+        bestAngleDeg = angle;
       }
     }
 
     // 最適な角度の周辺を次の探索範囲とする
-    start = Math.max(xMin, bestAngle - step * 2);
-    end = Math.min(xMax, bestAngle + step * 2);
+    start = Math.max(xMinDeg, bestAngleDeg - step * 2);
+    end = Math.min(xMaxDeg, bestAngleDeg + step * 2);
   }
 
   // 最終的な中立軸角度が有効範囲内にあるかを確認
-  if (bestAngle < xMin || bestAngle > xMax) {
+  if (bestAngleDeg < xMinDeg || bestAngleDeg > xMaxDeg) {
     throw new Error("計算範囲外です。中立軸の位置が有効範囲にありません。");
   }
 
   // 中立軸角度をラジアンに変換して内部角度を求める
-  const angleRad = bestAngle * (Math.PI / 180);
+  const angleRad = degToRad(bestAngleDeg);
   const innerAngle = computeInnerAngle(angleRad, radiusRatio, alphaValue);
 
   // 応力度係数
@@ -360,7 +370,7 @@ function solveNeutralAxisAngleDeg(input: NeutralAxisSolverInput): NeutralAxisSol
   });
 
   return {
-    neutralAxisAngleDeg: bestAngle,
+    neutralAxisAngleDeg: bestAngleDeg,
     concreteCompressionCoefficient,
     steelStressCoefficient,
     shearCoefficient,
@@ -394,7 +404,7 @@ function evaluateObjective(input: {
   axialKN: number;
   youngRatio: number;
 }): number {
-  const angleRad = input.angleDeg * (Math.PI / 180);
+  const angleRad = degToRad(input.angleDeg);
   const innerAngleRad = computeInnerAngle(angleRad, input.gamma, input.alpha);
   const isAxialZero = Math.abs(input.axialKN) < EPSILON;
 
