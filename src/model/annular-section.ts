@@ -302,6 +302,30 @@ interface NeutralAxisSolverResult {
   shearCoefficient: number;
 }
 
+interface StrengthMomentSolverInput {
+  momentKNm: number;
+  axialKN: number;
+  outerRadiusMm: number;
+  innerRadiusMm: number;
+  rebarRadiusMm: number;
+  rebarDiameterMm: RebarDiameterMm;
+  barCount: number;
+  youngRatio: number;
+  rebarYieldStrengthNPerMm2: number;
+  concreteDesignStrengthNPerMm2: number;
+}
+
+interface MomentStressState {
+  concreteCompressionStressNPerMm2: number;
+  rebarStressNPerMm2: number;
+}
+
+interface MomentStressEvaluation {
+  momentKNm: number;
+  concreteCompressionStressNPerMm2: number;
+  rebarStressNPerMm2: number;
+}
+
 // 中立軸角度を求めるソルバー関数
 function solveNeutralAxisAngleDeg(input: NeutralAxisSolverInput): NeutralAxisSolverResult {
   const { alpha, gamma, rebarRatioPercent, axialKN, momentKNm, outerRadiusMm, youngRatio } = input;
@@ -557,4 +581,151 @@ function computeShearCoefficient(input: {
   const numerator = youngRatio * rebarRatio * (alpha * Math.sin(xs) - (Math.PI - xs) * (z3 - 1));
   const denominator = 2 * (Math.sin(angleRad) - gamma * Math.sin(innerAngleRad)) * z2;
   return numerator / denominator;
+}
+
+// 鉄筋降伏曲げモーメントを計算する関数
+// 反復計算により、鉄筋降伏強度 == 鉄筋応力度となる曲げモーメントを求める
+function calculateRebarYieldMomentKNm(input: StrengthMomentSolverInput): number {
+  // 降伏強度 [N/mm2]
+  const sigmaSyNPerMm2 = input.rebarYieldStrengthNPerMm2;
+
+  return solveMomentForTargetStressKNm(
+    input,
+    sigmaSyNPerMm2,
+    (state) => state.rebarStressNPerMm2,
+    "鉄筋降伏曲げモーメント",
+  );
+}
+
+// コンクリート終局曲げモーメントを計算する関数
+// 反復計算により、コンクリート設計基準強度 == コンクリート圧縮応力度となる曲げモーメントを求める
+function calculateConcreteUltimateMomentKNm(input: StrengthMomentSolverInput): number {
+  // 終局応力度 [N/mm2]
+  // 【道示Ⅲ 図-5.5.1】より
+  const sigmaCNPerMm2 = 0.85 * input.concreteDesignStrengthNPerMm2;
+
+  return solveMomentForTargetStressKNm(
+    input,
+    sigmaCNPerMm2,
+    (state) => state.concreteCompressionStressNPerMm2,
+    "コンクリート終局曲げモーメント",
+  );
+}
+
+// 目標応力度に到達する曲げモーメントを求める関数
+function solveMomentForTargetStressKNm(
+  input: StrengthMomentSolverInput,
+  targetStressNPerMm2: number,
+  stressSelector: (state: MomentStressState) => number,
+  solverName: string,
+): number {
+  // 与えられた曲げモーメントに対して、コンクリート圧縮応力度と鉄筋応力度を計算する関数
+  const evaluate = (momentKNm: number): MomentStressEvaluation => {
+    const solver = solveNeutralAxisAngleDeg({
+      alpha: input.rebarRadiusMm / input.outerRadiusMm,
+      gamma: input.innerRadiusMm / input.outerRadiusMm,
+      rebarRatioPercent:
+        ((REBAR_AREAS_MM2[input.rebarDiameterMm] * input.barCount) /
+          (Math.PI * Math.pow(input.outerRadiusMm, 2))) *
+        100,
+      axialKN: input.axialKN,
+      momentKNm,
+      outerRadiusMm: input.outerRadiusMm,
+      rebarRadiusMm: input.rebarRadiusMm,
+      youngRatio: input.youngRatio,
+    });
+
+    // 換算曲げモーメントを計算
+    const combinedMomentKNmm = momentKNm * 1000 + input.axialKN * input.outerRadiusMm;
+    const combinedMomentNmm = combinedMomentKNmm * 1000;
+    const state: MomentStressState = {
+      concreteCompressionStressNPerMm2:
+        (combinedMomentNmm / Math.pow(input.outerRadiusMm, 3)) * solver.concreteCompressionCoefficient,
+      rebarStressNPerMm2:
+        (combinedMomentNmm / Math.pow(input.outerRadiusMm, 3)) *
+        solver.steelStressCoefficient *
+        input.youngRatio,
+    };
+
+    return {
+      momentKNm,
+      concreteCompressionStressNPerMm2: state.concreteCompressionStressNPerMm2,
+      rebarStressNPerMm2: state.rebarStressNPerMm2,
+    };
+  };
+
+  // 初期の下限と上限を設定して、二分探索で目標応力度に到達する曲げモーメントを求める
+  const lowerMomentKNm = 0;
+  const lowerEvaluation = evaluate(lowerMomentKNm);
+  const lowerStress = stressSelector({
+    concreteCompressionStressNPerMm2: lowerEvaluation.concreteCompressionStressNPerMm2,
+    rebarStressNPerMm2: lowerEvaluation.rebarStressNPerMm2,
+  });
+
+  // 下限の曲げモーメントで既に目標応力度を超えている場合は、その値を返す
+  if (lowerStress >= targetStressNPerMm2) {
+    return lowerMomentKNm;
+  }
+
+  // 上限の曲げモーメントを設定して評価する
+  // 目標応力度に到達するまで、上限を倍増させて探索する
+  let upperMomentKNm = Math.max(1, (targetStressNPerMm2 * Math.pow(input.outerRadiusMm, 3)) / 1000);
+  let upperEvaluation = evaluate(upperMomentKNm);
+  let upperStress = stressSelector({
+    concreteCompressionStressNPerMm2: upperEvaluation.concreteCompressionStressNPerMm2,
+    rebarStressNPerMm2: upperEvaluation.rebarStressNPerMm2,
+  });
+
+  // 安全策として、上限を倍増させる回数に制限を設ける（無限ループ防止）
+  let guard = 0;
+  while (upperStress < targetStressNPerMm2 && guard < 40) {
+    upperMomentKNm *= 2;
+    upperEvaluation = evaluate(upperMomentKNm);
+    upperStress = stressSelector({
+      concreteCompressionStressNPerMm2: upperEvaluation.concreteCompressionStressNPerMm2,
+      rebarStressNPerMm2: upperEvaluation.rebarStressNPerMm2,
+    });
+    guard++;
+  }
+
+  // 上限を十分に大きくしても目標応力度に到達しない場合は、エラーを投げる
+  if (upperStress < targetStressNPerMm2) {
+    throw new Error(
+      `${solverName}を求められませんでした。目標応力度に到達する曲げモーメントが見つかりません。`,
+    );
+  }
+
+  // 二分探索で目標応力度に到達する曲げモーメントを求める
+  let bestMomentKNm = upperEvaluation.momentKNm;
+  let bestError = Math.abs(upperStress - targetStressNPerMm2);
+  let low = lowerMomentKNm;
+  let high = upperMomentKNm;
+
+  // 反復計算の回数に制限を設ける（無限ループ防止）
+  for (let iteration = 0; iteration < 60; iteration++) {
+    const mid = (low + high) / 2;
+    const midEvaluation = evaluate(mid);
+    const midStress = stressSelector({
+      concreteCompressionStressNPerMm2: midEvaluation.concreteCompressionStressNPerMm2,
+      rebarStressNPerMm2: midEvaluation.rebarStressNPerMm2,
+    });
+    const error = midStress - targetStressNPerMm2;
+
+    if (Math.abs(error) < bestError) {
+      bestError = Math.abs(error);
+      bestMomentKNm = midEvaluation.momentKNm;
+    }
+
+    if (Math.abs(error) <= 1e-6) {
+      break;
+    }
+
+    if (error < 0) {
+      low = mid;
+    } else {
+      high = mid;
+    }
+  }
+
+  return bestMomentKNm;
 }
