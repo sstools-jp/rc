@@ -117,6 +117,20 @@ function formatValue(value: number | undefined, digits = 4): string {
   }).format(value);
 }
 
+// 記号の2文字目以降を下付きで表示するコンポーネント
+function SymbolText({ value }: { value: string }) {
+  if (value.length <= 1) {
+    return <>{value}</>;
+  }
+
+  return (
+    <>
+      {value[0]}
+      <sub>{value.slice(1)}</sub>
+    </>
+  );
+}
+
 // フォームの状態から計算用の入力オブジェクトを作成するユーティリティ関数
 function buildInput(form: FormState): AnnularSectionInput {
   return {
@@ -421,7 +435,7 @@ function FieldRow({ label, symbol, unit, children }: FieldRowProps) {
   return (
     <tr className="border-b border-slate-200 last:border-b-0">
       <td className="px-2 py-1">{label}</td>
-      <td className="px-1 py-1 text-center font-mono">{symbol}</td>
+      <td className="px-1 py-1 text-center font-mono"><SymbolText value={symbol} /></td>
       <td className="px-1 py-1 text-center font-mono">{unit}</td>
       <td className="w-26 px-1 py-1">{children}</td>
     </tr>
