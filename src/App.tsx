@@ -310,7 +310,7 @@ function App() {
               <ResultCell label="中立軸角度" value={formatValue(result?.neutralAxisAngleDeg, 4)} unit="deg" />
               <ResultCell
                 label="中立軸位置"
-                value={formatValue(result?.neutralAxisPositionMm, 2)}
+                value={formatValue(result?.neutralAxisPositionMm, 1)}
                 unit="mm"
               />
               <ResultCell
@@ -323,17 +323,17 @@ function App() {
             <CollapsibleSection title="発生応力度">
               <ResultCell
                 label="コンクリート圧縮応力度"
-                value={formatValue(result?.concreteCompressionStressNPerMm2, 4)}
+                value={formatValue(result?.concreteCompressionStressNPerMm2, 1)}
                 unit="N/mm²"
               />
               <ResultCell
                 label="鉄筋応力度"
-                value={formatValue(result?.rebarStressNPerMm2, 4)}
+                value={formatValue(result?.rebarStressNPerMm2, 1)}
                 unit="N/mm²"
               />
               <ResultCell
                 label="コンクリートせん断応力度"
-                value={formatValue(result?.concreteShearStressNPerMm2, 4)}
+                value={formatValue(result?.concreteShearStressNPerMm2, 1)}
                 unit="N/mm²"
               />
             </CollapsibleSection>
