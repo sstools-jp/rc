@@ -331,7 +331,7 @@ function solveNeutralAxisAngleDeg(input: NeutralAxisSolverInput): NeutralAxisSol
 
   // 中立軸角度をラジアンに変換して内部角度を求める
   const angleRad = bestAngle * (Math.PI / 180);
-  const innerAngle = solveInnerAngle(angleRad, radiusRatio, alphaValue);
+  const innerAngle = computeInnerAngle(angleRad, radiusRatio, alphaValue);
 
   // 応力度係数
   const concreteCompressionCoefficient = computeConcreteCompressionCoefficient({
@@ -367,7 +367,7 @@ function solveNeutralAxisAngleDeg(input: NeutralAxisSolverInput): NeutralAxisSol
 }
 
 // 中立軸角度の計算に必要な内部角度を求める関数
-function solveInnerAngle(angleRad: number, gamma: number, alpha: number): number {
+function computeInnerAngle(angleRad: number, gamma: number, alpha: number): number {
   if (gamma === 0) {
     return 0;
   }
@@ -394,7 +394,7 @@ function evaluateObjective(input: {
   youngRatio: number;
 }): number {
   const angleRad = input.angleDeg * (Math.PI / 180);
-  const innerAngleRad = solveInnerAngle(angleRad, input.gamma, input.alpha);
+  const innerAngleRad = computeInnerAngle(angleRad, input.gamma, input.alpha);
   const isAxialZero = Math.abs(input.axialKN) < EPSILON;
 
   if (isAxialZero) {
