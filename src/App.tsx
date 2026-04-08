@@ -128,12 +128,10 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-black">
+    <div className="min-h-screen bg-slate-50">
       <main className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-4 pt-6 pb-24 sm:px-6 lg:px-8 lg:pt-8 lg:pb-28">
         <header className="overflow-hidden border border-slate-200 bg-white px-6 py-6">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <h1 className="text-3xl font-bold text-slate-950 sm:text-3xl">ＲＣ計算［円環断面］</h1>
-          </div>
+          <h1 className="text-3xl">ＲＣ計算［円環断面］</h1>
         </header>
 
         <section className="grid gap-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-start">
