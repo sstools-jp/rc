@@ -57,7 +57,6 @@ export interface AnnularSectionResult {
   gamma:                            number;   // 軸力係数
   combinedMomentKNmm:               number;   // 結合モーメント [kN.mm]
   axialForceSign: AxialForceSign;             // 軸力の符号
-  isCircularSection:                boolean;  // 円形断面かどうか
   youngRatio:                       number;   // ヤング係数比
   neutralAxisAngleDeg:              number;   // 中立軸角度 [deg]
   neutralAxisPositionMm:            number;   // 中立軸位置 [mm]
@@ -221,7 +220,6 @@ export class AnnularSectionCalculator {
       gamma,
       combinedMomentKNmm,
       axialForceSign: classifyAxialForce(axialKN),
-      isCircularSection: Math.abs(innerRadiusMm) < EPSILON,
       youngRatio,
       neutralAxisAngleDeg: solver.neutralAxisAngleDeg,
       neutralAxisPositionMm,
