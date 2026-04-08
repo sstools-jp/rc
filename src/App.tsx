@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import {
   AnnularSectionCalculator,
   type AnnularSectionInput,
@@ -33,6 +33,65 @@ const DEFAULT_FORM_STATE: FormState = {
   barCount: "",
   youngRatio: "15",
 };
+
+// ローカルストレージ用のキー
+const FORM_STORAGE_KEY = "rc-calc:annular-section-form";
+
+// ローカルストレージからフォームの状態を読み込み／保存する関数
+function isFormState(value: unknown): value is FormState {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+
+  const candidate = value as Record<string, unknown>;
+  return (
+    typeof candidate.momentKNmm === "string" &&
+    typeof candidate.shearKN === "string" &&
+    typeof candidate.axialKN === "string" &&
+    typeof candidate.outerRadiusMm === "string" &&
+    typeof candidate.innerRadiusMm === "string" &&
+    typeof candidate.rebarRadiusMm === "string" &&
+    typeof candidate.rebarDiameterMm === "string" &&
+    typeof candidate.barCount === "string" &&
+    typeof candidate.youngRatio === "string"
+  );
+}
+
+// ローカルストレージからフォームの状態を読み込む関数
+function loadFormState(): FormState {
+  if (typeof window === "undefined") {
+    return DEFAULT_FORM_STATE;
+  }
+
+  try {
+    const storedValue = window.localStorage.getItem(FORM_STORAGE_KEY);
+    if (!storedValue) {
+      return DEFAULT_FORM_STATE;
+    }
+
+    const parsedValue = JSON.parse(storedValue) as unknown;
+    if (!isFormState(parsedValue)) {
+      return DEFAULT_FORM_STATE;
+    }
+
+    return { ...DEFAULT_FORM_STATE, ...parsedValue };
+  } catch {
+    return DEFAULT_FORM_STATE;
+  }
+}
+
+// フォームの状態をローカルストレージに保存する関数
+function saveFormState(form: FormState): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(form));
+  } catch {
+    // 保存に失敗しても計算処理は継続する
+  }
+}
 
 // 文字列を数値に変換するユーティリティ関数
 function parseNumber(value: string): number {
@@ -83,11 +142,17 @@ function createResult(form: FormState): AnnularSectionResult | null {
   }
 }
 
+const INITIAL_FORM_STATE = loadFormState();
+
 function App() {
-  const [form, setForm] = useState<FormState>(DEFAULT_FORM_STATE);
-  const [result, setResult] = useState<AnnularSectionResult | null>(() => createResult(DEFAULT_FORM_STATE));
+  const [form, setForm] = useState<FormState>(INITIAL_FORM_STATE);
+  const [result, setResult] = useState<AnnularSectionResult | null>(() => createResult(INITIAL_FORM_STATE));
   const [issues, setIssues] = useState<AnnularSectionValidationIssue[]>([]);
   const [statusMessage, setStatusMessage] = useState("入力を待機しています。");
+
+  useEffect(() => {
+    saveFormState(form);
+  }, [form]);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
