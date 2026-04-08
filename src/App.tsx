@@ -316,8 +316,8 @@ function App() {
               />
               <ResultCell
                 label="換算曲げモーメント"
-                value={formatValue(result?.combinedMomentKNmm, 2)}
-                unit="kN.mm"
+                value={formatValue(result?.combinedMomentKNm, 1)}
+                unit="kN.m"
               />
             </div>
 

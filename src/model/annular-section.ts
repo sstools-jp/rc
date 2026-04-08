@@ -55,7 +55,7 @@ export interface AnnularSectionResult {
   rebarRatioPercent:                number;   // 鉄筋比 [%]
   alpha:                            number;   // 中立軸位置の係数
   gamma:                            number;   // 軸力係数
-  combinedMomentKNmm:               number;   // 結合モーメント [kN.mm]
+  combinedMomentKNm:                number;   // 換算曲げモーメント [kN.m]
   axialForceSign: AxialForceSign;             // 軸力の符号
   youngRatio:                       number;   // ヤング係数比
   neutralAxisAngleDeg:              number;   // 中立軸角度 [deg]
@@ -202,6 +202,7 @@ export class AnnularSectionCalculator {
       (outerRadiusMm + rebarRadiusMm);
 
     // 応力度の計算
+    const combinedMomentKNm = combinedMomentKNmm / 1000;
     const combinedMomentNmm = combinedMomentKNmm * 1000;
     const concreteCompressionStressNPerMm2 =
       (combinedMomentNmm / Math.pow(outerRadiusMm, 3)) * solver.concreteCompressionCoefficient;
@@ -219,7 +220,7 @@ export class AnnularSectionCalculator {
       rebarRatioPercent,
       alpha,
       gamma,
-      combinedMomentKNmm,
+      combinedMomentKNm,
       axialForceSign: classifyAxialForce(axialKN),
       youngRatio,
       neutralAxisAngleDeg: solver.neutralAxisAngleDeg,
