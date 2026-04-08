@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   AnnularSectionCalculator,
   type AnnularSectionInput,
@@ -154,7 +154,7 @@ function App() {
     saveFormState(form);
   }, [form]);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const input = buildInput(form);
