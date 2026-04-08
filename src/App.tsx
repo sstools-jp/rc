@@ -144,24 +144,24 @@ function App() {
         <section className="grid gap-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-start">
           <form
             onSubmit={handleSubmit}
-            className="flex h-full flex-col gap-6 border border-slate-200 bg-white/90 p-5"
+            className="flex h-full flex-col gap-6 border border-slate-200 bg-white p-5"
           >
             <h2 className="text-xl">断面力・寸法・鉄筋</h2>
 
             <div className="overflow-hidden border border-slate-200 bg-slate-50/80">
               <table className="w-full border-collapse">
                 <thead className="hidden sm:table-header-group">
-                  <tr className="border-b border-slate-200 text-left text-sm font-semibold tracking-[0.18em] text-slate-500 uppercase">
-                    <th scope="col" className="py-1 text-center">
+                  <tr className="border-b border-slate-200 text-sm text-slate-500">
+                    <th scope="col" className="py-1">
                       項目
                     </th>
-                    <th scope="col" className="py-1 text-center">
+                    <th scope="col" className="py-1">
                       記号
                     </th>
-                    <th scope="col" className="py-1 text-center">
+                    <th scope="col" className="py-1">
                       単位
                     </th>
-                    <th scope="col" className="py-1 text-center">
+                    <th scope="col" className="py-1">
                       入力値
                     </th>
                   </tr>
@@ -244,7 +244,7 @@ function App() {
 
           <section
             aria-live="polite"
-            className="flex h-full flex-col gap-6 border border-slate-200 bg-white/90 p-5"
+            className="flex h-full flex-col gap-6 border border-slate-200 bg-white p-5"
           >
             <h2 className="text-xl">計算結果</h2>
 
@@ -263,7 +263,7 @@ function App() {
             </div>
 
             <div className="space-y-3">
-              <h3 className="text-base font-semibold text-slate-900">断面情報</h3>
+              <h3 className="font-semibold">断面情報</h3>
               <div className="overflow-hidden border border-slate-200 bg-slate-50/80">
                 <ResultCell label="断面積" value={formatValue(result?.sectionAreaMm2, 0)} unit="mm²" />
                 <ResultCell label="全断面積" value={formatValue(result?.fullSectionAreaMm2, 0)} unit="mm²" />
@@ -287,7 +287,7 @@ function App() {
             </div>
 
             <div className="space-y-3">
-              <h3 className="text-base font-semibold text-slate-900">係数</h3>
+              <h3 className="font-semibold">係数</h3>
               <div className="overflow-hidden border border-slate-200 bg-slate-50/80">
                 <ResultCell label="α" value={formatValue(result?.alpha, 4)} unit="-" />
                 <ResultCell label="γ" value={formatValue(result?.gamma, 4)} unit="-" />
@@ -307,7 +307,7 @@ function App() {
             </div>
 
             <div className="space-y-3">
-              <h3 className="text-base font-semibold text-slate-900">応力度</h3>
+              <h3 className="font-semibold">応力度</h3>
               <div className="overflow-hidden border border-slate-200 bg-slate-50/80">
                 <ResultCell
                   label="コンクリート圧縮応力度"
@@ -344,7 +344,7 @@ function StatusBar({ message }: StatusBarProps) {
     <div
       role="status"
       aria-live="polite"
-      className="fixed inset-x-0 bottom-0 z-20 border-t border-slate-200 bg-white/95 px-4 py-3 shadow-md sm:px-6 lg:px-8"
+      className="fixed inset-x-0 bottom-0 z-20 border-t border-slate-200 bg-white px-4 py-3 shadow-md sm:px-6 lg:px-8"
     >
       <div className="mx-auto flex w-full max-w-7xl items-center gap-3">
         <span aria-hidden="true" className="inline-flex h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500" />
@@ -430,11 +430,11 @@ type ResultCellProps = {
 };
 function ResultCell({ label, value, unit }: ResultCellProps) {
   return (
-    <article className="grid grid-cols-[minmax(0,1.8fr)_minmax(0,1fr)] gap-3 border-b border-slate-200 px-4 py-3 last:border-b-0 sm:grid-cols-[minmax(0,1.8fr)_minmax(0,1fr)]">
-      <span className="">{label}</span>
-      <div className="space-x-1 text-right font-mono">
-        <span>{value}</span>
-        {unit ? <span className="select-none">{unit}</span> : null}
+    <article className="flex border-b border-slate-200 px-3 py-2 last:border-b-0">
+      <span className="flex-1">{label}</span>
+      <div className="space-x-2 text-right font-mono">
+        <span className="inline-block">{value}</span>
+        {unit ? <span className="inline-block w-10 text-left select-none">{unit}</span> : null}
       </div>
     </article>
   );
