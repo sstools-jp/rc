@@ -354,7 +354,7 @@ function App() {
               />
             </CollapsibleSection>
 
-            <CollapsibleSection title="発生応力度">
+            <CollapsibleSection title="発生応力度" defaultOpen>
               <ResultCell
                 label="コンクリート圧縮応力度"
                 value={formatValue(result?.concreteCompressionStressNPerMm2, 1)}
@@ -372,15 +372,11 @@ function App() {
               />
             </CollapsibleSection>
 
-            <CollapsibleSection title="断面情報">
-              <ResultCell label="断面積" value={formatValue(result?.sectionAreaMm2, 0)} unit="mm²" />
-              <ResultCell label="全断面積" value={formatValue(result?.fullSectionAreaMm2, 0)} unit="mm²" />
-              <ResultCell label="内部断面積" value={formatValue(result?.innerSectionAreaMm2, 0)} unit="mm²" />
-              <ResultCell
-                label="鉄筋1本断面積"
-                value={formatValue(result?.rebarAreaPerBarMm2, 2)}
-                unit="mm²"
-              />
+            <CollapsibleSection title="断面情報" defaultOpen>
+              {/* <ResultCell label="断面積" value={formatValue(result?.sectionAreaMm2, 0)} unit="mm²" /> */}
+              {/* <ResultCell label="全断面積" value={formatValue(result?.fullSectionAreaMm2, 0)} unit="mm²" /> */}
+              {/* <ResultCell label="内部断面積" value={formatValue(result?.innerSectionAreaMm2, 0)} unit="mm²" /> */}
+              {/* <ResultCell label="鉄筋1本断面積" value={formatValue(result?.rebarAreaPerBarMm2, 2)} unit="mm²" /> */}
               <ResultCell label="鉄筋総断面積" value={formatValue(result?.totalRebarAreaMm2, 0)} unit="mm²" />
               <ResultCell label="鉄筋比" value={formatValue(result?.rebarRatioPercent, 2)} unit="%" />
             </CollapsibleSection>
@@ -435,7 +431,9 @@ function FieldRow({ label, symbol, unit, children }: FieldRowProps) {
   return (
     <tr className="border-b border-slate-200 last:border-b-0">
       <td className="px-2 py-1">{label}</td>
-      <td className="px-1 py-1 text-center font-mono"><SymbolText value={symbol} /></td>
+      <td className="px-1 py-1 text-center font-mono">
+        <SymbolText value={symbol} />
+      </td>
       <td className="px-1 py-1 text-center font-mono">{unit}</td>
       <td className="w-26 px-1 py-1">{children}</td>
     </tr>
