@@ -348,11 +348,7 @@ function App() {
                 unit="mm²"
               />
               <ResultCell label="鉄筋総断面積" value={formatValue(result?.totalRebarAreaMm2, 0)} unit="mm²" />
-              <ResultCell
-                label="鉄筋比"
-                value={formatValue((result?.rebarRatioPercent ?? 0) * 100, 3)}
-                unit="%"
-              />
+              <ResultCell label="鉄筋比" value={formatValue(result?.rebarRatioPercent, 2)} unit="%" />
             </CollapsibleSection>
 
             <CollapsibleSection title="係数">
