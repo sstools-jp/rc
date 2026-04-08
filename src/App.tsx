@@ -259,6 +259,27 @@ function App() {
             </div>
 
             <div className="space-y-3">
+              <h3 className="font-semibold">発生応力度</h3>
+              <div className="overflow-hidden border border-slate-200 bg-slate-50/80">
+                <ResultCell
+                  label="コンクリート圧縮応力度"
+                  value={formatValue(result?.concreteCompressionStressNPerMm2, 4)}
+                  unit="N/mm²"
+                />
+                <ResultCell
+                  label="鉄筋応力度"
+                  value={formatValue(result?.rebarStressNPerMm2, 4)}
+                  unit="N/mm²"
+                />
+                <ResultCell
+                  label="コンクリートせん断応力度"
+                  value={formatValue(result?.concreteShearStressNPerMm2, 4)}
+                  unit="N/mm²"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-3">
               <h3 className="font-semibold">断面情報</h3>
               <div className="overflow-hidden border border-slate-200 bg-slate-50/80">
                 <ResultCell label="断面積" value={formatValue(result?.sectionAreaMm2, 0)} unit="mm²" />
@@ -298,27 +319,6 @@ function App() {
                 <ResultCell label="鋼材応力度係数" value={formatValue(result?.steelStressCoefficient, 4)} />
                 <ResultCell label="せん断係数" value={formatValue(result?.shearCoefficient, 4)} />
                 <ResultCell label="ヤング係数比" value={formatValue(result?.youngRatio, 2)} />
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <h3 className="font-semibold">応力度</h3>
-              <div className="overflow-hidden border border-slate-200 bg-slate-50/80">
-                <ResultCell
-                  label="コンクリート圧縮応力度"
-                  value={formatValue(result?.concreteCompressionStressNPerMm2, 4)}
-                  unit="N/mm²"
-                />
-                <ResultCell
-                  label="鉄筋応力度"
-                  value={formatValue(result?.rebarStressNPerMm2, 4)}
-                  unit="N/mm²"
-                />
-                <ResultCell
-                  label="コンクリートせん断応力度"
-                  value={formatValue(result?.concreteShearStressNPerMm2, 4)}
-                  unit="N/mm²"
-                />
               </div>
             </div>
           </section>
