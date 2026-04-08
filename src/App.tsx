@@ -251,7 +251,7 @@ function App() {
                 unit="mm"
               />
               <ResultCell
-                label="結合モーメント"
+                label="換算曲げモーメント"
                 value={formatValue(result?.combinedMomentKNmm, 2)}
                 unit="kN.mm"
               />
