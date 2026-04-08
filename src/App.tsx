@@ -19,6 +19,8 @@ type FormState = {
   rebarDiameterMm: string;
   barCount: string;
   youngRatio: string;
+  rebarYieldStrengthNPerMm2: string;
+  concreteDesignStrengthNPerMm2: string;
 };
 
 // フォームの初期状態を定義
@@ -32,6 +34,8 @@ const DEFAULT_FORM_STATE: FormState = {
   rebarDiameterMm: "22",
   barCount: "",
   youngRatio: "15",
+  rebarYieldStrengthNPerMm2: "",
+  concreteDesignStrengthNPerMm2: "",
 };
 
 // ローカルストレージ用のキー
@@ -53,7 +57,9 @@ function isFormState(value: unknown): value is FormState {
     typeof candidate.rebarRadiusMm === "string" &&
     typeof candidate.rebarDiameterMm === "string" &&
     typeof candidate.barCount === "string" &&
-    typeof candidate.youngRatio === "string"
+    typeof candidate.youngRatio === "string" &&
+    typeof candidate.rebarYieldStrengthNPerMm2 === "string" &&
+    typeof candidate.concreteDesignStrengthNPerMm2 === "string"
   );
 }
 
@@ -123,6 +129,8 @@ function buildInput(form: FormState): AnnularSectionInput {
     rebarDiameterMm: parseNumber(form.rebarDiameterMm) as AnnularSectionInput["rebarDiameterMm"],
     barCount: parseNumber(form.barCount),
     youngRatio: parseNumber(form.youngRatio),
+    rebarYieldStrengthNPerMm2: parseNumber(form.rebarYieldStrengthNPerMm2),
+    concreteDesignStrengthNPerMm2: parseNumber(form.concreteDesignStrengthNPerMm2),
   };
 }
 
@@ -259,6 +267,18 @@ function App() {
                       onChange={updateField("barCount")}
                       inputMode="numeric"
                       step="1"
+                    />
+                  </FieldRow>
+                  <FieldRow label="鉄筋降伏強度" symbol="σsy" unit="N/mm²">
+                    <FieldInput
+                      value={form.rebarYieldStrengthNPerMm2}
+                      onChange={updateField("rebarYieldStrengthNPerMm2")}
+                    />
+                  </FieldRow>
+                  <FieldRow label="コンクリート設計基準強度" symbol="σck" unit="N/mm²">
+                    <FieldInput
+                      value={form.concreteDesignStrengthNPerMm2}
+                      onChange={updateField("concreteDesignStrengthNPerMm2")}
                     />
                   </FieldRow>
                   <FieldRow label="ヤング係数比" symbol="n" unit="-">

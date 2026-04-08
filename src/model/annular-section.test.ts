@@ -14,6 +14,8 @@ describe("AnnularSectionCalculator", () => {
       rebarDiameterMm: 22, // 鉄筋径 [mm]
       barCount: 16, // 鉄筋本数
       youngRatio: 15, // ヤング係数比
+      rebarYieldStrengthNPerMm2: 345, // 鉄筋降伏強度 [N/mm2]
+      concreteDesignStrengthNPerMm2: 30, // コンクリート設計基準強度 [N/mm2]
     });
 
     const result = calculator.calculate(); // 円環断面を計算
@@ -41,6 +43,8 @@ describe("AnnularSectionCalculator", () => {
       rebarDiameterMm: 22, // 鉄筋径 [mm]
       barCount: 24, // 鉄筋本数
       youngRatio: 15, // ヤング係数比
+      rebarYieldStrengthNPerMm2: 345, // 鉄筋降伏強度 [N/mm2]
+      concreteDesignStrengthNPerMm2: 30, // コンクリート設計基準強度 [N/mm2]
     });
 
     const result = calculator.calculate(); // 円環断面を計算
@@ -68,6 +72,8 @@ describe("AnnularSectionCalculator", () => {
       rebarDiameterMm: 51, // 鉄筋径 [mm]
       barCount: 16, // 鉄筋本数
       youngRatio: 15, // ヤング係数比
+      rebarYieldStrengthNPerMm2: 345, // 鉄筋降伏強度 [N/mm2]
+      concreteDesignStrengthNPerMm2: 30, // コンクリート設計基準強度 [N/mm2]
     });
 
     const result = calculator.calculate(); // 円環断面を計算
@@ -95,6 +101,8 @@ describe("AnnularSectionCalculator", () => {
       rebarDiameterMm: 10, // 鉄筋径 [mm]
       barCount: 8, // 鉄筋本数
       youngRatio: 15, // ヤング係数比
+      rebarYieldStrengthNPerMm2: 345, // 鉄筋降伏強度 [N/mm2]
+      concreteDesignStrengthNPerMm2: 30, // コンクリート設計基準強度 [N/mm2]
     });
 
     expect(() => calculator.calculate()).toThrow("半径（内）は半径（外）以下で指定してください。");

@@ -36,6 +36,8 @@ export interface AnnularSectionInput {
   rebarDiameterMm: RebarDiameterMm; // 鉄筋径 [mm]
   barCount:       number; // 鉄筋の本数
   youngRatio:     number; // ヤング係数比（鋼材のヤング係数 / コンクリートのヤング係数）
+  rebarYieldStrengthNPerMm2: number; // 鉄筋降伏強度 [N/mm2]
+  concreteDesignStrengthNPerMm2: number; // コンクリート設計基準強度 [N/mm2]
 }
 
 // 検算結果の型定義
@@ -93,6 +95,8 @@ export class AnnularSectionCalculator {
       rebarDiameterMm,
       barCount,
       youngRatio,
+      rebarYieldStrengthNPerMm2,
+      concreteDesignStrengthNPerMm2,
     } = this.input;
 
     if (!Number.isFinite(momentKNm)) {
@@ -126,6 +130,14 @@ export class AnnularSectionCalculator {
     if (!Number.isFinite(youngRatio) || youngRatio <= 0) {
       const message = "ヤング係数比は正の数で指定してください。";
       issues.push({ field: "youngRatio", message });
+    }
+    if (!Number.isFinite(rebarYieldStrengthNPerMm2) || rebarYieldStrengthNPerMm2 <= 0) {
+      const message = "鉄筋降伏強度は正の数で指定してください。";
+      issues.push({ field: "rebarYieldStrengthNPerMm2", message });
+    }
+    if (!Number.isFinite(concreteDesignStrengthNPerMm2) || concreteDesignStrengthNPerMm2 <= 0) {
+      const message = "コンクリート設計基準強度は正の数で指定してください。";
+      issues.push({ field: "concreteDesignStrengthNPerMm2", message });
     }
 
     const validDiameters = new Set<number>(REBAR_DIAMETERS_MM);
