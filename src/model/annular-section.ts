@@ -184,18 +184,25 @@ export class AnnularSectionCalculator {
       youngRatio,
     } = this.input;
 
+    // コンクリート断面積
     const fullSectionAreaMm2 = Math.PI * outerRadiusMm * outerRadiusMm;
     const innerSectionAreaMm2 = Math.PI * innerRadiusMm * innerRadiusMm;
     const sectionAreaMm2 = fullSectionAreaMm2 - innerSectionAreaMm2;
+
+    // 鉄筋断面積および鉄筋比
     const rebarAreaPerBarMm2 = REBAR_AREAS_MM2[rebarDiameterMm];
     const totalRebarAreaMm2 = rebarAreaPerBarMm2 * barCount;
     const rebarRatioPercent = (totalRebarAreaMm2 / fullSectionAreaMm2) * 100;
+
+    // 中立軸位置の係数および軸力係数
     const alpha = rebarRadiusMm / outerRadiusMm;
     const gamma = innerRadiusMm / outerRadiusMm;
+
+    // 換算曲げモーメント
     const momentKNmm = momentKNm * 1000;
     const combinedMomentKNmm = momentKNmm + axialKN * outerRadiusMm;
 
-    // 中立軸角度の計算
+    // 中立軸角度
     const solver = solveNeutralAxisAngleDeg({
       alpha,
       gamma,
@@ -207,13 +214,13 @@ export class AnnularSectionCalculator {
       youngRatio,
     });
 
-    // 中立軸位置の計算
+    // 中立軸位置
     const neutralAxisPositionMm =
       (solver.concreteCompressionCoefficient /
         (solver.concreteCompressionCoefficient + solver.steelStressCoefficient)) *
       (outerRadiusMm + rebarRadiusMm);
 
-    // 応力度の計算
+    // 応力度
     const combinedMomentKNm = combinedMomentKNmm / 1000;
     const combinedMomentNmm = combinedMomentKNmm * 1000;
     const concreteCompressionStressNPerMm2 =
@@ -258,7 +265,6 @@ function classifyAxialForce(axialKN: number): AxialForceSign {
   return "zero";
 }
 
-// 中立軸角度を数値的に求める関数と関連する計算関数群
 interface NeutralAxisSolverInput {
   alpha: number;
   gamma: number;
@@ -270,7 +276,6 @@ interface NeutralAxisSolverInput {
   youngRatio: number;
 }
 
-// 中立軸角度を数値的に求める関数の戻り値の型定義
 interface NeutralAxisSolverResult {
   neutralAxisAngleDeg: number;
   concreteCompressionCoefficient: number;
@@ -278,7 +283,7 @@ interface NeutralAxisSolverResult {
   shearCoefficient: number;
 }
 
-// 中立軸角度を数値的に求める関数（ソルバー）
+// 中立軸角度を求めるソルバー関数
 function solveNeutralAxisAngleDeg(input: NeutralAxisSolverInput): NeutralAxisSolverResult {
   const { alpha, gamma, rebarRatioPercent, axialKN, momentKNm, outerRadiusMm, youngRatio } = input;
   const radiusRatio = gamma;
@@ -294,7 +299,7 @@ function solveNeutralAxisAngleDeg(input: NeutralAxisSolverInput): NeutralAxisSol
   let bestAngle = (xMin + xMax) / 2;
   let bestObjective = Number.POSITIVE_INFINITY;
 
-  for (let iteration = 0; iteration < 14; iteration += 1) {
+  // 反復計算により中立軸角度を求める
     const step = Math.pow(10, -iteration);
     for (let angle = start; angle < end; angle += step) {
       const objective = evaluateObjective({
@@ -307,22 +312,28 @@ function solveNeutralAxisAngleDeg(input: NeutralAxisSolverInput): NeutralAxisSol
         youngRatio,
       });
 
+      // 目的関数の値が最小となる角度を更新
       if (Number.isFinite(objective) && objective < bestObjective) {
         bestObjective = objective;
         bestAngle = angle;
       }
     }
 
+    // 最適な角度の周辺を次の探索範囲とする
     start = Math.max(xMin, bestAngle - step * 2);
     end = Math.min(xMax, bestAngle + step * 2);
   }
 
+  // 最終的な中立軸角度が有効範囲内にあるかを確認
   if (bestAngle < xMin || bestAngle > xMax) {
     throw new Error("計算範囲外です。中立軸の位置が有効範囲にありません。");
   }
 
+  // 中立軸角度をラジアンに変換して内部角度を求める
   const angleRad = bestAngle * (Math.PI / 180);
   const innerAngle = solveInnerAngle(angleRad, radiusRatio, alphaValue);
+
+  // 応力度係数
   const concreteCompressionCoefficient = computeConcreteCompressionCoefficient({
     angleRad,
     innerAngleRad: innerAngle,
@@ -355,7 +366,7 @@ function solveNeutralAxisAngleDeg(input: NeutralAxisSolverInput): NeutralAxisSol
   };
 }
 
-// 中立軸角度の計算に必要な内部角度を求める関数（ソルバー）
+// 中立軸角度の計算に必要な内部角度を求める関数
 function solveInnerAngle(angleRad: number, gamma: number, alpha: number): number {
   if (gamma === 0) {
     return 0;
@@ -372,7 +383,7 @@ function solveInnerAngle(angleRad: number, gamma: number, alpha: number): number
   return Math.PI;
 }
 
-// 中立軸角度を数値的に求める関数（ソルバー）の目的関数
+// 中立軸角度を求めるソルバー関数の目的関数
 function evaluateObjective(input: {
   angleDeg: number;
   alpha: number;
@@ -419,7 +430,7 @@ function evaluateObjective(input: {
 }
 
 // コンクリート圧縮応力度係数の計算関数
-// 中立軸角度を数値的に求める関数（ソルバー）で使用する
+// 中立軸角度を求めるソルバー関数で使用する
 function computeConcreteCompressionCoefficient(input: {
   angleRad: number;
   innerAngleRad: number;
@@ -451,7 +462,7 @@ function computeConcreteCompressionCoefficient(input: {
 }
 
 // 鋼材応力度係数の計算関数
-// 中立軸角度を数値的に求める関数（ソルバー）で使用する
+// 中立軸角度を求めるソルバー関数で使用する
 function computeSteelStressCoefficient(input: {
   angleRad: number;
   innerAngleRad: number;
@@ -465,7 +476,7 @@ function computeSteelStressCoefficient(input: {
 }
 
 // せん断係数の計算関数
-// 中立軸角度を数値的に求める関数（ソルバー）で使用する
+// 中立軸角度を求めるソルバー関数で使用する
 function computeShearCoefficient(input: {
   angleRad: number;
   innerAngleRad: number;
