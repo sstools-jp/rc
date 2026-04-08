@@ -10,7 +10,7 @@ import clsx from "clsx";
 
 // フォームの状態を定義する型
 type FormState = {
-  momentKNmm: string;
+  momentKNm: string;
   shearKN: string;
   axialKN: string;
   outerRadiusMm: string;
@@ -23,7 +23,7 @@ type FormState = {
 
 // フォームの初期状態を定義
 const DEFAULT_FORM_STATE: FormState = {
-  momentKNmm: "",
+  momentKNm: "",
   shearKN: "",
   axialKN: "",
   outerRadiusMm: "",
@@ -45,7 +45,7 @@ function isFormState(value: unknown): value is FormState {
 
   const candidate = value as Record<string, unknown>;
   return (
-    typeof candidate.momentKNmm === "string" &&
+    typeof candidate.momentKNm === "string" &&
     typeof candidate.shearKN === "string" &&
     typeof candidate.axialKN === "string" &&
     typeof candidate.outerRadiusMm === "string" &&
@@ -114,7 +114,7 @@ function formatValue(value: number | undefined, digits = 4): string {
 // フォームの状態から計算用の入力オブジェクトを作成するユーティリティ関数
 function buildInput(form: FormState): AnnularSectionInput {
   return {
-    momentKNmm: parseNumber(form.momentKNmm),
+    momentKNm: parseNumber(form.momentKNm),
     shearKN: parseNumber(form.shearKN),
     axialKN: parseNumber(form.axialKN),
     outerRadiusMm: parseNumber(form.outerRadiusMm),
@@ -175,7 +175,7 @@ function App() {
       setStatusMessage("計算が完了しました。");
     } catch (error) {
       const message = error instanceof Error ? error.message : "計算に失敗しました。";
-      setIssues([{ field: "momentKNmm", message }]);
+      setIssues([{ field: "momentKNm", message }]);
       setResult(null);
       setStatusMessage(message);
     }
@@ -225,8 +225,8 @@ function App() {
                   </tr>
                 </thead>
                 <tbody>
-                  <FieldRow label="曲げモーメント" symbol="M" unit="kN.mm">
-                    <FieldInput value={form.momentKNmm} onChange={updateField("momentKNmm")} />
+                  <FieldRow label="曲げモーメント" symbol="M" unit="kN.m">
+                    <FieldInput value={form.momentKNm} onChange={updateField("momentKNm")} />
                   </FieldRow>
                   <FieldRow label="せん断力" symbol="S" unit="kN">
                     <FieldInput value={form.shearKN} onChange={updateField("shearKN")} />

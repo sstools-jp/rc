@@ -27,7 +27,7 @@ export type AxialForceSign = "compression" | "tension" | "zero";
 // 入力データの型定義
 // prettier-ignore
 export interface AnnularSectionInput {
-  momentKNmm:     number; // 曲げモーメント [kN.mm]
+  momentKNm:      number; // 曲げモーメント [kN.m]
   shearKN:        number; // せん断力 [kN]
   axialKN:        number; // 軸力 [kN]
   outerRadiusMm:  number; // 外径 [mm]
@@ -84,7 +84,7 @@ export class AnnularSectionCalculator {
   validate(): AnnularSectionValidationIssue[] {
     const issues: AnnularSectionValidationIssue[] = [];
     const {
-      momentKNmm,
+      momentKNm,
       shearKN,
       axialKN,
       outerRadiusMm,
@@ -95,9 +95,9 @@ export class AnnularSectionCalculator {
       youngRatio,
     } = this.input;
 
-    if (!Number.isFinite(momentKNmm)) {
+    if (!Number.isFinite(momentKNm)) {
       const message = "モーメントは数値で指定してください。";
-      issues.push({ field: "momentKNmm", message });
+      issues.push({ field: "momentKNm", message });
     }
     if (!Number.isFinite(shearKN)) {
       const message = "せん断力は数値で指定してください。";
@@ -161,7 +161,7 @@ export class AnnularSectionCalculator {
     }
 
     const {
-      momentKNmm,
+      momentKNm,
       shearKN,
       axialKN,
       outerRadiusMm,
@@ -180,6 +180,7 @@ export class AnnularSectionCalculator {
     const rebarRatioPercent = (totalRebarAreaMm2 / fullSectionAreaMm2) * 100;
     const alpha = rebarRadiusMm / outerRadiusMm;
     const gamma = innerRadiusMm / outerRadiusMm;
+    const momentKNmm = momentKNm * 1000;
     const combinedMomentKNmm = momentKNmm + axialKN * outerRadiusMm;
 
     // 中立軸角度の計算
@@ -188,7 +189,7 @@ export class AnnularSectionCalculator {
       gamma,
       rebarRatioPercent,
       axialKN,
-      momentKNmm,
+      momentKNm,
       outerRadiusMm,
       rebarRadiusMm,
       youngRatio,
@@ -250,7 +251,7 @@ interface NeutralAxisSolverInput {
   gamma: number;
   rebarRatioPercent: number;
   axialKN: number;
-  momentKNmm: number;
+  momentKNm: number;
   outerRadiusMm: number;
   rebarRadiusMm: number;
   youngRatio: number;
@@ -266,10 +267,11 @@ interface NeutralAxisSolverResult {
 
 // 中立軸角度を数値的に求める関数（ソルバー）
 function solveNeutralAxisAngleDeg(input: NeutralAxisSolverInput): NeutralAxisSolverResult {
-  const { alpha, gamma, rebarRatioPercent, axialKN, momentKNmm, outerRadiusMm, youngRatio } = input;
+  const { alpha, gamma, rebarRatioPercent, axialKN, momentKNm, outerRadiusMm, youngRatio } = input;
   const radiusRatio = gamma;
   const alphaValue = alpha;
   const rebarRatio = rebarRatioPercent / 100;
+  const momentKNmm = momentKNm * 1000;
   const beta = axialKN === 0 ? Number.POSITIVE_INFINITY : momentKNmm / (axialKN * outerRadiusMm);
 
   const xMin = Math.acos(alphaValue) * (180 / Math.PI);

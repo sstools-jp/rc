@@ -5,7 +5,7 @@ describe("AnnularSectionCalculator", () => {
   it("計算結果の照合 (1)", () => {
     const calculator = new AnnularSectionCalculator({
       // 入力値
-      momentKNmm: 1250000, // 曲げモーメント [kN.mm]
+      momentKNm: 1250, // 曲げモーメント [kN.m]
       shearKN: 200, // せん断力 [kN]
       axialKN: 500, // 軸力 [kN]
       outerRadiusMm: 800, // 外径 [mm]
@@ -32,7 +32,7 @@ describe("AnnularSectionCalculator", () => {
 
   it("計算結果の照合 (2)", () => {
     const calculator = new AnnularSectionCalculator({
-      momentKNmm: 850000, // 曲げモーメント [kN.mm]
+      momentKNm: 850, // 曲げモーメント [kN.m]
       shearKN: 1200, // せん断力 [kN]
       axialKN: 1800, // 軸力 [kN]
       outerRadiusMm: 1200, // 外径 [mm]
@@ -59,7 +59,7 @@ describe("AnnularSectionCalculator", () => {
 
   it("計算結果の照合 (曲げモーメントのみ)", () => {
     const calculator = new AnnularSectionCalculator({
-      momentKNmm: 2500, // 曲げモーメント [kN.mm]
+      momentKNm: 2.5, // 曲げモーメント [kN.m]
       shearKN: 0, // せん断力 [kN]
       axialKN: 0, // 軸力 [kN]
       outerRadiusMm: 1200, // 外径 [mm]
@@ -86,7 +86,7 @@ describe("AnnularSectionCalculator", () => {
 
   it("不正な入力の場合はエラー", () => {
     const calculator = new AnnularSectionCalculator({
-      momentKNmm: 100, // 曲げモーメント [kN.mm]
+      momentKNm: 0.1, // 曲げモーメント [kN.m]
       shearKN: 0, // せん断力 [kN]
       axialKN: 0, // 軸力 [kN]
       outerRadiusMm: 300, // 外径 [mm]
