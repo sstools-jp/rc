@@ -243,6 +243,7 @@ function App() {
           >
             <h2 className="text-xl">計算結果</h2>
 
+            <h3 className="font-semibold">中立軸および換算曲げモーメント</h3>
             <div className="overflow-hidden border border-slate-200 bg-slate-50/80">
               <ResultCell label="中立軸角度" value={formatValue(result?.neutralAxisAngleDeg, 4)} unit="deg" />
               <ResultCell
