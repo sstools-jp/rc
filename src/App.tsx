@@ -265,11 +265,11 @@ function App() {
             <div className="space-y-3">
               <h3 className="text-base font-semibold text-slate-900">断面情報</h3>
               <div className="overflow-hidden border border-slate-200 bg-slate-50/80">
-                <ResultCell label="断面積" value={formatValue(result?.sectionAreaMm2, 2)} unit="mm²" />
-                <ResultCell label="全断面積" value={formatValue(result?.fullSectionAreaMm2, 2)} unit="mm²" />
+                <ResultCell label="断面積" value={formatValue(result?.sectionAreaMm2, 0)} unit="mm²" />
+                <ResultCell label="全断面積" value={formatValue(result?.fullSectionAreaMm2, 0)} unit="mm²" />
                 <ResultCell
                   label="内部断面積"
-                  value={formatValue(result?.innerSectionAreaMm2, 2)}
+                  value={formatValue(result?.innerSectionAreaMm2, 0)}
                   unit="mm²"
                 />
                 <ResultCell
@@ -279,7 +279,7 @@ function App() {
                 />
                 <ResultCell
                   label="鉄筋総断面積"
-                  value={formatValue(result?.totalRebarAreaMm2, 2)}
+                  value={formatValue(result?.totalRebarAreaMm2, 0)}
                   unit="mm²"
                 />
                 <ResultCell label="鉄筋比" value={formatPercent(result?.steelRatioPercent)} unit="" />
