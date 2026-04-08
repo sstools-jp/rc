@@ -52,7 +52,7 @@ export interface AnnularSectionResult {
   innerSectionAreaMm2:              number;   // 内部断面積 [mm2]
   rebarAreaPerBarMm2:               number;   // 1本あたりの鉄筋断面積 [mm2]
   totalRebarAreaMm2:                number;   // 鉄筋総断面積 [mm2]
-  steelRatioPercent:                number;   // 鉄筋比 [%]
+  rebarRatioPercent:                number;   // 鉄筋比 [%]
   alpha:                            number;   // 中立軸位置の係数
   gamma:                            number;   // 軸力係数
   combinedMomentKNmm:               number;   // 結合モーメント [kN.mm]
@@ -66,7 +66,7 @@ export interface AnnularSectionResult {
   shearCoefficient:                 number;   // せん断応力度係数
   // 応力度
   concreteCompressionStressNPerMm2: number;   // コンクリート圧縮応力度 [N/mm2]
-  steelStressNPerMm2:               number;   // 鋼材応力度 [N/mm2]
+  rebarStressNPerMm2:               number;   // 鉄筋応力度 [N/mm2]
   concreteShearStressNPerMm2:       number;   // コンクリートせん断応力度 [N/mm2]
 }
 
@@ -178,7 +178,7 @@ export class AnnularSectionCalculator {
     const sectionAreaMm2 = fullSectionAreaMm2 - innerSectionAreaMm2;
     const rebarAreaPerBarMm2 = REBAR_AREAS_MM2[rebarDiameterMm];
     const totalRebarAreaMm2 = rebarAreaPerBarMm2 * barCount;
-    const steelRatioPercent = (totalRebarAreaMm2 / fullSectionAreaMm2) * 100;
+    const rebarRatioPercent = (totalRebarAreaMm2 / fullSectionAreaMm2) * 100;
     const alpha = rebarRadiusMm / outerRadiusMm;
     const gamma = innerRadiusMm / outerRadiusMm;
     const combinedMomentKNmm = momentKNmm + axialKN * outerRadiusMm;
@@ -187,7 +187,7 @@ export class AnnularSectionCalculator {
     const solver = solveNeutralAxisAngleDeg({
       alpha,
       gamma,
-      steelRatioPercent,
+      rebarRatioPercent,
       axialKN,
       momentKNmm,
       outerRadiusMm,
@@ -205,7 +205,7 @@ export class AnnularSectionCalculator {
     const combinedMomentNmm = combinedMomentKNmm * 1000;
     const concreteCompressionStressNPerMm2 =
       (combinedMomentNmm / Math.pow(outerRadiusMm, 3)) * solver.concreteCompressionCoefficient;
-    const steelStressNPerMm2 =
+    const rebarStressNPerMm2 =
       (combinedMomentNmm / Math.pow(outerRadiusMm, 3)) * solver.steelStressCoefficient * youngRatio;
     const concreteShearStressNPerMm2 =
       ((shearKN * 1000) / Math.pow(outerRadiusMm, 2)) * solver.shearCoefficient;
@@ -216,7 +216,7 @@ export class AnnularSectionCalculator {
       innerSectionAreaMm2,
       rebarAreaPerBarMm2,
       totalRebarAreaMm2,
-      steelRatioPercent,
+      rebarRatioPercent,
       alpha,
       gamma,
       combinedMomentKNmm,
@@ -229,7 +229,7 @@ export class AnnularSectionCalculator {
       steelStressCoefficient: solver.steelStressCoefficient,
       shearCoefficient: solver.shearCoefficient,
       concreteCompressionStressNPerMm2,
-      steelStressNPerMm2,
+      rebarStressNPerMm2,
       concreteShearStressNPerMm2,
     };
   }
@@ -250,7 +250,7 @@ function classifyAxialForce(axialKN: number): AxialForceSign {
 interface NeutralAxisSolverInput {
   alpha: number;
   gamma: number;
-  steelRatioPercent: number;
+  rebarRatioPercent: number;
   axialKN: number;
   momentKNmm: number;
   outerRadiusMm: number;
@@ -268,10 +268,10 @@ interface NeutralAxisSolverResult {
 
 // 中立軸角度を数値的に求める関数（ソルバー）
 function solveNeutralAxisAngleDeg(input: NeutralAxisSolverInput): NeutralAxisSolverResult {
-  const { alpha, gamma, steelRatioPercent, axialKN, momentKNmm, outerRadiusMm, youngRatio } = input;
+  const { alpha, gamma, rebarRatioPercent, axialKN, momentKNmm, outerRadiusMm, youngRatio } = input;
   const radiusRatio = gamma;
   const alphaValue = alpha;
-  const steelRatio = steelRatioPercent / 100;
+  const rebarRatio = rebarRatioPercent / 100;
   const beta = axialKN === 0 ? Number.POSITIVE_INFINITY : momentKNmm / (axialKN * outerRadiusMm);
 
   const xMin = Math.acos(alphaValue) * (180 / Math.PI);
@@ -288,7 +288,7 @@ function solveNeutralAxisAngleDeg(input: NeutralAxisSolverInput): NeutralAxisSol
         angleDeg: angle,
         alpha: alphaValue,
         gamma: radiusRatio,
-        steelRatio,
+        rebarRatio,
         beta,
         axialKN,
         youngRatio,
@@ -315,7 +315,7 @@ function solveNeutralAxisAngleDeg(input: NeutralAxisSolverInput): NeutralAxisSol
     innerAngleRad: innerAngle,
     gamma: radiusRatio,
     alpha: alphaValue,
-    steelRatio,
+    rebarRatio,
     youngRatio,
   });
   const steelStressCoefficient = computeSteelStressCoefficient({
@@ -329,7 +329,7 @@ function solveNeutralAxisAngleDeg(input: NeutralAxisSolverInput): NeutralAxisSol
     innerAngleRad: innerAngle,
     gamma: radiusRatio,
     alpha: alphaValue,
-    steelRatio,
+    rebarRatio,
     youngRatio,
     concreteCompressionCoefficient,
   });
@@ -364,7 +364,7 @@ function evaluateObjective(input: {
   angleDeg: number;
   alpha: number;
   gamma: number;
-  steelRatio: number;
+  rebarRatio: number;
   beta: number;
   axialKN: number;
   youngRatio: number;
@@ -380,7 +380,7 @@ function evaluateObjective(input: {
       Math.pow(input.gamma, 3) *
         ((Math.sin(innerAngleRad) / 3) * (2 + Math.pow(Math.cos(innerAngleRad), 2)) -
           innerAngleRad * Math.cos(innerAngleRad)) -
-      Math.PI * input.youngRatio * input.steelRatio * Math.cos(angleRad);
+      Math.PI * input.youngRatio * input.rebarRatio * Math.cos(angleRad);
     return Math.abs(objective);
   }
 
@@ -392,7 +392,7 @@ function evaluateObjective(input: {
         Math.sin(innerAngleRad) *
           Math.cos(innerAngleRad) *
           (5 / 12 - (1 / 6) * Math.pow(Math.cos(innerAngleRad), 2))) +
-    ((Math.PI * input.youngRatio * input.steelRatio) / 2) * Math.pow(input.alpha, 2);
+    ((Math.PI * input.youngRatio * input.rebarRatio) / 2) * Math.pow(input.alpha, 2);
 
   const denominator =
     (Math.sin(angleRad) / 3) * (2 + Math.pow(Math.cos(angleRad), 2)) -
@@ -400,7 +400,7 @@ function evaluateObjective(input: {
     Math.pow(input.gamma, 3) *
       ((Math.sin(innerAngleRad) / 3) * (2 + Math.pow(Math.cos(innerAngleRad), 2)) -
         innerAngleRad * Math.cos(innerAngleRad)) -
-    Math.PI * input.youngRatio * input.steelRatio * Math.cos(angleRad);
+    Math.PI * input.youngRatio * input.rebarRatio * Math.cos(angleRad);
 
   return Math.abs(input.beta - numerator / denominator);
 }
@@ -412,10 +412,10 @@ function computeConcreteCompressionCoefficient(input: {
   innerAngleRad: number;
   gamma: number;
   alpha: number;
-  steelRatio: number;
+  rebarRatio: number;
   youngRatio: number;
 }): number {
-  const { angleRad, innerAngleRad, gamma, alpha, steelRatio, youngRatio } = input;
+  const { angleRad, innerAngleRad, gamma, alpha, rebarRatio, youngRatio } = input;
   const numerator = 1 - Math.cos(angleRad);
   const denominator =
     (2 / 3) * Math.pow(Math.sin(angleRad), 3) -
@@ -432,7 +432,7 @@ function computeConcreteCompressionCoefficient(input: {
           (innerAngleRad / 4 -
             (1 / 4) * Math.sin(innerAngleRad) * Math.cos(innerAngleRad) -
             (1 / 6) * Math.pow(Math.sin(innerAngleRad), 3) * Math.cos(innerAngleRad))) +
-    Math.PI * youngRatio * steelRatio * ((1 / 2) * Math.pow(alpha, 2) - Math.cos(angleRad));
+    Math.PI * youngRatio * rebarRatio * ((1 / 2) * Math.pow(alpha, 2) - Math.cos(angleRad));
 
   return numerator / denominator;
 }
@@ -458,11 +458,11 @@ function computeShearCoefficient(input: {
   innerAngleRad: number;
   gamma: number;
   alpha: number;
-  steelRatio: number;
+  rebarRatio: number;
   youngRatio: number;
   concreteCompressionCoefficient: number;
 }): number {
-  const { angleRad, innerAngleRad, gamma, alpha, steelRatio, youngRatio } = input;
+  const { angleRad, innerAngleRad, gamma, alpha, rebarRatio, youngRatio } = input;
   const xs = Math.acos((1 / alpha) * Math.cos(angleRad));
   const z3Numerator =
     angleRad -
@@ -472,12 +472,12 @@ function computeShearCoefficient(input: {
       (innerAngleRad -
         Math.sin(innerAngleRad) * Math.cos(innerAngleRad) -
         (2 / 3) * gamma * Math.pow(Math.sin(innerAngleRad), 3)) +
-    Math.PI * youngRatio * steelRatio;
+    Math.PI * youngRatio * rebarRatio;
   const z3Denominator =
     angleRad -
     Math.sin(angleRad) * Math.cos(angleRad) -
     Math.pow(gamma, 2) * (innerAngleRad - Math.sin(innerAngleRad) * Math.cos(innerAngleRad)) +
-    Math.PI * youngRatio * steelRatio;
+    Math.PI * youngRatio * rebarRatio;
   const z3 = z3Numerator / z3Denominator;
 
   let z2 = 0;
@@ -508,9 +508,9 @@ function computeShearCoefficient(input: {
     gamma *
     Math.pow(Math.sin(innerAngleRad), 3) *
     ((gamma * Math.cos(innerAngleRad)) / 2 - 4 / 3);
-  z2 += Math.PI * youngRatio * steelRatio * (Math.pow(alpha, 2) / 2 + Math.pow(1 - z3, 2));
+  z2 += Math.PI * youngRatio * rebarRatio * (Math.pow(alpha, 2) / 2 + Math.pow(1 - z3, 2));
 
-  const numerator = youngRatio * steelRatio * (alpha * Math.sin(xs) - (Math.PI - xs) * (z3 - 1));
+  const numerator = youngRatio * rebarRatio * (alpha * Math.sin(xs) - (Math.PI - xs) * (z3 - 1));
   const denominator = 2 * (Math.sin(angleRad) - gamma * Math.sin(innerAngleRad)) * z2;
   return numerator / denominator;
 }

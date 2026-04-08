@@ -282,7 +282,7 @@ function App() {
                   value={formatValue(result?.totalRebarAreaMm2, 0)}
                   unit="mm²"
                 />
-                <ResultCell label="鉄筋比" value={formatPercent(result?.steelRatioPercent)} unit="" />
+                <ResultCell label="鉄筋比" value={formatPercent(result?.rebarRatioPercent)} unit="" />
               </div>
             </div>
 
@@ -315,20 +315,14 @@ function App() {
                   unit="N/mm²"
                 />
                 <ResultCell
-                  label="鋼材応力度"
-                  value={formatValue(result?.steelStressNPerMm2, 4)}
+                  label="鉄筋応力度"
+                  value={formatValue(result?.rebarStressNPerMm2, 4)}
                   unit="N/mm²"
                 />
                 <ResultCell
                   label="コンクリートせん断応力度"
                   value={formatValue(result?.concreteShearStressNPerMm2, 4)}
                   unit="N/mm²"
-                />
-                <ResultCell label="軸力の符号" value={result?.axialForceSign ?? "-"} unit="" />
-                <ResultCell
-                  label="円形断面"
-                  value={result ? (result.isCircularSection ? "はい" : "いいえ") : "-"}
-                  unit=""
                 />
               </div>
             </div>
@@ -369,11 +363,11 @@ type FieldRowProps = {
 };
 function FieldRow({ label, symbol, unit, children }: FieldRowProps) {
   return (
-    <tr className="border-b border-slate-200 text-sm last:border-b-0">
-      <td className="px-4 py-1">{label}</td>
-      <td className="px-4 py-1 text-center font-medium">{symbol}</td>
-      <td className="px-4 py-1 text-center">{unit}</td>
-      <td className="w-32 px-1 py-1">{children}</td>
+    <tr className="border-b border-slate-200 last:border-b-0">
+      <td className="px-2 py-1">{label}</td>
+      <td className="px-1 py-1 text-center font-mono">{symbol}</td>
+      <td className="px-1 py-1 text-center font-mono">{unit}</td>
+      <td className="w-26 px-1 py-1">{children}</td>
     </tr>
   );
 }
@@ -387,7 +381,7 @@ type FieldInputProps = {
 };
 function FieldInput({ value, onChange, inputMode = "decimal", step }: FieldInputProps) {
   const className = clsx(
-    "w-full border border-slate-300 bg-white px-1 py-1 text-right text-sm outline-none placeholder:text-slate-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15",
+    "w-full border border-slate-300 bg-white px-1 py-1 text-right font-mono outline-none placeholder:text-slate-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15",
   );
 
   return (
@@ -414,7 +408,7 @@ type FieldSelectProps = {
 };
 function FieldSelect({ value, onChange, options }: FieldSelectProps) {
   const className = clsx(
-    "w-full border border-slate-300 bg-white px-1 py-1 text-right text-sm outline-none placeholder:text-slate-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15",
+    "w-full border border-slate-300 bg-white px-1 py-1 text-right font-mono outline-none placeholder:text-slate-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15",
   );
 
   return (
