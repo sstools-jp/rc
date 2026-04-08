@@ -372,6 +372,19 @@ function App() {
               />
             </CollapsibleSection>
 
+            <CollapsibleSection title="終局耐力" defaultOpen>
+              <ResultCell
+                label="コンクリート終局曲げモーメント"
+                value={formatValue(result?.concreteUltimateMomentKNm, 0)}
+                unit="kN.m"
+              />
+              <ResultCell
+                label="鉄筋降伏曲げモーメント"
+                value={formatValue(result?.rebarYieldMomentKNm, 0)}
+                unit="kN.m"
+              />
+            </CollapsibleSection>
+
             <CollapsibleSection title="断面情報" defaultOpen>
               {/* <ResultCell label="断面積" value={formatValue(result?.sectionAreaMm2, 0)} unit="mm²" /> */}
               {/* <ResultCell label="全断面積" value={formatValue(result?.fullSectionAreaMm2, 0)} unit="mm²" /> */}

@@ -69,6 +69,9 @@ export interface AnnularSectionResult {
   concreteCompressionStressNPerMm2: number;   // コンクリート圧縮応力度 [N/mm2]
   rebarStressNPerMm2:               number;   // 鉄筋応力度 [N/mm2]
   concreteShearStressNPerMm2:       number;   // コンクリートせん断応力度 [N/mm2]
+  // 終局耐力
+  concreteUltimateMomentKNm:        number;   // コンクリート終局曲げモーメント [kN.m]
+  rebarYieldMomentKNm:              number;   // 鉄筋降伏曲げモーメント [kN.m]
 }
 
 // 数値計算用の極小値（ゼロ判定用）
@@ -240,6 +243,10 @@ export class AnnularSectionCalculator {
     const concreteShearStressNPerMm2 =
       ((shearKN * 1000) / Math.pow(outerRadiusMm, 2)) * solver.shearCoefficient;
 
+    // 終局耐力
+    const concreteUltimateMomentKNm = calculateConcreteUltimateMomentKNm(this.input);
+    const rebarYieldMomentKNm = calculateRebarYieldMomentKNm(this.input);
+
     return {
       sectionAreaMm2,
       fullSectionAreaMm2,
@@ -260,6 +267,8 @@ export class AnnularSectionCalculator {
       concreteCompressionStressNPerMm2,
       rebarStressNPerMm2,
       concreteShearStressNPerMm2,
+      concreteUltimateMomentKNm,
+      rebarYieldMomentKNm,
     };
   }
 }
