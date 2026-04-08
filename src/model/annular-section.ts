@@ -136,8 +136,8 @@ export class AnnularSectionCalculator {
       const message = "鉄筋の位置（有効半径）は 0 以上で指定してください。";
       issues.push({ field: "rebarRadiusMm", message });
     }
-    if (!Number.isInteger(barCount) || barCount <= 0) {
-      const message = "本数は 1 以上の整数で指定してください。";
+    if (!Number.isFinite(barCount) || barCount <= 0) {
+      const message = "本数は正の数で指定してください。";
       issues.push({ field: "barCount", message });
     }
     if (!Number.isFinite(youngRatio) || youngRatio <= 0) {

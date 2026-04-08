@@ -279,8 +279,8 @@ function App() {
                     <FieldInput
                       value={form.barCount}
                       onChange={updateField("barCount")}
-                      inputMode="numeric"
-                      step="1"
+                      inputMode="decimal"
+                      step="any"
                     />
                   </FieldRow>
                   <FieldRow label="鉄筋降伏強度" symbol="σsy" unit="N/mm²">

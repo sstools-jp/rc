@@ -107,4 +107,25 @@ describe("AnnularSectionCalculator", () => {
 
     expect(() => calculator.calculate()).toThrow("半径（内）は半径（外）以下で指定してください。");
   });
+
+  it("鉄筋本数に小数を指定できる", () => {
+    const calculator = new AnnularSectionCalculator({
+      momentKNm: 10, // 曲げモーメント [kN.m]
+      shearKN: 0, // せん断力 [kN]
+      axialKN: 0, // 軸力 [kN]
+      outerRadiusMm: 500, // 外径 [mm]
+      innerRadiusMm: 200, // 内径 [mm]
+      rebarRadiusMm: 350, // 鉄筋半径 [mm]
+      rebarDiameterMm: 10, // 鉄筋径 [mm]
+      barCount: 8.5, // 鉄筋本数
+      youngRatio: 15, // ヤング係数比
+      rebarYieldStrengthNPerMm2: 345, // 鉄筋降伏強度 [N/mm2]
+      concreteDesignStrengthNPerMm2: 30, // コンクリート設計基準強度 [N/mm2]
+    });
+
+    const result = calculator.calculate();
+
+    expect(result.totalRebarAreaMm2).toBeCloseTo(606.3, 1);
+    expect(result.rebarRatioPercent).toBeGreaterThan(0);
+  });
 });
