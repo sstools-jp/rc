@@ -421,7 +421,7 @@ type FieldInputProps = {
 };
 function FieldInput({ value, onChange, inputMode = "decimal", step }: FieldInputProps) {
   const className = clsx(
-    "w-full border border-slate-300 bg-white px-1 py-1 text-right font-mono outline-none placeholder:text-slate-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15",
+    "w-full border border-slate-300 bg-white px-1 py-0.5 text-right font-mono outline-none placeholder:text-slate-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15",
   );
 
   return (
@@ -448,7 +448,7 @@ type FieldSelectProps = {
 };
 function FieldSelect({ value, onChange, options }: FieldSelectProps) {
   const className = clsx(
-    "w-full border border-slate-300 bg-white px-1 py-1 text-right font-mono outline-none placeholder:text-slate-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15",
+    "w-full border border-slate-300 bg-white px-1 py-0.5 text-right font-mono outline-none placeholder:text-slate-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15",
   );
 
   return (
