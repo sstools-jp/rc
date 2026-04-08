@@ -306,8 +306,7 @@ function App() {
           >
             <h2 className="text-xl">計算結果</h2>
 
-            <h3 className="font-semibold">中立軸および換算曲げモーメント</h3>
-            <div className="overflow-hidden border border-slate-200 bg-slate-50/80">
+            <CollapsibleSection title="中立軸および換算曲げモーメント" defaultOpen>
               <ResultCell label="中立軸角度" value={formatValue(result?.neutralAxisAngleDeg, 4)} unit="deg" />
               <ResultCell
                 label="中立軸位置"
@@ -319,71 +318,54 @@ function App() {
                 value={formatValue(result?.combinedMomentKNm, 1)}
                 unit="kN.m"
               />
-            </div>
+            </CollapsibleSection>
 
-            <div className="space-y-3">
-              <h3 className="font-semibold">発生応力度</h3>
-              <div className="overflow-hidden border border-slate-200 bg-slate-50/80">
-                <ResultCell
-                  label="コンクリート圧縮応力度"
-                  value={formatValue(result?.concreteCompressionStressNPerMm2, 4)}
-                  unit="N/mm²"
-                />
-                <ResultCell
-                  label="鉄筋応力度"
-                  value={formatValue(result?.rebarStressNPerMm2, 4)}
-                  unit="N/mm²"
-                />
-                <ResultCell
-                  label="コンクリートせん断応力度"
-                  value={formatValue(result?.concreteShearStressNPerMm2, 4)}
-                  unit="N/mm²"
-                />
-              </div>
-            </div>
+            <CollapsibleSection title="発生応力度">
+              <ResultCell
+                label="コンクリート圧縮応力度"
+                value={formatValue(result?.concreteCompressionStressNPerMm2, 4)}
+                unit="N/mm²"
+              />
+              <ResultCell
+                label="鉄筋応力度"
+                value={formatValue(result?.rebarStressNPerMm2, 4)}
+                unit="N/mm²"
+              />
+              <ResultCell
+                label="コンクリートせん断応力度"
+                value={formatValue(result?.concreteShearStressNPerMm2, 4)}
+                unit="N/mm²"
+              />
+            </CollapsibleSection>
 
-            <div className="space-y-3">
-              <h3 className="font-semibold">断面情報</h3>
-              <div className="overflow-hidden border border-slate-200 bg-slate-50/80">
-                <ResultCell label="断面積" value={formatValue(result?.sectionAreaMm2, 0)} unit="mm²" />
-                <ResultCell label="全断面積" value={formatValue(result?.fullSectionAreaMm2, 0)} unit="mm²" />
-                <ResultCell
-                  label="内部断面積"
-                  value={formatValue(result?.innerSectionAreaMm2, 0)}
-                  unit="mm²"
-                />
-                <ResultCell
-                  label="鉄筋1本断面積"
-                  value={formatValue(result?.rebarAreaPerBarMm2, 2)}
-                  unit="mm²"
-                />
-                <ResultCell
-                  label="鉄筋総断面積"
-                  value={formatValue(result?.totalRebarAreaMm2, 0)}
-                  unit="mm²"
-                />
-                <ResultCell
-                  label="鉄筋比"
-                  value={formatValue((result?.rebarRatioPercent ?? 0) * 100, 3)}
-                  unit="%"
-                />
-              </div>
-            </div>
+            <CollapsibleSection title="断面情報">
+              <ResultCell label="断面積" value={formatValue(result?.sectionAreaMm2, 0)} unit="mm²" />
+              <ResultCell label="全断面積" value={formatValue(result?.fullSectionAreaMm2, 0)} unit="mm²" />
+              <ResultCell label="内部断面積" value={formatValue(result?.innerSectionAreaMm2, 0)} unit="mm²" />
+              <ResultCell
+                label="鉄筋1本断面積"
+                value={formatValue(result?.rebarAreaPerBarMm2, 2)}
+                unit="mm²"
+              />
+              <ResultCell label="鉄筋総断面積" value={formatValue(result?.totalRebarAreaMm2, 0)} unit="mm²" />
+              <ResultCell
+                label="鉄筋比"
+                value={formatValue((result?.rebarRatioPercent ?? 0) * 100, 3)}
+                unit="%"
+              />
+            </CollapsibleSection>
 
-            <div className="space-y-3">
-              <h3 className="font-semibold">係数</h3>
-              <div className="overflow-hidden border border-slate-200 bg-slate-50/80">
-                <ResultCell label="α" value={formatValue(result?.alpha, 4)} />
-                <ResultCell label="γ" value={formatValue(result?.gamma, 4)} />
-                <ResultCell
-                  label="コンクリート圧縮係数"
-                  value={formatValue(result?.concreteCompressionCoefficient, 4)}
-                />
-                <ResultCell label="鋼材応力度係数" value={formatValue(result?.steelStressCoefficient, 4)} />
-                <ResultCell label="せん断係数" value={formatValue(result?.shearCoefficient, 4)} />
-                <ResultCell label="ヤング係数比" value={formatValue(result?.youngRatio, 2)} />
-              </div>
-            </div>
+            <CollapsibleSection title="係数">
+              <ResultCell label="α" value={formatValue(result?.alpha, 4)} />
+              <ResultCell label="γ" value={formatValue(result?.gamma, 4)} />
+              <ResultCell
+                label="コンクリート圧縮係数"
+                value={formatValue(result?.concreteCompressionCoefficient, 4)}
+              />
+              <ResultCell label="鋼材応力度係数" value={formatValue(result?.steelStressCoefficient, 4)} />
+              <ResultCell label="せん断係数" value={formatValue(result?.shearCoefficient, 4)} />
+              <ResultCell label="ヤング係数比" value={formatValue(result?.youngRatio, 2)} />
+            </CollapsibleSection>
           </section>
         </section>
       </main>
@@ -495,6 +477,42 @@ function ResultCell({ label, value, unit }: ResultCellProps) {
         {unit ? <span className="inline-block w-10 text-left select-none">{unit}</span> : null}
       </div>
     </article>
+  );
+}
+
+// 折りたたみ可能なセクションコンポーネント
+type CollapsibleSectionProps = {
+  title: string;
+  defaultOpen?: boolean;
+  children: ReactNode;
+};
+function CollapsibleSection({ title, defaultOpen = false, children }: CollapsibleSectionProps) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  return (
+    <section className="space-y-3">
+      <h3>
+        <button
+          type="button"
+          onClick={() => setIsOpen((current) => !current)}
+          aria-expanded={isOpen}
+          className="flex w-full items-center gap-2 rounded-sm text-left font-semibold outline-none"
+        >
+          <span
+            aria-hidden="true"
+            className={clsx(
+              "inline-block h-0 w-0 shrink-0 border-y-[5px] border-l-[7px] border-y-transparent border-l-slate-600",
+              isOpen ? "rotate-90" : "rotate-0",
+            )}
+          />
+          <span>{title}</span>
+        </button>
+      </h3>
+
+      {isOpen ? (
+        <div className="overflow-hidden border border-slate-200 bg-slate-50/80">{children}</div>
+      ) : null}
+    </section>
   );
 }
 
