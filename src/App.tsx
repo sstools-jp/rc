@@ -52,11 +52,6 @@ function formatValue(value: number | undefined, digits = 4): string {
   }).format(value);
 }
 
-// パーセント表示用のフォーマット関数
-function formatPercent(value: number | undefined): string {
-  return `${formatValue(value, 3)} %`;
-}
-
 // フォームの状態から計算用の入力オブジェクトを作成するユーティリティ関数
 function buildInput(form: FormState): AnnularSectionInput {
   return {
@@ -249,7 +244,7 @@ function App() {
             <h2 className="text-xl">計算結果</h2>
 
             <div className="overflow-hidden border border-slate-200 bg-slate-50/80">
-              <ResultCell label="中立軸角度" value={formatValue(result?.neutralAxisAngleDeg, 4)} unit="°" />
+              <ResultCell label="中立軸角度" value={formatValue(result?.neutralAxisAngleDeg, 4)} unit="deg" />
               <ResultCell
                 label="中立軸位置"
                 value={formatValue(result?.neutralAxisPositionMm, 2)}
@@ -282,27 +277,26 @@ function App() {
                   value={formatValue(result?.totalRebarAreaMm2, 0)}
                   unit="mm²"
                 />
-                <ResultCell label="鉄筋比" value={formatPercent(result?.rebarRatioPercent)} unit="" />
+                <ResultCell
+                  label="鉄筋比"
+                  value={formatValue((result?.rebarRatioPercent ?? 0) * 100, 3)}
+                  unit="%"
+                />
               </div>
             </div>
 
             <div className="space-y-3">
               <h3 className="font-semibold">係数</h3>
               <div className="overflow-hidden border border-slate-200 bg-slate-50/80">
-                <ResultCell label="α" value={formatValue(result?.alpha, 4)} unit="-" />
-                <ResultCell label="γ" value={formatValue(result?.gamma, 4)} unit="-" />
+                <ResultCell label="α" value={formatValue(result?.alpha, 4)} />
+                <ResultCell label="γ" value={formatValue(result?.gamma, 4)} />
                 <ResultCell
                   label="コンクリート圧縮係数"
                   value={formatValue(result?.concreteCompressionCoefficient, 4)}
-                  unit="-"
                 />
-                <ResultCell
-                  label="鋼材応力度係数"
-                  value={formatValue(result?.steelStressCoefficient, 4)}
-                  unit="-"
-                />
-                <ResultCell label="せん断係数" value={formatValue(result?.shearCoefficient, 4)} unit="-" />
-                <ResultCell label="ヤング係数比" value={formatValue(result?.youngRatio, 2)} unit="-" />
+                <ResultCell label="鋼材応力度係数" value={formatValue(result?.steelStressCoefficient, 4)} />
+                <ResultCell label="せん断係数" value={formatValue(result?.shearCoefficient, 4)} />
+                <ResultCell label="ヤング係数比" value={formatValue(result?.youngRatio, 2)} />
               </div>
             </div>
 
@@ -426,7 +420,7 @@ function FieldSelect({ value, onChange, options }: FieldSelectProps) {
 type ResultCellProps = {
   label: string;
   value: string;
-  unit: string;
+  unit?: string;
 };
 function ResultCell({ label, value, unit }: ResultCellProps) {
   return (
