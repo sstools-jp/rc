@@ -6,6 +6,7 @@ import {
   type AnnularSectionValidationIssue,
   REBAR_DIAMETERS_MM,
 } from "./model/annular-section";
+import { PrintPreviewModal } from "./components/PrintPreviewModal";
 import clsx from "clsx";
 
 // フォームの状態を定義する型
@@ -171,10 +172,33 @@ function App() {
   const [result, setResult] = useState<AnnularSectionResult | null>(() => createResult(INITIAL_FORM_STATE));
   const [issues, setIssues] = useState<AnnularSectionValidationIssue[]>([]);
   const [statusMessage, setStatusMessage] = useState("入力を待機しています。");
+  const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
 
   useEffect(() => {
     saveFormState(form);
   }, [form]);
+
+  useEffect(() => {
+    if (!isPrintPreviewOpen) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsPrintPreviewOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isPrintPreviewOpen]);
 
   const handleSubmit = (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -186,6 +210,7 @@ function App() {
     if (validationIssues.length > 0) {
       setIssues(validationIssues);
       setResult(null);
+      setIsPrintPreviewOpen(false);
       setStatusMessage("入力値を確認してください。");
       return;
     }
@@ -199,6 +224,7 @@ function App() {
       const message = error instanceof Error ? error.message : "計算に失敗しました。";
       setIssues([{ field: "momentKNm", message }]);
       setResult(null);
+      setIsPrintPreviewOpen(false);
       setStatusMessage(message);
     }
   };
@@ -208,6 +234,7 @@ function App() {
     setResult(createResult(DEFAULT_FORM_STATE));
     setIssues([]);
     setStatusMessage("入力を待機しています。");
+    setIsPrintPreviewOpen(false);
   };
 
   const updateField = (field: keyof FormState) => (value: string) => {
@@ -338,7 +365,17 @@ function App() {
             aria-live="polite"
             className="flex h-full flex-col gap-6 border border-slate-200 bg-white p-5"
           >
-            <h2 className="text-xl">計算結果</h2>
+            <div className="flex items-start justify-between gap-3">
+              <h2 className="text-xl">計算結果</h2>
+              <button
+                type="button"
+                onClick={() => setIsPrintPreviewOpen(true)}
+                disabled={result === null}
+                className="inline-flex min-h-8 items-center justify-center border border-slate-300 bg-white px-4 text-sm text-slate-700 hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
+              >
+                印刷用テーブル
+              </button>
+            </div>
 
             <CollapsibleSection title="中立軸および換算曲げモーメント" defaultOpen>
               <ResultCell label="中立軸角度" value={formatValue(result?.neutralAxisAngleDeg, 4)} unit="deg" />
@@ -408,6 +445,10 @@ function App() {
           </section>
         </section>
       </main>
+
+      {isPrintPreviewOpen ? (
+        <PrintPreviewModal form={form} result={result} onClose={() => setIsPrintPreviewOpen(false)} />
+      ) : null}
 
       <StatusBar message={statusMessage} />
     </div>
