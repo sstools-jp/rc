@@ -506,7 +506,7 @@ export function PrintPreviewModal({ open, form, result, onClose }: PrintPreviewM
               ref={printContentRef}
               className="rounded-sm bg-white p-8 shadow-sm print:rounded-none print:p-0 print:shadow-none"
             >
-              <h4 className="mb-4 text-center text-xl font-semibold">ＲＣ計算［円環断面］</h4>
+              <h4 className="mb-4 text-center text-xl font-semibold">RC断面計算【円環断面】</h4>
               <PreviewTable
                 title="入力値"
                 sections={inputSections}
