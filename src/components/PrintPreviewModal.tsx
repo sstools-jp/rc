@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { AnnularSectionResult } from "../model/annular-section";
 
 type PrintPreviewModalProps = {
@@ -30,6 +31,12 @@ type PrintPreviewRow = {
 type PrintPreviewSection = {
   title: string;
   rows: PrintPreviewRow[];
+};
+
+type CopyBlock = {
+  title: string;
+  header: string;
+  sections: PrintPreviewSection[];
 };
 
 function parseNumber(value: string): number {
@@ -150,7 +157,7 @@ function buildResultPreviewSections(result: AnnularSectionResult | null): PrintP
           label: "コンクリート最大せん断応力度",
           symbol: "τc",
           unit: "N/mm²",
-          value: formatPrintValue(result?.concreteShearStressNPerMm2, 0),
+          value: formatPrintValue(result?.concreteShearStressNPerMm2, 2),
         },
       ],
     },
@@ -203,9 +210,84 @@ function buildResultPreviewSections(result: AnnularSectionResult | null): PrintP
   ];
 }
 
+function buildClipboardText(blocks: CopyBlock[]): string {
+  const lines: string[] = [];
+
+  for (const block of blocks) {
+    lines.push(block.title);
+    lines.push(block.header);
+
+    for (const section of block.sections) {
+      for (const row of section.rows) {
+        lines.push([section.title, row.label, row.symbol, row.unit, row.value].join("\t"));
+      }
+    }
+
+    lines.push("");
+  }
+
+  return lines.join("\n").trimEnd();
+}
+
+async function copyTextToClipboard(text: string): Promise<void> {
+  if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  if (typeof document === "undefined") {
+    throw new Error("クリップボードにアクセスできません。");
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "true");
+  textarea.style.position = "fixed";
+  textarea.style.top = "0";
+  textarea.style.left = "0";
+  textarea.style.opacity = "0";
+  document.body.appendChild(textarea);
+  textarea.select();
+
+  const copied = document.execCommand("copy");
+  document.body.removeChild(textarea);
+
+  if (!copied) {
+    throw new Error("クリップボードへのコピーに失敗しました。");
+  }
+}
+
 export function PrintPreviewModal({ form, result, onClose }: PrintPreviewModalProps) {
+  const [copyError, setCopyError] = useState<string | null>(null);
   const inputSections = buildInputPreviewSections(form);
   const resultSections = buildResultPreviewSections(result);
+  const canCopy = result !== null;
+
+  const handleCopy = async () => {
+    if (!canCopy) {
+      return;
+    }
+
+    try {
+      setCopyError(null);
+      const text = buildClipboardText([
+        {
+          title: "入力値",
+          header: "区分\t項目\t記号\t単位\t入力値",
+          sections: inputSections,
+        },
+        {
+          title: "計算結果",
+          header: "区分\t項目\t記号\t単位\t計算値",
+          sections: resultSections,
+        },
+      ]);
+
+      await copyTextToClipboard(text);
+    } catch {
+      setCopyError("クリップボードへのコピーに失敗しました。");
+    }
+  };
 
   return (
     <div
@@ -224,13 +306,26 @@ export function PrintPreviewModal({ form, result, onClose }: PrintPreviewModalPr
             <p className="text-sm font-medium text-slate-500">印刷用プレビュー</p>
             <h3 className="text-2xl font-semibold text-slate-900">ＲＣ計算［円環断面］</h3>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex min-h-9 items-center justify-center border border-slate-300 bg-white px-4 text-sm text-slate-700 hover:border-slate-400 hover:bg-slate-50"
-          >
-            閉じる
-          </button>
+          <div className="flex flex-col items-end gap-2">
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleCopy}
+                disabled={!canCopy}
+                className="inline-flex min-h-9 items-center justify-center border border-slate-300 bg-white px-4 text-sm text-slate-700 hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
+              >
+                クリップボードにコピー
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="inline-flex min-h-9 items-center justify-center border border-slate-300 bg-white px-4 text-sm text-slate-700 hover:border-slate-400 hover:bg-slate-50"
+              >
+                閉じる
+              </button>
+            </div>
+            {copyError ? <p className="text-sm text-rose-600">{copyError}</p> : null}
+          </div>
         </div>
 
         <div className="overflow-auto p-4">
