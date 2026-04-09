@@ -1,8 +1,8 @@
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { useRef, useState } from "react";
-import type { AnnularSectionResult } from "../model/annular-section";
-import { SymbolText } from "./SymbolText.tsx";
-import { formatNumber, parseNumber } from "../utils/number-format.ts";
+import type { AnnularSectionResult } from "@/model/annular-section";
+import { SymbolText } from "@/components/SymbolText";
+import { formatNumber, parseNumber } from "@/utils/number-format";
 
 type PrintPreviewModalProps = {
   open: boolean;

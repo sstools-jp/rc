@@ -5,11 +5,11 @@ import {
   type AnnularSectionResult,
   type AnnularSectionValidationIssue,
   REBAR_DIAMETERS_MM,
-} from "./model/annular-section";
-import { PrintPreviewModal } from "./components/PrintPreviewModal";
+} from "@/model/annular-section";
+import { PrintPreviewModal } from "@/components/PrintPreviewModal";
 import clsx from "clsx";
-import { SymbolText } from "./components/SymbolText.tsx";
-import { formatNumber, parseNumber } from "./utils/number-format.ts";
+import { SymbolText } from "@/components/SymbolText";
+import { formatNumber, parseNumber } from "@/utils/number-format";
 
 // フォームの状態を定義する型
 type FormState = {

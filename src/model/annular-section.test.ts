@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AnnularSectionCalculator } from "./annular-section";
+import { AnnularSectionCalculator } from "@/model/annular-section";
 
 describe("AnnularSectionCalculator", () => {
   it("計算結果の照合 (1)", () => {
