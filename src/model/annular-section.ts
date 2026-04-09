@@ -87,7 +87,9 @@ function radToDeg(rad: number): number {
   return rad * (180 / Math.PI);
 }
 
-// 円環断面の計算クラス
+/**
+ * 円環断面の計算クラス
+ */
 export class AnnularSectionCalculator {
   private readonly input: AnnularSectionInput;
 
@@ -177,7 +179,9 @@ export class AnnularSectionCalculator {
     return issues;
   }
 
-  // 計算処理
+  /**
+   * 計算処理
+   */
   calculate(): AnnularSectionResult {
     const issues = this.validate();
     if (issues.length > 0) {
@@ -273,7 +277,9 @@ export class AnnularSectionCalculator {
   }
 }
 
-// 軸力の符号を判定する関数
+/**
+ * 軸力の符号を判定する関数
+ */
 function classifyAxialForce(axialKN: number): AxialForceSign {
   if (axialKN > EPSILON) {
     return "compression";
@@ -326,7 +332,9 @@ interface MomentStressEvaluation {
   rebarStressNPerMm2: number;
 }
 
-// 中立軸角度を求めるソルバー関数
+/**
+ * 中立軸角度を求めるソルバー関数
+ */
 function solveNeutralAxisAngleDeg(input: NeutralAxisSolverInput): NeutralAxisSolverResult {
   const { alpha, gamma, rebarRatioPercent, axialKN, momentKNm, outerRadiusMm, youngRatio } = input;
   const radiusRatio = gamma;
@@ -410,7 +418,9 @@ function solveNeutralAxisAngleDeg(input: NeutralAxisSolverInput): NeutralAxisSol
   };
 }
 
-// 中立軸角度の計算に必要な内部角度を求める関数
+/**
+ * 中立軸角度の計算に必要な内部角度を求める関数
+ */
 function computeInnerAngle(angleRad: number, gamma: number, alpha: number): number {
   if (gamma === 0) {
     return 0;
@@ -427,7 +437,9 @@ function computeInnerAngle(angleRad: number, gamma: number, alpha: number): numb
   return Math.PI;
 }
 
-// 中立軸角度を求めるソルバー関数の目的関数
+/**
+ * 中立軸角度を求めるソルバー関数の目的関数
+ */
 function evaluateObjective(input: {
   angleDeg: number;
   alpha: number;
@@ -473,8 +485,11 @@ function evaluateObjective(input: {
   return Math.abs(input.beta - numerator / denominator);
 }
 
-// コンクリート圧縮応力度係数の計算関数
-// 中立軸角度を求めるソルバー関数で使用する
+/**
+ * コンクリート圧縮応力度係数の計算関数
+ *
+ * 中立軸角度を求めるソルバー関数で使用する
+ */
 function computeConcreteCompressionCoefficient(input: {
   angleRad: number;
   innerAngleRad: number;
@@ -505,8 +520,11 @@ function computeConcreteCompressionCoefficient(input: {
   return numerator / denominator;
 }
 
-// 鋼材応力度係数の計算関数
-// 中立軸角度を求めるソルバー関数で使用する
+/**
+ * 鋼材応力度係数の計算関数
+ *
+ * 中立軸角度を求めるソルバー関数で使用する
+ */
 function computeSteelStressCoefficient(input: {
   angleRad: number;
   innerAngleRad: number;
@@ -519,8 +537,11 @@ function computeSteelStressCoefficient(input: {
   return concreteCompressionCoefficient * (numerator / denominator);
 }
 
-// せん断係数の計算関数
-// 中立軸角度を求めるソルバー関数で使用する
+/**
+ * せん断係数の計算関数
+ *
+ * 中立軸角度を求めるソルバー関数で使用する
+ */
 function computeShearCoefficient(input: {
   angleRad: number;
   innerAngleRad: number;
@@ -583,8 +604,11 @@ function computeShearCoefficient(input: {
   return numerator / denominator;
 }
 
-// 鉄筋降伏曲げモーメントを計算する関数
-// 反復計算により、鉄筋降伏強度 == 鉄筋応力度となる曲げモーメントを求める
+/**
+ * 鉄筋降伏曲げモーメントを計算する関数
+ *
+ * 反復計算により、鉄筋降伏強度 == 鉄筋応力度となる曲げモーメントを求める
+ */
 function calculateRebarYieldMomentKNm(input: StrengthMomentSolverInput): number {
   // 降伏強度 [N/mm2]
   const sigmaSyNPerMm2 = input.rebarYieldStrengthNPerMm2;
@@ -597,8 +621,11 @@ function calculateRebarYieldMomentKNm(input: StrengthMomentSolverInput): number 
   );
 }
 
-// コンクリート終局曲げモーメントを計算する関数
-// 反復計算により、コンクリート設計基準強度 == コンクリート圧縮応力度となる曲げモーメントを求める
+/**
+ * コンクリート終局曲げモーメントを計算する関数
+ *
+ * 反復計算により、コンクリート設計基準強度 == コンクリート圧縮応力度となる曲げモーメントを求める
+ */
 function calculateConcreteUltimateMomentKNm(input: StrengthMomentSolverInput): number {
   // 終局応力度 [N/mm2]
   // 【道示Ⅲ 図-5.5.1】より
@@ -612,14 +639,16 @@ function calculateConcreteUltimateMomentKNm(input: StrengthMomentSolverInput): n
   );
 }
 
-// 目標応力度に到達する曲げモーメントを求める関数
+/**
+ * 目標応力度に到達する曲げモーメントを求める関数
+ */
 function solveMomentForTargetStressKNm(
   input: StrengthMomentSolverInput,
   targetStressNPerMm2: number,
   stressSelector: (state: MomentStressState) => number,
   solverName: string,
 ): number {
-  // 与えられた曲げモーメントに対して、コンクリート圧縮応力度と鉄筋応力度を計算する関数
+  // 曲げモーメントに対して、コンクリート圧縮応力度と鉄筋応力度を計算
   const evaluate = (momentKNm: number): MomentStressEvaluation => {
     const solver = solveNeutralAxisAngleDeg({
       alpha: input.rebarRadiusMm / input.outerRadiusMm,

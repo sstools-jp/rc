@@ -50,6 +50,9 @@ type PreviewTableProps = {
   includeSectionLabel: boolean;
 };
 
+/**
+ * 項目と値のテーブルを表示するコンポーネント
+ */
 function PreviewTable({ title, sections, valueHeader, includeSectionLabel }: PreviewTableProps) {
   return (
     <section>
@@ -104,6 +107,9 @@ function PreviewTable({ title, sections, valueHeader, includeSectionLabel }: Pre
   );
 }
 
+/**
+ * フォームの入力値から印刷用のセクションデータを構築する関数
+ */
 function buildInputPreviewSections(form: PrintPreviewFormState): PrintPreviewSection[] {
   return [
     {
@@ -172,6 +178,11 @@ function buildInputPreviewSections(form: PrintPreviewFormState): PrintPreviewSec
   ];
 }
 
+/**
+ * 計算結果から印刷用のセクションデータを構築する関数
+ *
+ * 結果が `null` の場合は空の値を表示する
+ */
 function buildResultPreviewSections(result: AnnularSectionResult | null): PrintPreviewSection[] {
   return [
     {
@@ -246,6 +257,11 @@ function buildResultPreviewSections(result: AnnularSectionResult | null): PrintP
   ];
 }
 
+/**
+ * クリップボードにコピーするテキストを構築する関数
+ *
+ * Excel貼り付け時に表として認識されるようにTSV形式で出力する
+ */
 function buildClipboardText(blocks: CopyBlock[]): string {
   const lines: string[] = [];
 
@@ -265,6 +281,11 @@ function buildClipboardText(blocks: CopyBlock[]): string {
   return lines.join("\n").trimEnd();
 }
 
+/**
+ * テキストをクリップボードにコピーする関数
+ *
+ * `navigator.clipboard` APIが利用できない環境では、フォールバックとして一時的なテキストエリアを使用してコピーを試みる
+ */
 async function copyTextToClipboard(text: string): Promise<void> {
   if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
     await navigator.clipboard.writeText(text);
@@ -293,6 +314,11 @@ async function copyTextToClipboard(text: string): Promise<void> {
   }
 }
 
+/**
+ * 元の文書からスタイル要素を印刷用ドキュメントへ複製する
+ *
+ * 外部CSSの読み込み完了も待ってから印刷に進む
+ */
 async function copyStylesToDocument(targetDocument: Document): Promise<void> {
   const styleNodes = document.querySelectorAll('style, link[rel="stylesheet"]');
   const pendingLoads: Promise<void>[] = [];
@@ -315,6 +341,11 @@ async function copyStylesToDocument(targetDocument: Document): Promise<void> {
   await Promise.all(pendingLoads);
 }
 
+/**
+ * 指定した要素の内容を印刷用の `iframe` に描画して印刷する
+ *
+ * 選択範囲が対象要素内にある場合は、その範囲のみを優先して印刷する
+ */
 async function printElementContent(sourceElement: HTMLElement): Promise<void> {
   const selection = window.getSelection();
   const hasSelection = Boolean(selection && !selection.isCollapsed && selection.rangeCount > 0);
@@ -375,6 +406,9 @@ async function printElementContent(sourceElement: HTMLElement): Promise<void> {
   iframe.remove();
 }
 
+/**
+ * 印刷プレビュー用モーダルを表示するコンポーネント
+ */
 export function PrintPreviewModal({ open, form, result, onClose }: PrintPreviewModalProps) {
   const [copyError, setCopyError] = useState<string | null>(null);
   const printContentRef = useRef<HTMLDivElement | null>(null);
@@ -382,6 +416,7 @@ export function PrintPreviewModal({ open, form, result, onClose }: PrintPreviewM
   const resultSections = buildResultPreviewSections(result);
   const canCopy = result !== null;
 
+  // 印刷ボタンのクリックハンドラー
   const handlePrint = async () => {
     const printRoot = printContentRef.current;
 
@@ -397,6 +432,7 @@ export function PrintPreviewModal({ open, form, result, onClose }: PrintPreviewM
     }
   };
 
+  // クリップボードコピーのクリックハンドラー
   const handleCopy = async () => {
     if (!canCopy) {
       return;

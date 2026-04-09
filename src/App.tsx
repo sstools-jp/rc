@@ -11,7 +11,6 @@ import clsx from "clsx";
 import { SymbolText } from "@/components/SymbolText";
 import { formatNumber, parseNumber } from "@/utils/number-format";
 
-// フォームの状態を定義する型
 type FormState = {
   momentKNm: string;
   shearKN: string;
@@ -26,7 +25,6 @@ type FormState = {
   concreteDesignStrengthNPerMm2: string;
 };
 
-// フォームの初期状態を定義
 const DEFAULT_FORM_STATE: FormState = {
   momentKNm: "",
   shearKN: "",
@@ -44,7 +42,9 @@ const DEFAULT_FORM_STATE: FormState = {
 // ローカルストレージ用のキー
 const FORM_STORAGE_KEY = "rc-calc:annular-section-form";
 
-// ローカルストレージからフォームの状態を読み込み／保存する関数
+/**
+ * ローカルストレージからフォームの状態を読み込み／保存する関数
+ */
 function isFormState(value: unknown): value is FormState {
   if (typeof value !== "object" || value === null) {
     return false;
@@ -66,7 +66,9 @@ function isFormState(value: unknown): value is FormState {
   );
 }
 
-// ローカルストレージからフォームの状態を読み込む関数
+/**
+ * ローカルストレージからフォームの状態を読み込む関数
+ */
 function loadFormState(): FormState {
   if (typeof window === "undefined") {
     return DEFAULT_FORM_STATE;
@@ -89,7 +91,9 @@ function loadFormState(): FormState {
   }
 }
 
-// フォームの状態をローカルストレージに保存する関数
+/**
+ * フォームの状態をローカルストレージに保存する関数
+ */
 function saveFormState(form: FormState): void {
   if (typeof window === "undefined") {
     return;
@@ -102,7 +106,9 @@ function saveFormState(form: FormState): void {
   }
 }
 
-// フォームの状態から計算用の入力オブジェクトを作成するユーティリティ関数
+/**
+ * フォームの状態から計算用の入力オブジェクトを作成するユーティリティ関数
+ */
 function buildInput(form: FormState): AnnularSectionInput {
   return {
     momentKNm: parseNumber(form.momentKNm),
@@ -119,7 +125,9 @@ function buildInput(form: FormState): AnnularSectionInput {
   };
 }
 
-// 初期状態の入力から結果を作成するユーティリティ関数
+/**
+ * 初期状態の入力から結果を作成するユーティリティ関数
+ */
 function createResult(form: FormState): AnnularSectionResult | null {
   const calculator = new AnnularSectionCalculator(buildInput(form));
   const validationIssues = calculator.validate();
@@ -137,6 +145,9 @@ function createResult(form: FormState): AnnularSectionResult | null {
 
 const INITIAL_FORM_STATE = loadFormState();
 
+/**
+ * メインコンポーネント
+ */
 function App() {
   const [form, setForm] = useState<FormState>(INITIAL_FORM_STATE);
   const [result, setResult] = useState<AnnularSectionResult | null>(() => createResult(INITIAL_FORM_STATE));
@@ -414,7 +425,9 @@ function App() {
   );
 }
 
-// ステータスバーコンポーネント
+/**
+ * ステータスバーコンポーネント
+ */
 type StatusBarProps = {
   message: string;
 };
@@ -433,7 +446,9 @@ function StatusBar({ message }: StatusBarProps) {
   );
 }
 
-// 入力用の行コンポーネント
+/**
+ * 入力用の行コンポーネント
+ */
 type FieldRowProps = {
   label: string;
   symbol: string;
@@ -453,7 +468,9 @@ function FieldRow({ label, symbol, unit, children }: FieldRowProps) {
   );
 }
 
-// 数値入力用のコンポーネント
+/**
+ * 数値入力用のコンポーネント
+ */
 type FieldInputProps = {
   value: string;
   onChange: (value: string) => void;
@@ -477,7 +494,9 @@ function FieldInput({ value, onChange, inputMode = "decimal", step }: FieldInput
   );
 }
 
-// 選択入力用のコンポーネント
+/**
+ * 選択入力用のコンポーネント
+ */
 type FieldSelectOption = {
   value: string;
   label: string;
@@ -503,7 +522,9 @@ function FieldSelect({ value, onChange, options }: FieldSelectProps) {
   );
 }
 
-// 結果表示用セルコンポーネント
+/**
+ * 結果表示用セルコンポーネント
+ */
 type ResultCellProps = {
   label: string;
   value: string;
@@ -521,7 +542,9 @@ function ResultCell({ label, value, unit }: ResultCellProps) {
   );
 }
 
-// 折りたたみ可能なセクションコンポーネント
+/**
+ * 折りたたみ可能なセクションコンポーネント
+ */
 type CollapsibleSectionProps = {
   title: string;
   defaultOpen?: boolean;
