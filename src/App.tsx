@@ -178,28 +178,6 @@ function App() {
     saveFormState(form);
   }, [form]);
 
-  useEffect(() => {
-    if (!isPrintPreviewOpen) {
-      return;
-    }
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsPrintPreviewOpen(false);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isPrintPreviewOpen]);
-
   const handleSubmit = (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -446,9 +424,12 @@ function App() {
         </section>
       </main>
 
-      {isPrintPreviewOpen ? (
-        <PrintPreviewModal form={form} result={result} onClose={() => setIsPrintPreviewOpen(false)} />
-      ) : null}
+      <PrintPreviewModal
+        open={isPrintPreviewOpen}
+        form={form}
+        result={result}
+        onClose={() => setIsPrintPreviewOpen(false)}
+      />
 
       <StatusBar message={statusMessage} />
     </div>

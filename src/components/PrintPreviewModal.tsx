@@ -1,7 +1,9 @@
+import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { useState } from "react";
 import type { AnnularSectionResult } from "../model/annular-section";
 
 type PrintPreviewModalProps = {
+  open: boolean;
   form: PrintPreviewFormState;
   result: AnnularSectionResult | null;
   onClose: () => void;
@@ -39,6 +41,13 @@ type CopyBlock = {
   sections: PrintPreviewSection[];
 };
 
+type PreviewTableProps = {
+  title: string;
+  sections: PrintPreviewSection[];
+  valueHeader: string;
+  includeSectionLabel: boolean;
+};
+
 function parseNumber(value: string): number {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : Number.NaN;
@@ -65,6 +74,60 @@ function SymbolText({ value }: { value: string }) {
       {value[0]}
       <sub>{value.slice(1)}</sub>
     </>
+  );
+}
+
+function PreviewTable({ title, sections, valueHeader, includeSectionLabel }: PreviewTableProps) {
+  return (
+    <section>
+      <h4 className="mb-2 text-center text-lg font-semibold">{title}</h4>
+
+      <table className="w-lg border-collapse border-2 border-slate-600">
+        <thead>
+          <tr className="bg-slate-200">
+            <th
+              colSpan={includeSectionLabel ? 2 : 1}
+              className="border border-slate-600 px-1 py-1 text-center font-semibold"
+              scope="col"
+            >
+              項目
+            </th>
+            <th className="w-12 border border-slate-600 px-1 py-1 text-center font-semibold" scope="col">
+              記号
+            </th>
+            <th className="w-18 border border-slate-600 px-1 py-1 text-center font-semibold" scope="col">
+              単位
+            </th>
+            <th className="w-24 border border-slate-600 px-1 py-1 text-center font-semibold" scope="col">
+              {valueHeader}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {sections.map((section) =>
+            section.rows.map((row, rowIndex) => (
+              <tr key={`${section.title}-${row.symbol}`} className="border border-slate-600">
+                {includeSectionLabel && rowIndex === 0 ? (
+                  <td
+                    rowSpan={section.rows.length}
+                    className="border border-slate-600 bg-slate-50 px-1 text-center align-middle font-semibold"
+                    style={{ writingMode: "vertical-rl", textOrientation: "upright" }}
+                  >
+                    {section.title}
+                  </td>
+                ) : null}
+                <td className="border border-slate-600 px-1 py-1 font-mono">{row.label}</td>
+                <td className="border border-slate-600 px-1 py-1 text-center font-mono">
+                  <SymbolText value={row.symbol} />
+                </td>
+                <td className="border border-slate-600 px-1 py-1 text-center font-mono">{row.unit}</td>
+                <td className="border border-slate-600 px-1 py-1 text-right font-mono">{row.value}</td>
+              </tr>
+            )),
+          )}
+        </tbody>
+      </table>
+    </section>
   );
 }
 
@@ -257,7 +320,7 @@ async function copyTextToClipboard(text: string): Promise<void> {
   }
 }
 
-export function PrintPreviewModal({ form, result, onClose }: PrintPreviewModalProps) {
+export function PrintPreviewModal({ open, form, result, onClose }: PrintPreviewModalProps) {
   const [copyError, setCopyError] = useState<string | null>(null);
   const inputSections = buildInputPreviewSections(form);
   const resultSections = buildResultPreviewSections(result);
@@ -290,150 +353,61 @@ export function PrintPreviewModal({ form, result, onClose }: PrintPreviewModalPr
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4"
-      onClick={onClose}
-    >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label="印刷用テーブルプレビュー"
-        className="flex max-h-[calc(100vh-2rem)] max-w-5xl flex-col overflow-hidden rounded-sm bg-slate-100 shadow-2xl"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <div className="flex items-start justify-between gap-4 border-b border-slate-200 bg-white px-5 py-4 sm:px-6">
-          <div>
-            <p className="text-sm font-medium text-slate-500">印刷用プレビュー</p>
-            <h3 className="text-2xl font-semibold text-slate-900">ＲＣ計算［円環断面］</h3>
-          </div>
-          <div className="flex flex-col items-end gap-2">
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={handleCopy}
-                disabled={!canCopy}
-                className="inline-flex min-h-9 items-center justify-center border border-slate-300 bg-white px-4 text-sm text-slate-700 hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
-              >
-                クリップボードにコピー
-              </button>
-              <button
-                type="button"
-                onClick={onClose}
-                className="inline-flex min-h-9 items-center justify-center border border-slate-300 bg-white px-4 text-sm text-slate-700 hover:border-slate-400 hover:bg-slate-50"
-              >
-                閉じる
-              </button>
+    <Dialog open={open} onClose={onClose} className="relative z-50">
+      <div className="fixed inset-0 bg-slate-950/60" aria-hidden="true" />
+
+      <div className="fixed inset-0 flex items-center justify-center p-4">
+        <DialogPanel className="flex max-h-[calc(100vh-2rem)] max-w-5xl flex-col overflow-hidden rounded-sm bg-slate-100 shadow-2xl">
+          <div className="flex items-start justify-between gap-4 border-b border-slate-200 bg-white px-5 py-4">
+            <div>
+              <p className="text-sm font-medium text-slate-500">印刷用プレビュー</p>
+              <DialogTitle as="h3" className="text-2xl font-semibold">
+                ＲＣ計算［円環断面］
+              </DialogTitle>
             </div>
-            {copyError ? <p className="text-sm text-rose-600">{copyError}</p> : null}
+            <div className="flex flex-col items-end gap-2">
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleCopy}
+                  disabled={!canCopy}
+                  className="inline-flex min-h-9 items-center justify-center border border-slate-300 bg-white px-4 text-sm text-slate-700 hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
+                >
+                  クリップボードにコピー
+                </button>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="inline-flex min-h-9 items-center justify-center border border-slate-300 bg-white px-4 text-sm text-slate-700 hover:border-slate-400 hover:bg-slate-50"
+                >
+                  閉じる
+                </button>
+              </div>
+              {copyError ? <p className="text-sm text-rose-600">{copyError}</p> : null}
+            </div>
           </div>
-        </div>
 
-        <div className="overflow-auto p-4">
-          <div className="rounded-sm bg-white p-8 shadow-sm">
-            <h4 className="mb-2 text-center text-lg font-semibold">入力値</h4>
+          <div className="overflow-auto p-4">
+            <div className="rounded-sm bg-white p-8 shadow-sm">
+              <PreviewTable
+                title="入力値"
+                sections={inputSections}
+                valueHeader="入力値"
+                includeSectionLabel
+              />
 
-            <table className="w-120 border-collapse border-2 border-slate-600 text-sm">
-              <thead>
-                <tr className="bg-slate-200">
-                  <th
-                    colSpan={2}
-                    className="border border-slate-600 px-1 py-1 text-center font-semibold"
-                    scope="col"
-                  >
-                    項目
-                  </th>
-                  <th
-                    className="w-12 border border-slate-600 px-1 py-1 text-center font-semibold"
-                    scope="col"
-                  >
-                    記号
-                  </th>
-                  <th
-                    className="w-18 border border-slate-600 px-1 py-1 text-center font-semibold"
-                    scope="col"
-                  >
-                    単位
-                  </th>
-                  <th
-                    className="w-24 border border-slate-600 px-1 py-1 text-center font-semibold"
-                    scope="col"
-                  >
-                    入力値
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {inputSections.map((section) =>
-                  section.rows.map((row, rowIndex) => (
-                    <tr key={`${section.title}-${row.symbol}`} className="border border-slate-600">
-                      {rowIndex === 0 ? (
-                        <td
-                          rowSpan={section.rows.length}
-                          className="border border-slate-600 bg-slate-50 px-1 py-1 text-center align-middle font-semibold"
-                          style={{ writingMode: "vertical-rl", textOrientation: "upright" }}
-                        >
-                          {section.title}
-                        </td>
-                      ) : null}
-                      <td className="border border-slate-600 px-1 py-1 font-mono">{row.label}</td>
-                      <td className="border border-slate-600 px-1 py-1 text-center font-mono">
-                        <SymbolText value={row.symbol} />
-                      </td>
-                      <td className="border border-slate-600 px-1 py-1 text-center font-mono">{row.unit}</td>
-                      <td className="border border-slate-600 px-1 py-1 text-right font-mono">{row.value}</td>
-                    </tr>
-                  )),
-                )}
-              </tbody>
-            </table>
+              <div className="h-6" />
 
-            <h4 className="mt-6 mb-2 text-center text-lg font-semibold">計算結果</h4>
-
-            <table className="w-120 border-collapse border-2 border-slate-600 text-sm">
-              <thead>
-                <tr className="bg-slate-200">
-                  <th className="border border-slate-600 px-1 py-1 text-center font-semibold" scope="col">
-                    項目
-                  </th>
-
-                  <th
-                    className="w-12 border border-slate-600 px-1 py-1 text-center font-semibold"
-                    scope="col"
-                  >
-                    記号
-                  </th>
-                  <th
-                    className="w-18 border border-slate-600 px-1 py-1 text-center font-semibold"
-                    scope="col"
-                  >
-                    単位
-                  </th>
-                  <th
-                    className="w-24 border border-slate-600 px-1 py-1 text-center font-semibold"
-                    scope="col"
-                  >
-                    計算値
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {resultSections.map((section) =>
-                  section.rows.map((row) => (
-                    <tr key={`${section.title}-${row.symbol}`} className="border border-slate-600">
-                      <td className="border border-slate-600 px-1 py-1 font-mono">{row.label}</td>
-                      <td className="border border-slate-600 px-1 py-1 text-center font-mono">
-                        <SymbolText value={row.symbol} />
-                      </td>
-                      <td className="border border-slate-600 px-1 py-1 text-center font-mono">{row.unit}</td>
-                      <td className="border border-slate-600 px-1 py-1 text-right font-mono">{row.value}</td>
-                    </tr>
-                  )),
-                )}
-              </tbody>
-            </table>
+              <PreviewTable
+                title="計算結果"
+                sections={resultSections}
+                valueHeader="計算値"
+                includeSectionLabel={false}
+              />
+            </div>
           </div>
-        </div>
+        </DialogPanel>
       </div>
-    </div>
+    </Dialog>
   );
 }
