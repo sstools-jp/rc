@@ -110,7 +110,7 @@ function PreviewTable({ title, sections, valueHeader, includeSectionLabel }: Pre
                 {includeSectionLabel && rowIndex === 0 ? (
                   <td
                     rowSpan={section.rows.length}
-                    className="border border-slate-600 bg-slate-50 px-1 text-center align-middle font-semibold"
+                    className="border border-slate-600 bg-slate-50 text-center align-middle"
                     style={{ writingMode: "vertical-rl", textOrientation: "upright" }}
                   >
                     {section.title}
@@ -358,7 +358,7 @@ export function PrintPreviewModal({ open, form, result, onClose }: PrintPreviewM
 
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <DialogPanel className="flex max-h-[calc(100vh-2rem)] max-w-5xl flex-col overflow-hidden rounded-sm bg-slate-100 shadow-2xl">
-          <div className="flex items-start justify-between gap-4 border-b border-slate-200 bg-white px-5 py-4">
+          <div className="flex items-center justify-between gap-4 border-b border-slate-200 bg-white px-5 py-4">
             <DialogTitle as="h3" className="text-lg">
               印刷用テーブル
             </DialogTitle>
