@@ -80,7 +80,7 @@ function SymbolText({ value }: { value: string }) {
 function PreviewTable({ title, sections, valueHeader, includeSectionLabel }: PreviewTableProps) {
   return (
     <section>
-      <h4 className="mb-2 text-center text-lg font-semibold">{title}</h4>
+      <h5 className="mb-2 text-center text-lg font-semibold">{title}</h5>
 
       <table className="w-lg border-collapse border-2 border-slate-600">
         <thead>
@@ -359,12 +359,9 @@ export function PrintPreviewModal({ open, form, result, onClose }: PrintPreviewM
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <DialogPanel className="flex max-h-[calc(100vh-2rem)] max-w-5xl flex-col overflow-hidden rounded-sm bg-slate-100 shadow-2xl">
           <div className="flex items-start justify-between gap-4 border-b border-slate-200 bg-white px-5 py-4">
-            <div>
-              <p className="text-sm font-medium text-slate-500">印刷用プレビュー</p>
-              <DialogTitle as="h3" className="text-2xl font-semibold">
-                ＲＣ計算［円環断面］
-              </DialogTitle>
-            </div>
+            <DialogTitle as="h3" className="text-lg">
+              印刷用テーブル
+            </DialogTitle>
             <div className="flex flex-col items-end gap-2">
               <div className="flex gap-2">
                 <button
@@ -389,6 +386,7 @@ export function PrintPreviewModal({ open, form, result, onClose }: PrintPreviewM
 
           <div className="overflow-auto p-4">
             <div className="rounded-sm bg-white p-8 shadow-sm">
+              <h4 className="mb-4 text-center text-xl font-semibold">ＲＣ計算［円環断面］</h4>
               <PreviewTable
                 title="入力値"
                 sections={inputSections}
