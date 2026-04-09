@@ -191,7 +191,7 @@ function buildInputPreviewSections(form: PrintPreviewFormState): PrintPreviewSec
         {
           label: "本数",
           symbol: "H",
-          unit: "(本)",
+          unit: "本",
           value: formatPrintValue(parseNumber(form.barCount), 3),
         },
       ],
