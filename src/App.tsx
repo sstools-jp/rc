@@ -40,7 +40,7 @@ const DEFAULT_FORM_STATE: FormState = {
 };
 
 // ローカルストレージ用のキー
-const FORM_STORAGE_KEY = "rc-calc:annular-section-form";
+const FORM_STORAGE_KEY = "rc:annular-section-form";
 
 /**
  * ローカルストレージからフォームの状態を読み込み／保存する関数
