@@ -1,5 +1,5 @@
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { AnnularSectionResult } from "../model/annular-section";
 
 type PrintPreviewModalProps = {
@@ -320,11 +320,109 @@ async function copyTextToClipboard(text: string): Promise<void> {
   }
 }
 
+async function copyStylesToDocument(targetDocument: Document): Promise<void> {
+  const styleNodes = document.querySelectorAll('style, link[rel="stylesheet"]');
+  const pendingLoads: Promise<void>[] = [];
+
+  styleNodes.forEach((node) => {
+    const clonedNode = node.cloneNode(true);
+
+    if (clonedNode instanceof HTMLLinkElement) {
+      pendingLoads.push(
+        new Promise((resolve) => {
+          clonedNode.addEventListener("load", () => resolve(), { once: true });
+          clonedNode.addEventListener("error", () => resolve(), { once: true });
+        }),
+      );
+    }
+
+    targetDocument.head.appendChild(clonedNode);
+  });
+
+  await Promise.all(pendingLoads);
+}
+
+async function printElementContent(sourceElement: HTMLElement): Promise<void> {
+  const selection = window.getSelection();
+  const hasSelection = Boolean(selection && !selection.isCollapsed && selection.rangeCount > 0);
+  const iframe = document.createElement("iframe");
+
+  iframe.setAttribute("aria-hidden", "true");
+  iframe.style.position = "fixed";
+  iframe.style.right = "0";
+  iframe.style.bottom = "0";
+  iframe.style.width = "0";
+  iframe.style.height = "0";
+  iframe.style.border = "0";
+  iframe.style.opacity = "0";
+  document.body.appendChild(iframe);
+
+  const frameDocument = iframe.contentDocument;
+
+  if (!frameDocument) {
+    iframe.remove();
+    throw new Error("印刷用ドキュメントを作成できませんでした。");
+  }
+
+  frameDocument.open();
+  frameDocument.write("<!doctype html><html><head><title>印刷用テーブル</title></head><body></body></html>");
+  frameDocument.close();
+  await copyStylesToDocument(frameDocument);
+
+  const content = frameDocument.createElement("div");
+  content.className = "p-8";
+
+  if (hasSelection && selection) {
+    const range = selection.getRangeAt(0);
+
+    if (sourceElement.contains(range.commonAncestorContainer)) {
+      content.appendChild(range.cloneContents());
+    } else {
+      content.appendChild(sourceElement.cloneNode(true));
+    }
+  } else {
+    content.appendChild(sourceElement.cloneNode(true));
+  }
+
+  frameDocument.body.appendChild(content);
+
+  await new Promise<void>((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+  });
+
+  const frameWindow = iframe.contentWindow;
+
+  if (!frameWindow) {
+    iframe.remove();
+    throw new Error("印刷用ウィンドウを取得できませんでした。");
+  }
+
+  frameWindow.focus();
+  frameWindow.print();
+  iframe.remove();
+}
+
 export function PrintPreviewModal({ open, form, result, onClose }: PrintPreviewModalProps) {
   const [copyError, setCopyError] = useState<string | null>(null);
+  const printContentRef = useRef<HTMLDivElement | null>(null);
   const inputSections = buildInputPreviewSections(form);
   const resultSections = buildResultPreviewSections(result);
   const canCopy = result !== null;
+
+  const handlePrint = async () => {
+    const printRoot = printContentRef.current;
+
+    if (!printRoot) {
+      window.print();
+      return;
+    }
+
+    try {
+      await printElementContent(printRoot);
+    } catch {
+      window.print();
+    }
+  };
 
   const handleCopy = async () => {
     if (!canCopy) {
@@ -353,17 +451,24 @@ export function PrintPreviewModal({ open, form, result, onClose }: PrintPreviewM
   };
 
   return (
-    <Dialog open={open} onClose={onClose} className="relative z-50">
-      <div className="fixed inset-0 bg-slate-950/60" aria-hidden="true" />
+    <Dialog open={open} onClose={onClose} className="relative z-50 print:static print:z-auto">
+      <div className="fixed inset-0 bg-slate-950/60 print:hidden" aria-hidden="true" />
 
-      <div className="fixed inset-0 flex items-center justify-center p-4">
-        <DialogPanel className="flex max-h-[calc(100vh-2rem)] max-w-5xl flex-col overflow-hidden rounded-sm bg-slate-100 shadow-2xl">
-          <div className="flex items-center justify-between gap-4 border-b border-slate-200 bg-white px-5 py-4">
+      <div className="fixed inset-0 flex items-center justify-center p-4 print:static print:block print:p-0">
+        <DialogPanel className="flex max-h-[calc(100vh-2rem)] max-w-5xl flex-col overflow-hidden rounded-sm bg-slate-100 shadow-2xl print:max-h-none print:max-w-none print:overflow-visible print:rounded-none print:bg-white print:shadow-none">
+          <div className="flex items-center justify-between gap-4 border-b border-slate-200 bg-white px-5 py-4 print:hidden">
             <DialogTitle as="h3" className="text-lg">
               印刷用テーブル
             </DialogTitle>
             <div className="flex flex-col items-end gap-2">
               <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handlePrint}
+                  className="inline-flex min-h-9 items-center justify-center border border-slate-300 bg-white px-4 text-sm text-slate-700 hover:border-slate-400 hover:bg-slate-50"
+                >
+                  印刷
+                </button>
                 <button
                   type="button"
                   onClick={handleCopy}
@@ -384,8 +489,11 @@ export function PrintPreviewModal({ open, form, result, onClose }: PrintPreviewM
             </div>
           </div>
 
-          <div className="overflow-auto p-4">
-            <div className="rounded-sm bg-white p-8 shadow-sm">
+          <div className="overflow-auto p-4 print:overflow-visible print:p-0">
+            <div
+              ref={printContentRef}
+              className="rounded-sm bg-white p-8 shadow-sm print:rounded-none print:p-0 print:shadow-none"
+            >
               <h4 className="mb-4 text-center text-xl font-semibold">ＲＣ計算［円環断面］</h4>
               <PreviewTable
                 title="入力値"
