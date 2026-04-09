@@ -359,7 +359,8 @@ async function printElementContent(sourceElement: HTMLElement): Promise<void> {
   iframe.style.height = "0";
   iframe.style.border = "0";
   iframe.style.opacity = "0";
-  iframe.srcdoc = "<!doctype html><html><head><title>印刷用テーブル</title></head><body></body></html>";
+  iframe.srcdoc =
+    "<!doctype html><html><head><title>印刷用テーブル</title><style>html,body{margin:0;padding:0}body{display:flex;flex-direction:column;align-items:center;}</style></head><body></body></html>";
   document.body.appendChild(iframe);
 
   await new Promise<void>((resolve) => {
