@@ -359,7 +359,12 @@ async function printElementContent(sourceElement: HTMLElement): Promise<void> {
   iframe.style.height = "0";
   iframe.style.border = "0";
   iframe.style.opacity = "0";
+  iframe.srcdoc = "<!doctype html><html><head><title>印刷用テーブル</title></head><body></body></html>";
   document.body.appendChild(iframe);
+
+  await new Promise<void>((resolve) => {
+    iframe.addEventListener("load", () => resolve(), { once: true });
+  });
 
   const frameDocument = iframe.contentDocument;
 
@@ -368,9 +373,6 @@ async function printElementContent(sourceElement: HTMLElement): Promise<void> {
     throw new Error("印刷用ドキュメントを作成できませんでした。");
   }
 
-  frameDocument.open();
-  frameDocument.write("<!doctype html><html><head><title>印刷用テーブル</title></head><body></body></html>");
-  frameDocument.close();
   await copyStylesToDocument(frameDocument);
 
   const content = frameDocument.createElement("div");
