@@ -8,6 +8,8 @@ import {
 } from "./model/annular-section";
 import { PrintPreviewModal } from "./components/PrintPreviewModal";
 import clsx from "clsx";
+import { SymbolText } from "./components/SymbolText.tsx";
+import { formatNumber, parseNumber } from "./utils/number-format.ts";
 
 // フォームの状態を定義する型
 type FormState = {
@@ -98,38 +100,6 @@ function saveFormState(form: FormState): void {
   } catch {
     // 保存に失敗しても計算処理は継続する
   }
-}
-
-// 文字列を数値に変換するユーティリティ関数
-function parseNumber(value: string): number {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : Number.NaN;
-}
-
-// 数値を指定された小数点以下の桁数でフォーマットするユーティリティ関数
-function formatValue(value: number | undefined, digits = 4): string {
-  if (typeof value !== "number" || !Number.isFinite(value)) {
-    return "-";
-  }
-
-  return new Intl.NumberFormat("ja-JP", {
-    maximumFractionDigits: digits,
-    minimumFractionDigits: 0,
-  }).format(value);
-}
-
-// 記号の2文字目以降を下付きで表示するコンポーネント
-function SymbolText({ value }: { value: string }) {
-  if (value.length <= 1) {
-    return <>{value}</>;
-  }
-
-  return (
-    <>
-      {value[0]}
-      <sub>{value.slice(1)}</sub>
-    </>
-  );
 }
 
 // フォームの状態から計算用の入力オブジェクトを作成するユーティリティ関数
@@ -356,15 +326,19 @@ function App() {
             </div>
 
             <CollapsibleSection title="中立軸および換算曲げモーメント" defaultOpen>
-              <ResultCell label="中立軸角度" value={formatValue(result?.neutralAxisAngleDeg, 4)} unit="deg" />
+              <ResultCell
+                label="中立軸角度"
+                value={formatNumber(result?.neutralAxisAngleDeg, 4)}
+                unit="deg"
+              />
               <ResultCell
                 label="中立軸位置"
-                value={formatValue(result?.neutralAxisPositionMm, 1)}
+                value={formatNumber(result?.neutralAxisPositionMm, 1)}
                 unit="mm"
               />
               <ResultCell
                 label="換算曲げモーメント"
-                value={formatValue(result?.combinedMomentKNm, 1)}
+                value={formatNumber(result?.combinedMomentKNm, 1)}
                 unit="kN.m"
               />
             </CollapsibleSection>
@@ -372,17 +346,17 @@ function App() {
             <CollapsibleSection title="発生応力度" defaultOpen>
               <ResultCell
                 label="コンクリート圧縮応力度"
-                value={formatValue(result?.concreteCompressionStressNPerMm2, 1)}
+                value={formatNumber(result?.concreteCompressionStressNPerMm2, 1)}
                 unit="N/mm²"
               />
               <ResultCell
                 label="鉄筋応力度"
-                value={formatValue(result?.rebarStressNPerMm2, 1)}
+                value={formatNumber(result?.rebarStressNPerMm2, 1)}
                 unit="N/mm²"
               />
               <ResultCell
                 label="コンクリートせん断応力度"
-                value={formatValue(result?.concreteShearStressNPerMm2, 1)}
+                value={formatNumber(result?.concreteShearStressNPerMm2, 1)}
                 unit="N/mm²"
               />
             </CollapsibleSection>
@@ -390,35 +364,39 @@ function App() {
             <CollapsibleSection title="終局耐力" defaultOpen>
               <ResultCell
                 label="コンクリート終局曲げモーメント"
-                value={formatValue(result?.concreteUltimateMomentKNm, 0)}
+                value={formatNumber(result?.concreteUltimateMomentKNm, 0)}
                 unit="kN.m"
               />
               <ResultCell
                 label="鉄筋降伏曲げモーメント"
-                value={formatValue(result?.rebarYieldMomentKNm, 0)}
+                value={formatNumber(result?.rebarYieldMomentKNm, 0)}
                 unit="kN.m"
               />
             </CollapsibleSection>
 
             <CollapsibleSection title="断面情報" defaultOpen>
-              {/* <ResultCell label="断面積" value={formatValue(result?.sectionAreaMm2, 0)} unit="mm²" /> */}
-              {/* <ResultCell label="全断面積" value={formatValue(result?.fullSectionAreaMm2, 0)} unit="mm²" /> */}
-              {/* <ResultCell label="内部断面積" value={formatValue(result?.innerSectionAreaMm2, 0)} unit="mm²" /> */}
-              {/* <ResultCell label="鉄筋1本断面積" value={formatValue(result?.rebarAreaPerBarMm2, 2)} unit="mm²" /> */}
-              <ResultCell label="鉄筋総断面積" value={formatValue(result?.totalRebarAreaMm2, 0)} unit="mm²" />
-              <ResultCell label="鉄筋比" value={formatValue(result?.rebarRatioPercent, 2)} unit="%" />
+              {/* <ResultCell label="断面積" value={formatNumber(result?.sectionAreaMm2, 0)} unit="mm²" /> */}
+              {/* <ResultCell label="全断面積" value={formatNumber(result?.fullSectionAreaMm2, 0)} unit="mm²" /> */}
+              {/* <ResultCell label="内部断面積" value={formatNumber(result?.innerSectionAreaMm2, 0)} unit="mm²" /> */}
+              {/* <ResultCell label="鉄筋1本断面積" value={formatNumber(result?.rebarAreaPerBarMm2, 2)} unit="mm²" /> */}
+              <ResultCell
+                label="鉄筋総断面積"
+                value={formatNumber(result?.totalRebarAreaMm2, 0)}
+                unit="mm²"
+              />
+              <ResultCell label="鉄筋比" value={formatNumber(result?.rebarRatioPercent, 2)} unit="%" />
             </CollapsibleSection>
 
             <CollapsibleSection title="係数">
-              <ResultCell label="α" value={formatValue(result?.alpha, 4)} />
-              <ResultCell label="γ" value={formatValue(result?.gamma, 4)} />
+              <ResultCell label="α" value={formatNumber(result?.alpha, 4)} />
+              <ResultCell label="γ" value={formatNumber(result?.gamma, 4)} />
               <ResultCell
                 label="コンクリート圧縮係数"
-                value={formatValue(result?.concreteCompressionCoefficient, 4)}
+                value={formatNumber(result?.concreteCompressionCoefficient, 4)}
               />
-              <ResultCell label="鋼材応力度係数" value={formatValue(result?.steelStressCoefficient, 4)} />
-              <ResultCell label="せん断係数" value={formatValue(result?.shearCoefficient, 4)} />
-              <ResultCell label="ヤング係数比" value={formatValue(result?.youngRatio, 2)} />
+              <ResultCell label="鋼材応力度係数" value={formatNumber(result?.steelStressCoefficient, 4)} />
+              <ResultCell label="せん断係数" value={formatNumber(result?.shearCoefficient, 4)} />
+              <ResultCell label="ヤング係数比" value={formatNumber(result?.youngRatio, 2)} />
             </CollapsibleSection>
           </section>
         </section>

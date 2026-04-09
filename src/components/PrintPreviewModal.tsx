@@ -1,6 +1,8 @@
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { useRef, useState } from "react";
 import type { AnnularSectionResult } from "../model/annular-section";
+import { SymbolText } from "./SymbolText.tsx";
+import { formatNumber, parseNumber } from "../utils/number-format.ts";
 
 type PrintPreviewModalProps = {
   open: boolean;
@@ -47,35 +49,6 @@ type PreviewTableProps = {
   valueHeader: string;
   includeSectionLabel: boolean;
 };
-
-function parseNumber(value: string): number {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : Number.NaN;
-}
-
-function formatPrintValue(value: number | undefined, digits = 3): string {
-  if (typeof value !== "number" || !Number.isFinite(value)) {
-    return "-";
-  }
-
-  return new Intl.NumberFormat("ja-JP", {
-    maximumFractionDigits: digits,
-    useGrouping: false,
-  }).format(value);
-}
-
-function SymbolText({ value }: { value: string }) {
-  if (value.length <= 1) {
-    return <>{value}</>;
-  }
-
-  return (
-    <>
-      {value[0]}
-      <sub>{value.slice(1)}</sub>
-    </>
-  );
-}
 
 function PreviewTable({ title, sections, valueHeader, includeSectionLabel }: PreviewTableProps) {
   return (
@@ -140,19 +113,19 @@ function buildInputPreviewSections(form: PrintPreviewFormState): PrintPreviewSec
           label: "曲げモーメント",
           symbol: "M",
           unit: "kN.m",
-          value: formatPrintValue(parseNumber(form.momentKNm), 2),
+          value: formatNumber(parseNumber(form.momentKNm), 2),
         },
         {
           label: "せん断力",
           symbol: "S",
           unit: "kN",
-          value: formatPrintValue(parseNumber(form.shearKN), 2),
+          value: formatNumber(parseNumber(form.shearKN), 2),
         },
         {
           label: "軸力（圧縮力）",
           symbol: "N",
           unit: "kN",
-          value: formatPrintValue(parseNumber(form.axialKN), 2),
+          value: formatNumber(parseNumber(form.axialKN), 2),
         },
       ],
     },
@@ -163,19 +136,19 @@ function buildInputPreviewSections(form: PrintPreviewFormState): PrintPreviewSec
           label: "半径（外径）",
           symbol: "r",
           unit: "mm",
-          value: formatPrintValue(parseNumber(form.outerRadiusMm), 0),
+          value: formatNumber(parseNumber(form.outerRadiusMm), 0),
         },
         {
           label: "半径（内径）",
           symbol: "r0",
           unit: "mm",
-          value: formatPrintValue(parseNumber(form.innerRadiusMm), 0),
+          value: formatNumber(parseNumber(form.innerRadiusMm), 0),
         },
         {
           label: "鉄筋位置（有効半径）",
           symbol: "rs",
           unit: "mm",
-          value: formatPrintValue(parseNumber(form.rebarRadiusMm), 0),
+          value: formatNumber(parseNumber(form.rebarRadiusMm), 0),
         },
       ],
     },
@@ -192,7 +165,7 @@ function buildInputPreviewSections(form: PrintPreviewFormState): PrintPreviewSec
           label: "本数",
           symbol: "H",
           unit: "本",
-          value: formatPrintValue(parseNumber(form.barCount), 3),
+          value: formatNumber(parseNumber(form.barCount), 3),
         },
       ],
     },
@@ -208,19 +181,19 @@ function buildResultPreviewSections(result: AnnularSectionResult | null): PrintP
           label: "コンクリート圧縮応力度",
           symbol: "σc",
           unit: "N/mm²",
-          value: formatPrintValue(result?.concreteCompressionStressNPerMm2, 2),
+          value: formatNumber(result?.concreteCompressionStressNPerMm2, 2),
         },
         {
           label: "鉄筋引張応力度",
           symbol: "σs",
           unit: "N/mm²",
-          value: formatPrintValue(result?.rebarStressNPerMm2, 2),
+          value: formatNumber(result?.rebarStressNPerMm2, 2),
         },
         {
           label: "コンクリート最大せん断応力度",
           symbol: "τc",
           unit: "N/mm²",
-          value: formatPrintValue(result?.concreteShearStressNPerMm2, 2),
+          value: formatNumber(result?.concreteShearStressNPerMm2, 2),
         },
       ],
     },
@@ -231,13 +204,13 @@ function buildResultPreviewSections(result: AnnularSectionResult | null): PrintP
           label: "コンクリート終局曲げモーメント",
           symbol: "Mc",
           unit: "kN.m",
-          value: formatPrintValue(result?.concreteUltimateMomentKNm, 1),
+          value: formatNumber(result?.concreteUltimateMomentKNm, 1),
         },
         {
           label: "鉄筋降伏曲げモーメント",
           symbol: "Mb",
           unit: "kN.m",
-          value: formatPrintValue(result?.rebarYieldMomentKNm, 1),
+          value: formatNumber(result?.rebarYieldMomentKNm, 1),
         },
       ],
     },
@@ -248,25 +221,25 @@ function buildResultPreviewSections(result: AnnularSectionResult | null): PrintP
           label: "中立軸の位置(圧縮端からの距離)",
           symbol: "x",
           unit: "mm",
-          value: formatPrintValue(result?.neutralAxisPositionMm, 0),
+          value: formatNumber(result?.neutralAxisPositionMm, 0),
         },
         {
           label: "換算曲げモーメント",
           symbol: "Me",
           unit: "kN.m",
-          value: formatPrintValue(result?.combinedMomentKNm, 1),
+          value: formatNumber(result?.combinedMomentKNm, 1),
         },
         {
           label: "鉄筋断面積",
           symbol: "As",
           unit: "mm²",
-          value: formatPrintValue(result?.totalRebarAreaMm2, 0),
+          value: formatNumber(result?.totalRebarAreaMm2, 0),
         },
         {
           label: "鉄筋比 [=As/(π*r*r)]",
           symbol: "P",
           unit: "%",
-          value: formatPrintValue(result?.rebarRatioPercent, 2),
+          value: formatNumber(result?.rebarRatioPercent, 2),
         },
       ],
     },
