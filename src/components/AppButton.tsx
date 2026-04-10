@@ -10,9 +10,7 @@ type AppButtonProps = Omit<ComponentPropsWithoutRef<typeof Button>, "className" 
   variant?: AppButtonVariant;
   /** ボタンのサイズ */
   size?: AppButtonSize;
-  /** 追加のクラス名 */
   className?: string;
-  /** ボタンの内容 */
   children: ReactNode;
 };
 

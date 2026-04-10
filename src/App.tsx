@@ -14,19 +14,31 @@ import { SymbolText } from "@/components/SymbolText";
 import { formatNumber, parseNumber } from "@/utils/number-format";
 
 type FormState = {
+  /** 曲げモーメント [kN.m] */
   momentKNm: string;
+  /** せん断力 [kN] */
   shearKN: string;
+  /** 軸力（圧縮力） [kN] */
   axialKN: string;
+  /** 外径 [mm] */
   outerRadiusMm: string;
+  /** 内径 [mm] */
   innerRadiusMm: string;
+  /** 鉄筋位置 [mm] */
   rebarRadiusMm: string;
+  /** 鉄筋径 [mm] */
   rebarDiameterMm: string;
+  /** 鉄筋本数 [本] */
   barCount: string;
+  /** ヤング係数比 */
   youngRatio: string;
+  /** 鉄筋降伏強度 [N/mm2] */
   rebarYieldStrengthNPerMm2: string;
+  /** コンクリート設計基準強度 [N/mm2] */
   concreteDesignStrengthNPerMm2: string;
 };
 
+/** フォームのデフォルト入力値 */
 const DEFAULT_FORM_STATE: FormState = {
   momentKNm: "",
   shearKN: "",
@@ -41,7 +53,7 @@ const DEFAULT_FORM_STATE: FormState = {
   concreteDesignStrengthNPerMm2: "30",
 };
 
-// ローカルストレージ用のキー
+/** ローカルストレージ用のキー */
 const FORM_STORAGE_KEY = "rc:annular-section-form";
 
 /**
@@ -427,12 +439,13 @@ function App() {
   );
 }
 
-/**
- * ステータスバーコンポーネント
- */
 type StatusBarProps = {
   message: string;
 };
+
+/**
+ * ステータスバーコンポーネント
+ */
 function StatusBar({ message }: StatusBarProps) {
   return (
     <div
@@ -448,15 +461,16 @@ function StatusBar({ message }: StatusBarProps) {
   );
 }
 
-/**
- * 入力用の行コンポーネント
- */
 type FieldRowProps = {
   label: string;
   symbol: string;
   unit: string;
   children: ReactNode;
 };
+
+/**
+ * 入力用の行コンポーネント
+ */
 function FieldRow({ label, symbol, unit, children }: FieldRowProps) {
   return (
     <tr className="border-b border-slate-200 last:border-b-0">
@@ -470,15 +484,16 @@ function FieldRow({ label, symbol, unit, children }: FieldRowProps) {
   );
 }
 
-/**
- * 数値入力用のコンポーネント
- */
 type FieldInputProps = {
   value: string;
   onChange: (value: string) => void;
   inputMode?: "decimal" | "numeric";
   step?: string;
 };
+
+/**
+ * 数値入力用のコンポーネント
+ */
 function FieldInput({ value, onChange, inputMode = "decimal", step }: FieldInputProps) {
   const className = clsx(
     "w-full border border-slate-300 bg-white px-1 py-0.5 text-right font-mono outline-none placeholder:text-slate-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15",
@@ -496,18 +511,20 @@ function FieldInput({ value, onChange, inputMode = "decimal", step }: FieldInput
   );
 }
 
-/**
- * 選択入力用のコンポーネント
- */
 type FieldSelectOption = {
   value: string;
   label: string;
 };
+
 type FieldSelectProps = {
   value: string;
   onChange: (value: string) => void;
   options: Array<FieldSelectOption>;
 };
+
+/**
+ * 選択入力用のコンポーネント
+ */
 function FieldSelect({ value, onChange, options }: FieldSelectProps) {
   const className = clsx(
     "w-full border border-slate-300 bg-white px-1 py-0.5 text-right font-mono outline-none placeholder:text-slate-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15",
@@ -524,14 +541,15 @@ function FieldSelect({ value, onChange, options }: FieldSelectProps) {
   );
 }
 
-/**
- * 結果表示用セルコンポーネント
- */
 type ResultCellProps = {
   label: string;
   value: string;
   unit?: string;
 };
+
+/**
+ * 結果表示用セルコンポーネント
+ */
 function ResultCell({ label, value, unit }: ResultCellProps) {
   return (
     <article className="flex border-b border-slate-200 px-3 py-1 last:border-b-0">
@@ -544,14 +562,15 @@ function ResultCell({ label, value, unit }: ResultCellProps) {
   );
 }
 
-/**
- * 折りたたみ可能なセクションコンポーネント
- */
 type CollapsibleSectionProps = {
   title: string;
   defaultOpen?: boolean;
   children: ReactNode;
 };
+
+/**
+ * 折りたたみ可能なセクションコンポーネント
+ */
 function CollapsibleSection({ title, defaultOpen = false, children }: CollapsibleSectionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
