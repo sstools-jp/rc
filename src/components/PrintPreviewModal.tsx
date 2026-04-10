@@ -1,29 +1,15 @@
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { useRef, useState } from "react";
 import type { AnnularSectionResult } from "@/model/annular-section";
+import type { FormState } from "@/forms/form-state";
 import { AppButton } from "@/components/AppButton";
 import { SymbolText } from "@/components/SymbolText";
 import { formatNumber, parseNumber } from "@/utils/number-format";
-
 type PrintPreviewModalProps = {
   open: boolean;
-  form: PrintPreviewFormState;
+  form: FormState;
   result: AnnularSectionResult | null;
   onClose: () => void;
-};
-
-export type PrintPreviewFormState = {
-  momentKNm: string;
-  shearKN: string;
-  axialKN: string;
-  outerRadiusMm: string;
-  innerRadiusMm: string;
-  rebarRadiusMm: string;
-  rebarDiameterMm: string;
-  barCount: string;
-  youngRatio: string;
-  rebarYieldStrengthNPerMm2: string;
-  concreteDesignStrengthNPerMm2: string;
 };
 
 type PrintPreviewRow = {
@@ -111,7 +97,7 @@ function PreviewTable({ title, sections, valueHeader, includeSectionLabel }: Pre
 /**
  * フォームの入力値から印刷用のセクションデータを構築する関数
  */
-function buildInputPreviewSections(form: PrintPreviewFormState): PrintPreviewSection[] {
+function buildInputPreviewSections(form: FormState): PrintPreviewSection[] {
   return [
     {
       title: "断面力",
