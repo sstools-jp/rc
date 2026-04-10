@@ -5,10 +5,15 @@ import type { FormState } from "@/forms/form-state";
 import { AppButton } from "@/components/AppButton";
 import { SymbolText } from "@/components/SymbolText";
 import { formatNumber, parseNumber } from "@/utils/number-format";
+
 type PrintPreviewModalProps = {
+  /** モーダルの開閉状態 */
   open: boolean;
+  /** フォームの状態 */
   form: FormState;
+  /** 計算結果 */
   result: AnnularSectionResult | null;
+  /** モーダルを閉じるためのハンドラ */
   onClose: () => void;
 };
 

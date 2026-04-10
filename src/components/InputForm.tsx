@@ -1,0 +1,207 @@
+import clsx from "clsx";
+import type { ReactNode, SubmitEventHandler } from "react";
+import { AppButton } from "@/components/AppButton";
+import { SymbolText } from "@/components/SymbolText";
+import { REBAR_DIAMETERS_MM, type AnnularSectionValidationIssue } from "@/model/annular-section";
+import type { FormState } from "@/forms/form-state";
+
+type AnnularSectionInputFormProps = {
+  /** フォームの状態 */
+  form: FormState;
+  /** 入力の検証問題リスト */
+  issues: AnnularSectionValidationIssue[];
+  /** フォームの送信イベントハンドラ */
+  onSubmit: SubmitEventHandler<HTMLFormElement>;
+  /** フォームのリセットハンドラ */
+  onReset: () => void;
+  /** フォームのフィールド更新ハンドラ */
+  onChangeField: (field: keyof FormState) => (value: string) => void;
+};
+
+/** 入力フォームパネル */
+export function AnnularSectionInputFormPanel({
+  form,
+  issues,
+  onSubmit,
+  onReset,
+  onChangeField,
+}: AnnularSectionInputFormProps) {
+  return (
+    <form onSubmit={onSubmit} className="flex h-full flex-col gap-6 border border-slate-200 bg-white p-5">
+      <h2 className="text-xl">断面力・寸法・鉄筋</h2>
+
+      <div className="overflow-hidden border border-slate-200 bg-slate-50/80">
+        <table className="w-full border-collapse">
+          <thead className="hidden sm:table-header-group">
+            <tr className="border-b border-slate-200 text-sm text-slate-500">
+              <th scope="col" className="py-1">
+                項目
+              </th>
+              <th scope="col" className="py-1">
+                記号
+              </th>
+              <th scope="col" className="py-1">
+                単位
+              </th>
+              <th scope="col" className="py-1">
+                入力値
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <FieldRow label="曲げモーメント" symbol="M" unit="kN.m">
+              <FieldInput value={form.momentKNm} onChange={onChangeField("momentKNm")} />
+            </FieldRow>
+            <FieldRow label="せん断力" symbol="S" unit="kN">
+              <FieldInput value={form.shearKN} onChange={onChangeField("shearKN")} />
+            </FieldRow>
+            <FieldRow label="軸力（圧縮を正）" symbol="N" unit="kN">
+              <FieldInput value={form.axialKN} onChange={onChangeField("axialKN")} />
+            </FieldRow>
+            <FieldRow label="外径半径" symbol="r" unit="mm">
+              <FieldInput value={form.outerRadiusMm} onChange={onChangeField("outerRadiusMm")} />
+            </FieldRow>
+            <FieldRow label="内径半径" symbol="r0" unit="mm">
+              <FieldInput value={form.innerRadiusMm} onChange={onChangeField("innerRadiusMm")} />
+            </FieldRow>
+            <FieldRow label="鉄筋位置（有効半径）" symbol="rs" unit="mm">
+              <FieldInput value={form.rebarRadiusMm} onChange={onChangeField("rebarRadiusMm")} />
+            </FieldRow>
+            <FieldRow label="鉄筋径" symbol="D" unit="-">
+              <FieldSelect
+                value={form.rebarDiameterMm}
+                onChange={onChangeField("rebarDiameterMm")}
+                options={REBAR_DIAMETERS_MM.map((diameter) => ({
+                  value: String(diameter),
+                  label: `D${diameter}`,
+                }))}
+              />
+            </FieldRow>
+            <FieldRow label="鉄筋本数" symbol="H" unit="本">
+              <FieldInput
+                value={form.barCount}
+                onChange={onChangeField("barCount")}
+                inputMode="decimal"
+                step="any"
+              />
+            </FieldRow>
+            <FieldRow label="鉄筋降伏強度" symbol="σsy" unit="N/mm²">
+              <FieldInput
+                value={form.rebarYieldStrengthNPerMm2}
+                onChange={onChangeField("rebarYieldStrengthNPerMm2")}
+              />
+            </FieldRow>
+            <FieldRow label="コンクリート設計基準強度" symbol="σck" unit="N/mm²">
+              <FieldInput
+                value={form.concreteDesignStrengthNPerMm2}
+                onChange={onChangeField("concreteDesignStrengthNPerMm2")}
+              />
+            </FieldRow>
+            <FieldRow label="ヤング係数比" symbol="n" unit="-">
+              <FieldInput value={form.youngRatio} onChange={onChangeField("youngRatio")} />
+            </FieldRow>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <AppButton type="submit" variant="primary">
+          計算
+        </AppButton>
+        <AppButton onClick={onReset}>リセット</AppButton>
+      </div>
+
+      {issues.length > 0 ? (
+        <div aria-live="polite" className="border border-rose-200 bg-rose-50 px-3 py-3 text-rose-900">
+          <p className="text-sm font-semibold">入力エラー</p>
+          <ul className="mt-2 space-y-1 text-sm">
+            {issues.map((issue) => (
+              <li key={`${issue.field}-${issue.message}`}>{issue.message}</li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <p className="border border-emerald-200 bg-emerald-50 px-3 py-3 text-sm text-emerald-900">
+          「計算」を押すと計算結果が表示されます。
+        </p>
+      )}
+    </form>
+  );
+}
+
+type FieldRowProps = {
+  /** 項目の名称 */
+  label: string;
+  /** 項目の記号 */
+  symbol: string;
+  /** 項目の単位 */
+  unit: string;
+  children: ReactNode;
+};
+
+/** 入力用の行コンポーネント */
+function FieldRow({ label, symbol, unit, children }: FieldRowProps) {
+  return (
+    <tr className="border-b border-slate-200 last:border-b-0">
+      <td className="px-2 py-1">{label}</td>
+      <td className="px-1 py-1 text-center font-mono">
+        <SymbolText value={symbol} />
+      </td>
+      <td className="px-1 py-1 text-center font-mono">{unit}</td>
+      <td className="w-26 px-1 py-1">{children}</td>
+    </tr>
+  );
+}
+
+type FieldInputProps = {
+  value: string;
+  onChange: (value: string) => void;
+  inputMode?: "decimal" | "numeric";
+  step?: string;
+};
+
+/** 数値入力用のコンポーネント */
+function FieldInput({ value, onChange, inputMode = "decimal", step }: FieldInputProps) {
+  const className = clsx(
+    "w-full border border-slate-300 bg-white px-1 py-0.5 text-right font-mono outline-none placeholder:text-slate-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15",
+  );
+
+  return (
+    <input
+      type="number"
+      inputMode={inputMode}
+      step={step}
+      className={className}
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+    />
+  );
+}
+
+type FieldSelectOption = {
+  value: string;
+  label: string;
+};
+
+type FieldSelectProps = {
+  value: string;
+  onChange: (value: string) => void;
+  options: Array<FieldSelectOption>;
+};
+
+/** 選択入力用のコンポーネント */
+function FieldSelect({ value, onChange, options }: FieldSelectProps) {
+  const className = clsx(
+    "w-full border border-slate-300 bg-white px-1 py-0.5 text-right font-mono outline-none placeholder:text-slate-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15",
+  );
+
+  return (
+    <select className={className} value={value} onChange={(event) => onChange(event.target.value)}>
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+  );
+}
