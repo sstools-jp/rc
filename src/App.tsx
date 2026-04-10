@@ -37,8 +37,8 @@ const DEFAULT_FORM_STATE: FormState = {
   rebarDiameterMm: "22",
   barCount: "",
   youngRatio: "15",
-  rebarYieldStrengthNPerMm2: "",
-  concreteDesignStrengthNPerMm2: "",
+  rebarYieldStrengthNPerMm2: "345",
+  concreteDesignStrengthNPerMm2: "30",
 };
 
 // ローカルストレージ用のキー
