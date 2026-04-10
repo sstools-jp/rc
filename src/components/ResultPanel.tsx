@@ -12,7 +12,10 @@ type AnnularSectionResultPanelProps = {
 /** 計算結果表示パネル */
 export function AnnularSectionResultPanel({ result, onOpenPrintPreview }: AnnularSectionResultPanelProps) {
   return (
-    <section aria-live="polite" className="flex h-full flex-col gap-6 border border-slate-200 bg-white p-5">
+    <section
+      aria-live="polite"
+      className="flex w-120 flex-col gap-6 rounded-sm border border-slate-300 bg-white p-5"
+    >
       <div className="flex items-start justify-between gap-3">
         <h2 className="text-xl">計算結果</h2>
         <AppButton onClick={onOpenPrintPreview} disabled={result === null}>

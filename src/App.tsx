@@ -19,39 +19,40 @@ function App() {
   } = useAnnularSectionPageState();
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <main className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-4 pt-6 pb-24 sm:px-6 lg:px-8 lg:pt-8 lg:pb-28">
-        <header className="overflow-hidden border border-slate-200 bg-white px-6 py-6">
-          <div className="flex items-start justify-between gap-4">
-            <h1 className="text-3xl">RC断面計算【円環断面】</h1>
-            <div className="flex flex-col items-end gap-1">
-              <a
-                href="https://github.com/sstools-jp/rc"
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1 text-sm text-slate-500 transition-colors hover:text-slate-900"
-              >
-                <FaGithub className="h-4 w-4" aria-hidden="true" />
-                sstools-jp/rc
-              </a>
-              <p className="text-sm text-slate-500">ver {__APP_VERSION__}</p>
-            </div>
+    <div className="min-h-screen bg-slate-100">
+      {/* ヘッダー */}
+      <header className="overflow-hidden border-b border-slate-300 bg-white px-4 pt-3 pb-1">
+        <div className="flex items-center justify-between gap-4">
+          <h1 className="flex items-end gap-1 text-xl">
+            RC断面計算【円環断面】
+            <small className="pb-1 font-mono text-xs text-slate-500">ver {__APP_VERSION__}</small>
+          </h1>
+          <div className="flex flex-col items-end gap-1">
+            <a
+              href="https://github.com/sstools-jp/rc"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 text-sm text-slate-500 transition-colors hover:text-slate-900"
+            >
+              <FaGithub className="h-5 w-5" aria-hidden="true" />
+              sstools-jp/rc
+            </a>
           </div>
-        </header>
+        </div>
+      </header>
 
-        <section className="grid gap-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-start">
-          {/* 入力フォームパネル */}
-          <AnnularSectionInputFormPanel
-            form={form}
-            issues={issues}
-            onSubmit={handleSubmit}
-            onReset={handleReset}
-            onChangeField={updateField}
-          />
+      <main className="mx-auto flex w-full flex-wrap items-start justify-center gap-6 px-4 pt-6 pb-16">
+        {/* 入力フォームパネル */}
+        <AnnularSectionInputFormPanel
+          form={form}
+          issues={issues}
+          onSubmit={handleSubmit}
+          onReset={handleReset}
+          onChangeField={updateField}
+        />
 
-          {/* 結果表示パネル */}
-          <AnnularSectionResultPanel result={result} onOpenPrintPreview={openPrintPreview} />
-        </section>
+        {/* 結果表示パネル */}
+        <AnnularSectionResultPanel result={result} onOpenPrintPreview={openPrintPreview} />
       </main>
 
       <PrintPreviewModal open={isPrintPreviewOpen} form={form} result={result} onClose={closePrintPreview} />

@@ -44,7 +44,7 @@ export function AppButton({
       type={type}
       {...props}
       className={clsx(
-        "group inline-flex items-center justify-center transition-colors",
+        "group inline-flex items-center justify-center rounded-xs transition-colors",
         sizeClassNames[size],
         variantClassNames[variant],
         className,
