@@ -6,6 +6,7 @@ import {
   type AnnularSectionValidationIssue,
   REBAR_DIAMETERS_MM,
 } from "@/model/annular-section";
+import { AppButton } from "@/components/AppButton";
 import { PrintPreviewModal } from "@/components/PrintPreviewModal";
 import clsx from "clsx";
 import { FaGithub } from "react-icons/fa";
@@ -304,19 +305,10 @@ function App() {
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row">
-              <button
-                type="submit"
-                className="inline-flex min-h-8 items-center justify-center bg-blue-600 px-5 text-white hover:bg-blue-700"
-              >
+              <AppButton type="submit" variant="primary">
                 計算
-              </button>
-              <button
-                type="button"
-                onClick={handleReset}
-                className="inline-flex min-h-8 items-center justify-center border border-slate-300 bg-white px-4 text-slate-700 hover:border-slate-400 hover:bg-slate-50"
-              >
-                リセット
-              </button>
+              </AppButton>
+              <AppButton onClick={handleReset}>リセット</AppButton>
             </div>
 
             {issues.length > 0 ? (
@@ -341,14 +333,9 @@ function App() {
           >
             <div className="flex items-start justify-between gap-3">
               <h2 className="text-xl">計算結果</h2>
-              <button
-                type="button"
-                onClick={() => setIsPrintPreviewOpen(true)}
-                disabled={result === null}
-                className="inline-flex min-h-8 items-center justify-center border border-slate-300 bg-white px-4 text-sm text-slate-700 hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
-              >
+              <AppButton onClick={() => setIsPrintPreviewOpen(true)} disabled={result === null}>
                 印刷用テーブル
-              </button>
+              </AppButton>
             </div>
 
             <CollapsibleSection title="中立軸および換算曲げモーメント" defaultOpen>

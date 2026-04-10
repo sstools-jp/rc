@@ -1,6 +1,7 @@
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { useRef, useState } from "react";
 import type { AnnularSectionResult } from "@/model/annular-section";
+import { AppButton } from "@/components/AppButton";
 import { SymbolText } from "@/components/SymbolText";
 import { formatNumber, parseNumber } from "@/utils/number-format";
 
@@ -474,28 +475,11 @@ export function PrintPreviewModal({ open, form, result, onClose }: PrintPreviewM
             </DialogTitle>
             <div className="flex flex-col items-end gap-2">
               <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={handlePrint}
-                  className="inline-flex min-h-9 items-center justify-center border border-slate-300 bg-white px-4 text-sm text-slate-700 hover:border-slate-400 hover:bg-slate-50"
-                >
-                  印刷
-                </button>
-                <button
-                  type="button"
-                  onClick={handleCopy}
-                  disabled={!canCopy}
-                  className="inline-flex min-h-9 items-center justify-center border border-slate-300 bg-white px-4 text-sm text-slate-700 hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
-                >
+                <AppButton onClick={handlePrint}>印刷</AppButton>
+                <AppButton onClick={handleCopy} disabled={!canCopy}>
                   クリップボードにコピー
-                </button>
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="inline-flex min-h-9 items-center justify-center border border-slate-300 bg-white px-4 text-sm text-slate-700 hover:border-slate-400 hover:bg-slate-50"
-                >
-                  閉じる
-                </button>
+                </AppButton>
+                <AppButton onClick={onClose}>閉じる</AppButton>
               </div>
               {copyError ? <p className="text-sm text-rose-600">{copyError}</p> : null}
             </div>
