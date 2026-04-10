@@ -8,6 +8,7 @@ import {
 } from "@/model/annular-section";
 import { PrintPreviewModal } from "@/components/PrintPreviewModal";
 import clsx from "clsx";
+import { FaGithub } from "react-icons/fa";
 import { SymbolText } from "@/components/SymbolText";
 import { formatNumber, parseNumber } from "@/utils/number-format";
 
@@ -206,7 +207,18 @@ function App() {
         <header className="overflow-hidden border border-slate-200 bg-white px-6 py-6">
           <div className="flex items-start justify-between gap-4">
             <h1 className="text-3xl">RC断面計算【円環断面】</h1>
-            <p className="text-sm text-slate-500">ver {__APP_VERSION__}</p>
+            <div className="flex flex-col items-end gap-1">
+              <a
+                href="https://github.com/sstools-jp/rc"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 text-sm text-slate-500 transition-colors hover:text-slate-900"
+              >
+                <FaGithub className="h-4 w-4" aria-hidden="true" />
+                sstools-jp/rc
+              </a>
+              <p className="text-sm text-slate-500">ver {__APP_VERSION__}</p>
+            </div>
           </div>
         </header>
 
