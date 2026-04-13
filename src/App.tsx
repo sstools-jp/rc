@@ -52,7 +52,7 @@ function App() {
         />
 
         {/* 結果表示パネル */}
-        <AnnularSectionResultPanel result={result} onOpenPrintPreview={openPrintPreview} />
+        <AnnularSectionResultPanel form={form} result={result} onOpenPrintPreview={openPrintPreview} />
       </main>
 
       <PrintPreviewModal open={isPrintPreviewOpen} form={form} result={result} onClose={closePrintPreview} />

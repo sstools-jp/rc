@@ -1,16 +1,23 @@
 import { useState, type ReactNode } from "react";
 import clsx from "clsx";
 import { AppButton } from "@/components/AppButton";
+import type { FormState } from "@/forms/form-state";
 import type { AnnularSectionResult } from "@/model/annular-section";
 import { formatNumber } from "@/utils/number-format";
+import { CrossSectionPreview } from "@/components/CrossSectionPreview";
 
 type AnnularSectionResultPanelProps = {
+  form: FormState;
   result: AnnularSectionResult | null;
   onOpenPrintPreview: () => void;
 };
 
 /** 計算結果表示パネル */
-export function AnnularSectionResultPanel({ result, onOpenPrintPreview }: AnnularSectionResultPanelProps) {
+export function AnnularSectionResultPanel({
+  form,
+  result,
+  onOpenPrintPreview,
+}: AnnularSectionResultPanelProps) {
   return (
     <section
       aria-live="polite"
@@ -22,6 +29,10 @@ export function AnnularSectionResultPanel({ result, onOpenPrintPreview }: Annula
           印刷用テーブル
         </AppButton>
       </div>
+
+      <CollapsibleSection title="断面プレビュー" defaultOpen>
+        <CrossSectionPreview form={form} result={result} />
+      </CollapsibleSection>
 
       <CollapsibleSection title="中立軸および換算曲げモーメント" defaultOpen>
         <ResultCell label="中立軸角度" value={formatNumber(result?.neutralAxisAngleDeg, 4)} unit="deg" />
