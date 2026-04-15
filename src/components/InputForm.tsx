@@ -30,7 +30,20 @@ export function AnnularSectionInputFormPanel({
     <section className="flex w-120 flex-col gap-4 rounded-sm border border-slate-300 bg-white p-5">
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <section className="flex flex-col gap-1">
-          <h2 className="text-xl">断面力</h2>
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="text-xl">断面力</h2>
+            <fieldset className="mr-2 flex gap-4 text-sm">
+              <legend className="sr-only">断面力の項目数</legend>
+              <label className="flex gap-1.5">
+                <input type="radio" name="section-force-mode" defaultChecked />
+                <span>3断面力</span>
+              </label>
+              <label className="flex gap-1.5">
+                <input type="radio" name="section-force-mode" />
+                <span>6断面力</span>
+              </label>
+            </fieldset>
+          </div>
           <table className="border-collapse overflow-hidden border border-slate-400 bg-slate-50/80">
             <thead className="bg-slate-200/50 text-sm">
               <tr className="border-b border-slate-400 text-slate-500">
