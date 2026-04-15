@@ -184,13 +184,13 @@ function FieldRow({ label, symbol, unit, children }: FieldRowProps) {
       {/* 項目名 */}
       <td className="border-x border-slate-400 px-2 py-1">{label}</td>
       {/* 記号 */}
-      <td className="border-x border-slate-400 px-1 py-1 text-center font-mono">
+      <td className="w-12 border-x border-slate-400 px-1 py-1 text-center font-mono">
         <SymbolText value={symbol} />
       </td>
       {/* 単位 */}
-      <td className="border-x border-slate-400 px-1 py-1 text-center font-mono">{unit}</td>
+      <td className="w-16 border-x border-slate-400 px-1 py-1 text-center font-mono">{unit}</td>
       {/* 入力値 */}
-      <td className="w-26 border-x border-slate-400">{children}</td>
+      <td className="w-24 border-x border-slate-400 bg-white">{children}</td>
     </tr>
   );
 }
@@ -234,7 +234,7 @@ type FieldSelectProps = {
 /** 選択入力用のコンポーネント */
 function FieldSelect({ value, onChange, options }: FieldSelectProps) {
   const className = clsx(
-    "w-full bg-white px-1 py-0.5 text-right font-mono outline-none placeholder:text-slate-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15",
+    "w-full px-1 py-0.5 text-right font-mono outline-none placeholder:text-slate-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15",
   );
 
   return (
