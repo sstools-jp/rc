@@ -43,21 +43,32 @@ export function CrossSectionPreview({ form, result }: CrossSectionPreviewProps) 
     rebarRadiusMm >= innerRadiusMm &&
     rebarRadiusMm <= outerRadiusMm;
 
-  // 表示用の寸法を計算（入力値が不正な場合はデフォルト値を使用）
-  const displayOuterRadius = Number.isFinite(outerRadiusMm) && outerRadiusMm > 0 ? outerRadiusMm : 100;
-  const displayInnerRadius = Number.isFinite(innerRadiusMm) && innerRadiusMm >= 0 ? innerRadiusMm : 0;
-  const displayRebarRadius = Number.isFinite(rebarRadiusMm) && rebarRadiusMm >= 0 ? rebarRadiusMm : 0;
+  // 表示用の基本半径
+  const baseOuterRadius = 200;
+
+  // 表示用の寸法を計算（外径半径は固定し、入力寸法を倍率変換する）
+  const displayOuterRadiusMm = Number.isFinite(outerRadiusMm) && outerRadiusMm > 0 ? outerRadiusMm : 100;
+  const displayScale = baseOuterRadius / displayOuterRadiusMm;
+  const displayOuterRadius = baseOuterRadius;
+  const displayInnerRadius =
+    Number.isFinite(innerRadiusMm) && innerRadiusMm >= 0 ? innerRadiusMm * displayScale : 0;
+  const displayRebarRadius =
+    Number.isFinite(rebarRadiusMm) && rebarRadiusMm >= 0 ? rebarRadiusMm * displayScale : 0;
   const displayRebarDiameterMm =
-    Number.isFinite(rebarDiameterMm) && rebarDiameterMm > 0 ? rebarDiameterMm : 12;
+    Number.isFinite(rebarDiameterMm) && rebarDiameterMm > 0
+      ? rebarDiameterMm * displayScale * 2
+      : 12 * displayScale;
 
   // SVGのviewBoxの半径を計算（断面が見切れないようにmarginを追加）
   const margin = Math.max(displayOuterRadius * 0.18, 14);
   const viewBoxRadius = displayOuterRadius + margin;
   const neutralAxisLine =
-    result && Number.isFinite(result.neutralAxisPositionMm) ? -result.neutralAxisPositionMm : null;
+    result && Number.isFinite(result.neutralAxisPositionMm)
+      ? -result.neutralAxisPositionMm * displayScale
+      : null;
 
   // 描画用パラメータ
-  const strokeWidth = 10;
+  const strokeWidth = 2;
   const dashDotLine = `${strokeWidth * 14} ${strokeWidth * 4} ${strokeWidth * 2} ${strokeWidth * 4}`;
   const strokeColor = "#0f172a";
   const fillColor = "#e2e8f0";
@@ -69,7 +80,7 @@ export function CrossSectionPreview({ form, result }: CrossSectionPreviewProps) 
       <div className="flex justify-center rounded-xs border border-slate-200 bg-white p-2">
         <svg
           viewBox={`${-viewBoxRadius} ${-viewBoxRadius} ${viewBoxRadius * 2} ${viewBoxRadius * 2}`}
-          className="h-72 w-80"
+          className="h-72 w-full"
           role="img"
           aria-label="円環断面のプレビュー"
         >
@@ -87,7 +98,8 @@ export function CrossSectionPreview({ form, result }: CrossSectionPreviewProps) 
             ? Array.from({ length: barCount }, (_, index) => {
                 const angle = (index / barCount) * Math.PI * 2 - Math.PI / 2;
                 const point = polarToCartesian(displayRebarRadius, angle);
-                const barRadius = Math.max(displayRebarDiameterMm / 2, displayOuterRadius * 0.02);
+                const maxBarRadius = (Math.PI * 2 * displayRebarRadius) / barCount / 2;
+                const barRadius = Math.min(displayRebarDiameterMm / 2, maxBarRadius);
 
                 return (
                   <circle
