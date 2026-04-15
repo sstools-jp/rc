@@ -100,7 +100,7 @@ type ResultCellProps = {
 /** 結果表示用セルコンポーネント */
 function ResultCell({ label, value, unit }: ResultCellProps) {
   return (
-    <article className="flex border-b border-slate-200 px-3 py-1 last:border-b-0">
+    <article className="flex border-b border-slate-400 px-3 py-1 last:border-b-0">
       <span className="flex-1">{label}</span>
       <div className="space-x-2 text-right font-mono">
         <span className="inline-block">{value}</span>
@@ -141,7 +141,7 @@ function CollapsibleSection({ title, defaultOpen = false, children }: Collapsibl
       </h3>
 
       {isOpen ? (
-        <div className="overflow-hidden border border-slate-200 bg-slate-50/80">{children}</div>
+        <div className="overflow-hidden border border-slate-400 bg-slate-50/80">{children}</div>
       ) : null}
     </section>
   );

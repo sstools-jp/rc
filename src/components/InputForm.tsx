@@ -31,24 +31,24 @@ export function AnnularSectionInputFormPanel({
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <section className="flex flex-col gap-1">
           <h2 className="text-xl">断面力</h2>
-          <table className="border-collapse overflow-hidden border border-slate-300 bg-slate-50/80">
-            <thead className="text-xs">
-              <tr className="border-b border-slate-200 text-slate-500">
-                <th scope="col" className="py-1">
-                  項目
+          <table className="border-collapse overflow-hidden border border-slate-400 bg-slate-50/80">
+            <thead className="bg-slate-200/50 text-sm">
+              <tr className="border-b border-slate-400 text-slate-500">
+                <th scope="col" className="border-x border-slate-400 py-1">
+                  項目名
                 </th>
-                <th scope="col" className="py-1">
+                <th scope="col" className="border-x border-slate-400 py-1">
                   記号
                 </th>
-                <th scope="col" className="py-1">
+                <th scope="col" className="border-x border-slate-400 py-1">
                   単位
                 </th>
-                <th scope="col" className="py-1">
+                <th scope="col" className="border-x border-slate-400 py-1">
                   入力値
                 </th>
               </tr>
             </thead>
-            <tbody className="text-sm">
+            <tbody className="text-md">
               <FieldRow label="曲げモーメント" symbol="M" unit="kN.m">
                 <FieldInput value={form.momentKNm} onChange={onChangeField("momentKNm")} />
               </FieldRow>
@@ -64,33 +64,24 @@ export function AnnularSectionInputFormPanel({
 
         <section className="flex flex-col gap-1">
           <h2 className="text-xl">寸法・鉄筋</h2>
-          <table className="border-collapse overflow-hidden border border-slate-300 bg-slate-50/80">
-            <thead className="text-xs">
-              <tr className="border-b border-slate-200 text-slate-500">
-                <th scope="col" className="py-1">
-                  項目
+          <table className="border-collapse overflow-hidden border border-slate-400 bg-slate-50/80">
+            <thead className="bg-slate-200/50 text-sm">
+              <tr className="border-b border-slate-400 text-slate-500">
+                <th scope="col" className="border-x border-slate-400 py-1">
+                  項目名
                 </th>
-                <th scope="col" className="py-1">
+                <th scope="col" className="border-x border-slate-400 py-1">
                   記号
                 </th>
-                <th scope="col" className="py-1">
+                <th scope="col" className="border-x border-slate-400 py-1">
                   単位
                 </th>
-                <th scope="col" className="py-1">
+                <th scope="col" className="border-x border-slate-400 py-1">
                   入力値
                 </th>
               </tr>
             </thead>
-            <tbody className="text-sm">
-              <FieldRow label="曲げモーメント" symbol="M" unit="kN.m">
-                <FieldInput value={form.momentKNm} onChange={onChangeField("momentKNm")} />
-              </FieldRow>
-              <FieldRow label="せん断力" symbol="S" unit="kN">
-                <FieldInput value={form.shearKN} onChange={onChangeField("shearKN")} />
-              </FieldRow>
-              <FieldRow label="軸力（圧縮を正）" symbol="N" unit="kN">
-                <FieldInput value={form.axialKN} onChange={onChangeField("axialKN")} />
-              </FieldRow>
+            <tbody className="text-md">
               <FieldRow label="外径半径" symbol="r" unit="mm">
                 <FieldInput value={form.outerRadiusMm} onChange={onChangeField("outerRadiusMm")} />
               </FieldRow>
@@ -176,13 +167,17 @@ type FieldRowProps = {
 /** 入力用の行コンポーネント */
 function FieldRow({ label, symbol, unit, children }: FieldRowProps) {
   return (
-    <tr className="border-b border-slate-200 last:border-b-0">
-      <td className="px-2 py-1">{label}</td>
-      <td className="px-1 py-1 text-center font-mono">
+    <tr className="border-b border-slate-400 last:border-b-0">
+      {/* 項目名 */}
+      <td className="border-x border-slate-400 px-2 py-1">{label}</td>
+      {/* 記号 */}
+      <td className="border-x border-slate-400 px-1 py-1 text-center font-mono">
         <SymbolText value={symbol} />
       </td>
-      <td className="px-1 py-1 text-center font-mono">{unit}</td>
-      <td className="w-26 px-1 py-1">{children}</td>
+      {/* 単位 */}
+      <td className="border-x border-slate-400 px-1 py-1 text-center font-mono">{unit}</td>
+      {/* 入力値 */}
+      <td className="w-26 border-x border-slate-400">{children}</td>
     </tr>
   );
 }
@@ -197,7 +192,7 @@ type FieldInputProps = {
 /** 数値入力用のコンポーネント */
 function FieldInput({ value, onChange, inputMode = "decimal", step }: FieldInputProps) {
   const className = clsx(
-    "w-full border border-slate-300 bg-white px-1 py-0.5 text-right font-mono outline-none placeholder:text-slate-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15",
+    "w-full bg-white px-1 py-0.5 text-right font-mono outline-none placeholder:text-slate-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15",
   );
 
   return (
@@ -226,7 +221,7 @@ type FieldSelectProps = {
 /** 選択入力用のコンポーネント */
 function FieldSelect({ value, onChange, options }: FieldSelectProps) {
   const className = clsx(
-    "w-full border border-slate-300 bg-white px-1 py-0.5 text-right font-mono outline-none placeholder:text-slate-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15",
+    "w-full bg-white px-1 py-0.5 text-right font-mono outline-none placeholder:text-slate-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15",
   );
 
   return (
