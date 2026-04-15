@@ -58,17 +58,43 @@ export function AnnularSectionInputFormPanel({
                 </th>
               </tr>
             </thead>
-            <tbody className="text-md">
-              <FieldRow label="曲げモーメント" symbol="M" unit="kN.m">
-                <FieldInput value={form.momentKNm} onChange={onChangeField("momentKNm")} />
-              </FieldRow>
-              <FieldRow label="せん断力" symbol="S" unit="kN">
-                <FieldInput value={form.shearKN} onChange={onChangeField("shearKN")} />
-              </FieldRow>
-              <FieldRow label="軸力（圧縮を正）" symbol="N" unit="kN">
-                <FieldInput value={form.axialKN} onChange={onChangeField("axialKN")} />
-              </FieldRow>
-            </tbody>
+            {/* 3断面力 */}
+            {sectionForceMode === "3" && (
+              <tbody className="text-md">
+                <FieldRow label="曲げモーメント" symbol="M" unit="kN.m">
+                  <FieldInput value={form.momentKNm} onChange={onChangeField("momentKNm")} />
+                </FieldRow>
+                <FieldRow label="せん断力" symbol="S" unit="kN">
+                  <FieldInput value={form.shearKN} onChange={onChangeField("shearKN")} />
+                </FieldRow>
+                <FieldRow label="軸力（圧縮を正）" symbol="N" unit="kN">
+                  <FieldInput value={form.axialKN} onChange={onChangeField("axialKN")} />
+                </FieldRow>
+              </tbody>
+            )}
+            {/* 6断面力 */}
+            {sectionForceMode === "6" && (
+              <tbody className="text-md">
+                <FieldRow label="軸力" symbol="Fx" unit="kN">
+                  <FieldInput value={form.fxKN} onChange={onChangeField("fxKN")} />
+                </FieldRow>
+                <FieldRow label="せん断力（面外）" symbol="Fy" unit="kN">
+                  <FieldInput value={form.fyKN} onChange={onChangeField("fyKN")} />
+                </FieldRow>
+                <FieldRow label="せん断力（面内）" symbol="Fz" unit="kN">
+                  <FieldInput value={form.fzKN} onChange={onChangeField("fzKN")} />
+                </FieldRow>
+                <FieldRow label="ねじりモーメント" symbol="Mx" unit="kN.m">
+                  <FieldInput value={form.mxKNm} onChange={onChangeField("mxKNm")} />
+                </FieldRow>
+                <FieldRow label="曲げモーメント（面内）" symbol="My" unit="kN.m">
+                  <FieldInput value={form.myKNm} onChange={onChangeField("myKNm")} />
+                </FieldRow>
+                <FieldRow label="曲げモーメント（面外）" symbol="Mz" unit="kN.m">
+                  <FieldInput value={form.mzKNm} onChange={onChangeField("mzKNm")} />
+                </FieldRow>
+              </tbody>
+            )}
           </table>
         </section>
 

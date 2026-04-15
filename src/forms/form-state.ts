@@ -1,10 +1,25 @@
-export type LoadFormState = {
+export type SectionForce3FormState = {
   /** 曲げモーメント [kN.m] */
   momentKNm: string;
   /** せん断力 [kN] */
   shearKN: string;
   /** 軸力（圧縮力） [kN] */
   axialKN: string;
+};
+
+export type SectionForce6FormState = {
+  /** 軸力 [kN] */
+  fxKN: string;
+  /** せん断力（面外） [kN] */
+  fyKN: string;
+  /** せん断力（面内） [kN] */
+  fzKN: string;
+  /** ねじりモーメント [kN.m] */
+  mxKNm: string;
+  /** 曲げモーメント（面内） [kN.m] */
+  myKNm: string;
+  /** 曲げモーメント（面外） [kN.m] */
+  mzKNm: string;
 };
 
 export type GeometryFormState = {
@@ -29,4 +44,7 @@ export type MaterialPropertiesFormState = {
   youngRatio: string;
 };
 
-export type FormState = LoadFormState & GeometryFormState & MaterialPropertiesFormState;
+export type FormState = SectionForce3FormState &
+  SectionForce6FormState &
+  GeometryFormState &
+  MaterialPropertiesFormState;
