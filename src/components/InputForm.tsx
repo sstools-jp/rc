@@ -28,12 +28,12 @@ export function AnnularSectionInputFormPanel({
 }: AnnularSectionInputFormProps) {
   return (
     <section className="flex w-120 flex-col gap-4 rounded-sm border border-slate-300 bg-white p-5">
-      <h2 className="text-xl">断面力・寸法・鉄筋</h2>
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
-        <div className="overflow-hidden border border-slate-200 bg-slate-50/80">
-          <table className="w-full border-collapse">
-            <thead className="">
-              <tr className="border-b border-slate-200 text-sm text-slate-500">
+        <section className="flex flex-col gap-1">
+          <h2 className="text-xl">断面力</h2>
+          <table className="border-collapse overflow-hidden border border-slate-300 bg-slate-50/80">
+            <thead className="text-xs">
+              <tr className="border-b border-slate-200 text-slate-500">
                 <th scope="col" className="py-1">
                   項目
                 </th>
@@ -48,7 +48,40 @@ export function AnnularSectionInputFormPanel({
                 </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="text-sm">
+              <FieldRow label="曲げモーメント" symbol="M" unit="kN.m">
+                <FieldInput value={form.momentKNm} onChange={onChangeField("momentKNm")} />
+              </FieldRow>
+              <FieldRow label="せん断力" symbol="S" unit="kN">
+                <FieldInput value={form.shearKN} onChange={onChangeField("shearKN")} />
+              </FieldRow>
+              <FieldRow label="軸力（圧縮を正）" symbol="N" unit="kN">
+                <FieldInput value={form.axialKN} onChange={onChangeField("axialKN")} />
+              </FieldRow>
+            </tbody>
+          </table>
+        </section>
+
+        <section className="flex flex-col gap-1">
+          <h2 className="text-xl">寸法・鉄筋</h2>
+          <table className="border-collapse overflow-hidden border border-slate-300 bg-slate-50/80">
+            <thead className="text-xs">
+              <tr className="border-b border-slate-200 text-slate-500">
+                <th scope="col" className="py-1">
+                  項目
+                </th>
+                <th scope="col" className="py-1">
+                  記号
+                </th>
+                <th scope="col" className="py-1">
+                  単位
+                </th>
+                <th scope="col" className="py-1">
+                  入力値
+                </th>
+              </tr>
+            </thead>
+            <tbody className="text-sm">
               <FieldRow label="曲げモーメント" symbol="M" unit="kN.m">
                 <FieldInput value={form.momentKNm} onChange={onChangeField("momentKNm")} />
               </FieldRow>
@@ -102,7 +135,7 @@ export function AnnularSectionInputFormPanel({
               </FieldRow>
             </tbody>
           </table>
-        </div>
+        </section>
 
         <div className="flex flex-row gap-3">
           <AppButton type="submit" variant="primary">
