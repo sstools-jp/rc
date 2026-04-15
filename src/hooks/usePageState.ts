@@ -6,6 +6,7 @@ import {
   type AnnularSectionValidationIssue,
 } from "@/model/annular-section";
 import type { FormState } from "@/forms/form-state";
+import { type SectionForceMode } from "@/components/SectionForceModeSelector";
 import { parseNumber } from "@/utils/number-format";
 
 /** フォームのデフォルト入力値 */
@@ -23,8 +24,16 @@ const DEFAULT_FORM_STATE: FormState = {
   concreteDesignStrengthNPerMm2: "30",
 };
 
+/** 断面力タイプのデフォルト値 */
+const DEFAULT_SECTION_FORCE_MODE: SectionForceMode = "3";
+
 /** ローカルストレージ用のキー */
 const FORM_STORAGE_KEY = "rc:annular-section-form";
+
+type StoredPageState = {
+  form: FormState;
+  sectionForceMode: SectionForceMode;
+};
 
 /** ローカルストレージからフォームの状態を読み込むための型ガード */
 function isFormState(value: unknown): value is FormState {
@@ -48,37 +57,68 @@ function isFormState(value: unknown): value is FormState {
   );
 }
 
-/** フォームの状態をローカルストレージから読み込む */
-function loadFormState(): FormState {
+/** ローカルストレージからページ状態を読み込む */
+function loadPageState(): StoredPageState {
   if (typeof window === "undefined") {
-    return DEFAULT_FORM_STATE;
+    return {
+      form: DEFAULT_FORM_STATE,
+      sectionForceMode: DEFAULT_SECTION_FORCE_MODE,
+    };
   }
 
   try {
     const storedValue = window.localStorage.getItem(FORM_STORAGE_KEY);
     if (!storedValue) {
-      return DEFAULT_FORM_STATE;
+      return {
+        form: DEFAULT_FORM_STATE,
+        sectionForceMode: DEFAULT_SECTION_FORCE_MODE,
+      };
     }
 
     const parsedValue = JSON.parse(storedValue) as unknown;
-    if (!isFormState(parsedValue)) {
-      return DEFAULT_FORM_STATE;
+    if (isFormState(parsedValue)) {
+      return {
+        form: { ...DEFAULT_FORM_STATE, ...parsedValue },
+        sectionForceMode: DEFAULT_SECTION_FORCE_MODE,
+      };
     }
 
-    return { ...DEFAULT_FORM_STATE, ...parsedValue };
+    if (typeof parsedValue === "object" && parsedValue !== null) {
+      const candidate = parsedValue as Record<string, unknown>;
+      const form = candidate.form;
+      const sectionForceMode = candidate.sectionForceMode;
+
+      if (isFormState(form)) {
+        return {
+          form: { ...DEFAULT_FORM_STATE, ...form },
+          sectionForceMode:
+            sectionForceMode === "3" || sectionForceMode === "6"
+              ? sectionForceMode
+              : DEFAULT_SECTION_FORCE_MODE,
+        };
+      }
+    }
+
+    return {
+      form: DEFAULT_FORM_STATE,
+      sectionForceMode: DEFAULT_SECTION_FORCE_MODE,
+    };
   } catch {
-    return DEFAULT_FORM_STATE;
+    return {
+      form: DEFAULT_FORM_STATE,
+      sectionForceMode: DEFAULT_SECTION_FORCE_MODE,
+    };
   }
 }
 
-/** フォームの状態をローカルストレージに保存する */
-function saveFormState(form: FormState): void {
+/** ページ状態をローカルストレージに保存する */
+function savePageState(form: FormState, sectionForceMode: SectionForceMode): void {
   if (typeof window === "undefined") {
     return;
   }
 
   try {
-    window.localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(form));
+    window.localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify({ form, sectionForceMode }));
   } catch {
     // 保存に失敗しても計算処理は継続する
   }
@@ -128,25 +168,33 @@ type UseAnnularSectionPageStateResult = {
   statusMessage: string;
   /** 印刷プレビューモーダルの開閉状態 */
   isPrintPreviewOpen: boolean;
+  /** 断面力タイプ */
+  sectionForceMode: SectionForceMode;
   handleSubmit: SubmitEventHandler<HTMLFormElement>;
   handleReset: () => void;
   updateField: (field: keyof FormState) => (value: string) => void;
+  updateSectionForceMode: (value: SectionForceMode) => void;
   openPrintPreview: () => void;
   closePrintPreview: () => void;
 };
 
 /** 円環断面計算画面の状態とイベントを管理する */
 export function useAnnularSectionPageState(): UseAnnularSectionPageStateResult {
-  const initialFormState = loadFormState();
-  const [form, setForm] = useState<FormState>(initialFormState);
-  const [result, setResult] = useState<AnnularSectionResult | null>(() => createResult(initialFormState));
+  const initialPageState = loadPageState();
+  const [form, setForm] = useState<FormState>(initialPageState.form);
+  const [result, setResult] = useState<AnnularSectionResult | null>(() =>
+    createResult(initialPageState.form),
+  );
   const [issues, setIssues] = useState<AnnularSectionValidationIssue[]>([]);
   const [statusMessage, setStatusMessage] = useState("入力を待機しています。");
   const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
+  const [sectionForceMode, setSectionForceMode] = useState<SectionForceMode>(
+    initialPageState.sectionForceMode,
+  );
 
   useEffect(() => {
-    saveFormState(form);
-  }, [form]);
+    savePageState(form, sectionForceMode);
+  }, [form, sectionForceMode]);
 
   const handleSubmit: SubmitEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault();
@@ -183,6 +231,7 @@ export function useAnnularSectionPageState(): UseAnnularSectionPageStateResult {
     setIssues([]);
     setStatusMessage("入力を待機しています。");
     setIsPrintPreviewOpen(false);
+    setSectionForceMode(DEFAULT_SECTION_FORCE_MODE);
   };
 
   const updateField = (field: keyof FormState) => (value: string) => {
@@ -195,9 +244,11 @@ export function useAnnularSectionPageState(): UseAnnularSectionPageStateResult {
     issues,
     statusMessage,
     isPrintPreviewOpen,
+    sectionForceMode,
     handleSubmit,
     handleReset,
     updateField,
+    updateSectionForceMode: setSectionForceMode,
     openPrintPreview: () => setIsPrintPreviewOpen(true),
     closePrintPreview: () => setIsPrintPreviewOpen(false),
   };

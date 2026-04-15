@@ -2,6 +2,7 @@ import clsx from "clsx";
 import type { ReactNode, SubmitEventHandler } from "react";
 import { AppButton } from "@/components/AppButton";
 import { SymbolText } from "@/components/SymbolText";
+import { SectionForceModeSelector, type SectionForceMode } from "@/components/SectionForceModeSelector";
 import { REBAR_DIAMETERS_MM, type AnnularSectionValidationIssue } from "@/model/annular-section";
 import type { FormState } from "@/forms/form-state";
 
@@ -16,6 +17,10 @@ type AnnularSectionInputFormProps = {
   onReset: () => void;
   /** フォームのフィールド更新ハンドラ */
   onChangeField: (field: keyof FormState) => (value: string) => void;
+  /** 断面力タイプ */
+  sectionForceMode: SectionForceMode;
+  /** 断面力タイプ更新ハンドラ */
+  onChangeSectionForceMode: (value: SectionForceMode) => void;
 };
 
 /** 入力フォームパネル */
@@ -25,6 +30,8 @@ export function AnnularSectionInputFormPanel({
   onSubmit,
   onReset,
   onChangeField,
+  sectionForceMode,
+  onChangeSectionForceMode,
 }: AnnularSectionInputFormProps) {
   return (
     <section className="flex w-120 flex-col gap-4 rounded-sm border border-slate-300 bg-white p-5">
@@ -32,17 +39,7 @@ export function AnnularSectionInputFormPanel({
         <section className="flex flex-col gap-1">
           <div className="flex items-center justify-between gap-4">
             <h2 className="text-xl">断面力</h2>
-            <fieldset className="mr-2 flex gap-4 text-sm">
-              <legend className="sr-only">断面力の項目数</legend>
-              <label className="flex gap-1.5">
-                <input type="radio" name="section-force-mode" defaultChecked />
-                <span>3断面力</span>
-              </label>
-              <label className="flex gap-1.5">
-                <input type="radio" name="section-force-mode" />
-                <span>6断面力</span>
-              </label>
-            </fieldset>
+            <SectionForceModeSelector value={sectionForceMode} onChange={onChangeSectionForceMode} />
           </div>
           <table className="border-collapse overflow-hidden border border-slate-400 bg-slate-50/80">
             <thead className="bg-slate-200/50 text-sm">
