@@ -205,7 +205,7 @@ type FieldInputProps = {
 /** 数値入力用のコンポーネント */
 function FieldInput({ value, onChange, inputMode = "decimal", step }: FieldInputProps) {
   const className = clsx(
-    "w-full bg-white px-1 py-0.5 text-right font-mono outline-none placeholder:text-slate-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15",
+    "w-full [appearance:textfield] px-1 py-0.5 text-right font-mono outline-none placeholder:text-slate-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
   );
 
   return (
@@ -215,6 +215,12 @@ function FieldInput({ value, onChange, inputMode = "decimal", step }: FieldInput
       step={step}
       className={className}
       value={value}
+      onKeyDown={(event) => {
+        if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+          event.preventDefault();
+        }
+      }}
+      onWheel={(event) => event.currentTarget.blur()}
       onChange={(event) => onChange(event.target.value)}
     />
   );
