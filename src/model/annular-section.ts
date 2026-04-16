@@ -302,85 +302,145 @@ export class AnnularSectionCalculator {
       throw new Error(message);
     }
 
-    const geometry = AnnularSectionGeometry.fromInput(this.input.geometry);
-    const { materialParams } = this.input;
-    const force3 = resolveSectionForce3(this.input);
+    // 入力と荷重状態をまとめる
+    const context = createCalculationContext(this.input);
 
-    /** 曲げモーメント [kN.m] */
-    const momentKNm = force3.momentKNm;
-    /** 曲げモーメント [N.mm] */
-    const momentKNmm = momentKNm * 1000;
-    /** せん断力 [kN] */
-    const shearKN = force3.shearKN;
-    /** 軸力 [kN] */
-    const axialKN = force3.axialKN;
+    // 中立軸角度を求めるソルバーを実行
+    const solver = solveNeutralAxisAngleDeg(context);
 
-    /** 換算曲げモーメント [N.mm] （軸力の影響を考慮） */
-    const combinedMomentKNmm = momentKNmm + axialKN * geometry.outerRadiusMm;
+    /** 中立軸位置 [mm] */
+    const neutralAxisPositionMm = calculateNeutralAxisPositionMm(context.geometry, solver);
 
-    // 中立軸角度
-    const solver = solveNeutralAxisAngleDeg({
-      geometry,
-      materialParams,
-      axialKN,
-      momentKNm,
-    });
+    // 応力度の状態を算出
+    const stressState = calculateStressState(context, solver);
 
-    // 中立軸位置
-    const neutralAxisPositionMm =
-      (solver.concreteCompressionCoefficient /
-        (solver.concreteCompressionCoefficient + solver.steelStressCoefficient)) *
-      (geometry.outerRadiusMm + geometry.rebarRadiusMm);
-
-    // 応力度
-    const combinedMomentKNm = combinedMomentKNmm / 1000;
-    const combinedMomentNmm = combinedMomentKNmm * 1000;
-    const concreteCompressionStressNPerMm2 =
-      (combinedMomentNmm / Math.pow(geometry.outerRadiusMm, 3)) * solver.concreteCompressionCoefficient;
-    const rebarStressNPerMm2 =
-      (combinedMomentNmm / Math.pow(geometry.outerRadiusMm, 3)) *
-      solver.steelStressCoefficient *
-      materialParams.youngRatio;
-    const concreteShearStressNPerMm2 =
-      ((shearKN * 1000) / Math.pow(geometry.outerRadiusMm, 2)) * solver.shearCoefficient;
-
-    // 終局耐力
-    const solverInput: StrengthMomentSolverInput = {
-      force3: {
-        momentKNm,
-        shearKN,
-        axialKN,
-      },
-      geometry,
-      materialParams,
-    };
-    const concreteUltimateMomentKNm = calculateConcreteUltimateMomentKNm(solverInput);
-    const rebarYieldMomentKNm = calculateRebarYieldMomentKNm(solverInput);
+    // 耐力の状態を算出
+    const strengthState = calculateStrengthState(context);
 
     return {
-      sectionAreaMm2: geometry.sectionAreaMm2,
-      fullSectionAreaMm2: geometry.fullSectionAreaMm2,
-      innerSectionAreaMm2: geometry.innerSectionAreaMm2,
-      rebarAreaPerBarMm2: geometry.rebarAreaPerBarMm2,
-      totalRebarAreaMm2: geometry.totalRebarAreaMm2,
-      rebarRatioPercent: geometry.rebarRatioPercent,
-      alpha: geometry.alpha,
-      gamma: geometry.gamma,
-      combinedMomentKNm,
-      axialForceSign: classifyAxialForce(axialKN),
-      youngRatio: materialParams.youngRatio,
+      sectionAreaMm2: context.geometry.sectionAreaMm2,
+      fullSectionAreaMm2: context.geometry.fullSectionAreaMm2,
+      innerSectionAreaMm2: context.geometry.innerSectionAreaMm2,
+      rebarAreaPerBarMm2: context.geometry.rebarAreaPerBarMm2,
+      totalRebarAreaMm2: context.geometry.totalRebarAreaMm2,
+      rebarRatioPercent: context.geometry.rebarRatioPercent,
+      alpha: context.geometry.alpha,
+      gamma: context.geometry.gamma,
+      combinedMomentKNm: context.combinedMomentKNm,
+      axialForceSign: classifyAxialForce(context.axialKN),
+      youngRatio: context.materialParams.youngRatio,
       neutralAxisAngleDeg: solver.neutralAxisAngleDeg,
       neutralAxisPositionMm,
       concreteCompressionCoefficient: solver.concreteCompressionCoefficient,
       steelStressCoefficient: solver.steelStressCoefficient,
       shearCoefficient: solver.shearCoefficient,
-      concreteCompressionStressNPerMm2,
-      rebarStressNPerMm2,
-      concreteShearStressNPerMm2,
-      concreteUltimateMomentKNm,
-      rebarYieldMomentKNm,
+      concreteCompressionStressNPerMm2: stressState.concreteCompressionStressNPerMm2,
+      rebarStressNPerMm2: stressState.rebarStressNPerMm2,
+      concreteShearStressNPerMm2: stressState.concreteShearStressNPerMm2,
+      concreteUltimateMomentKNm: strengthState.concreteUltimateMomentKNm,
+      rebarYieldMomentKNm: strengthState.rebarYieldMomentKNm,
     };
   }
+}
+
+/** フォームの状態を表す型定義 */
+interface SectionCalculationContext {
+  /** 断面形状 */
+  geometry: AnnularSectionGeometry;
+  /** 諸係数 */
+  materialParams: MaterialParams;
+  /** 3断面力 */
+  force3: SectionForce3;
+  /** モーメント [kN.m] */
+  momentKNm: number;
+  shearKN: number;
+  axialKN: number;
+  combinedMomentKNmm: number;
+  combinedMomentKNm: number;
+}
+
+/** 応力度の状態をまとめる型定義 */
+interface SectionStressState {
+  /** コンクリート圧縮応力度 [N/mm2] */
+  concreteCompressionStressNPerMm2: number;
+  /** 鉄筋応力度 [N/mm2] */
+  rebarStressNPerMm2: number;
+  /** コンクリートせん断応力度 [N/mm2] */
+  concreteShearStressNPerMm2: number;
+}
+
+/** 耐力の状態をまとめる型定義 */
+interface SectionStrengthState {
+  /** コンクリート終局曲げモーメント [kN.m] */
+  concreteUltimateMomentKNm: number;
+  /** 鉄筋降伏曲げモーメント [kN.m] */
+  rebarYieldMomentKNm: number;
+}
+
+/** 計算に必要な入力と荷重状態をまとめる */
+function createCalculationContext(input: AnnularSectionInput): SectionCalculationContext {
+  const geometry = AnnularSectionGeometry.fromInput(input.geometry);
+  const force3 = resolveSectionForce3(input);
+  const momentKNm = force3.momentKNm;
+  const shearKN = force3.shearKN;
+  const axialKN = force3.axialKN;
+  const combinedMomentKNmm = momentKNm * 1000 + axialKN * geometry.outerRadiusMm;
+
+  return {
+    geometry,
+    materialParams: input.materialParams,
+    force3,
+    momentKNm,
+    shearKN,
+    axialKN,
+    combinedMomentKNmm,
+    combinedMomentKNm: combinedMomentKNmm / 1000,
+  };
+}
+
+/** 中立軸位置 [mm] を算出する */
+function calculateNeutralAxisPositionMm(
+  geometry: AnnularSectionGeometry,
+  solver: NeutralAxisSolverResult,
+): number {
+  return (
+    (solver.concreteCompressionCoefficient /
+      (solver.concreteCompressionCoefficient + solver.steelStressCoefficient)) *
+    (geometry.outerRadiusMm + geometry.rebarRadiusMm)
+  );
+}
+
+/** 応力度の状態を算出する */
+function calculateStressState(
+  context: SectionCalculationContext,
+  solver: NeutralAxisSolverResult,
+): SectionStressState {
+  const scale = (context.combinedMomentKNmm * 1000) / Math.pow(context.geometry.outerRadiusMm, 3);
+
+  return {
+    concreteCompressionStressNPerMm2: scale * solver.concreteCompressionCoefficient,
+    rebarStressNPerMm2: scale * solver.steelStressCoefficient * context.materialParams.youngRatio,
+    concreteShearStressNPerMm2:
+      ((context.shearKN * 1000) / Math.pow(context.geometry.outerRadiusMm, 2)) * solver.shearCoefficient,
+  };
+}
+
+/** 耐力の状態を算出する */
+function calculateStrengthState(context: SectionCalculationContext): SectionStrengthState {
+  const solverInput: StrengthMomentSolverInput = {
+    force3: {
+      momentKNm: context.momentKNm,
+      shearKN: context.shearKN,
+      axialKN: context.axialKN,
+    },
+    geometry: context.geometry,
+    materialParams: context.materialParams,
+  };
+
+  return {
+    concreteUltimateMomentKNm: calculateConcreteUltimateMomentKNm(solverInput),
+    rebarYieldMomentKNm: calculateRebarYieldMomentKNm(solverInput),
+  };
 }
 
 /**
