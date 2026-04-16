@@ -3,7 +3,8 @@ import type { ReactNode, SubmitEventHandler } from "react";
 import { AppButton } from "@/components/AppButton";
 import { SymbolText } from "@/components/SymbolText";
 import { SectionForceModeSelector, type SectionForceMode } from "@/components/SectionForceModeSelector";
-import { REBAR_DIAMETERS_MM, type AnnularSectionValidationIssue } from "@/model/annular-section";
+import { type AnnularSectionValidationIssue } from "@/model/annular-section";
+import { REBAR_DIAMETERS_MM } from "@/model/rebar";
 import type { FormState } from "@/forms/form-state";
 
 type AnnularSectionInputFormProps = {

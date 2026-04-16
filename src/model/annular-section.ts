@@ -1,25 +1,5 @@
-export const REBAR_DIAMETERS_MM = [6, 8, 10, 13, 16, 19, 22, 25, 29, 32, 35, 38, 41, 51] as const;
-
-/** 鉄筋径を表す型 */
-export type RebarDiameterMm = (typeof REBAR_DIAMETERS_MM)[number];
-
-/** 鉄筋径に対応する断面積[mm2]を定義 */
-export const REBAR_AREAS_MM2: Readonly<Record<RebarDiameterMm, number>> = {
-  6: 31.67,
-  8: 49.51,
-  10: 71.33,
-  13: 126.7,
-  16: 198.6,
-  19: 286.5,
-  22: 387.1,
-  25: 506.7,
-  29: 642.4,
-  32: 794.2,
-  35: 956.6,
-  38: 1140,
-  41: 1340,
-  51: 2027,
-};
+import { REBAR_DIAMETERS_MM, getRebarAreaMm2 } from "./rebar";
+import type { RebarDiameterMm } from "./rebar";
 
 /** 軸力の符号を表す型 */
 export type AxialForceSign = "compression" | "tension" | "zero";
@@ -256,7 +236,7 @@ export class AnnularSectionCalculator {
     const sectionAreaMm2 = fullSectionAreaMm2 - innerSectionAreaMm2;
 
     // 鉄筋断面積および鉄筋比
-    const rebarAreaPerBarMm2 = REBAR_AREAS_MM2[geometry.rebarDiameterMm];
+    const rebarAreaPerBarMm2 = getRebarAreaMm2(geometry.rebarDiameterMm);
     const totalRebarAreaMm2 = rebarAreaPerBarMm2 * geometry.barCount;
     const rebarRatioPercent = (totalRebarAreaMm2 / fullSectionAreaMm2) * 100;
 
@@ -721,13 +701,12 @@ function solveMomentForTargetStressKNm(
 
   // 曲げモーメントに対して、コンクリート圧縮応力度と鉄筋応力度を計算
   const evaluate = (momentKNm: number): MomentStressEvaluation => {
+    const singleRebarAreaMm2 = getRebarAreaMm2(geometry.rebarDiameterMm);
     const solver = solveNeutralAxisAngleDeg({
       alpha: geometry.rebarRadiusMm / geometry.outerRadiusMm,
       gamma: geometry.innerRadiusMm / geometry.outerRadiusMm,
       rebarRatioPercent:
-        ((REBAR_AREAS_MM2[geometry.rebarDiameterMm] * geometry.barCount) /
-          (Math.PI * Math.pow(geometry.outerRadiusMm, 2))) *
-        100,
+        ((singleRebarAreaMm2 * geometry.barCount) / (Math.PI * Math.pow(geometry.outerRadiusMm, 2))) * 100,
       axialKN: force3.axialKN,
       momentKNm,
       outerRadiusMm: geometry.outerRadiusMm,
