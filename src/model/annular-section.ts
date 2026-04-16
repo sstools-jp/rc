@@ -359,6 +359,51 @@ interface NeutralAxisSolverResult {
   shearCoefficient: number;
 }
 
+/** 中立軸角度の候補を探索する */
+function searchBestNeutralAxisAngleDeg(input: NeutralAxisSolverInput): number {
+  const { alpha, gamma, rebarRatioPercent, axialKN, momentKNm, outerRadiusMm, youngRatio } = input;
+  const rebarRatio = rebarRatioPercent / 100;
+  const momentKNmm = momentKNm * 1000;
+  const beta = axialKN === 0 ? Number.POSITIVE_INFINITY : momentKNmm / (axialKN * outerRadiusMm);
+
+  const xMinDeg = radToDeg(Math.acos(alpha));
+  const xMaxDeg = radToDeg(Math.acos(-alpha));
+  let start = xMinDeg;
+  let end = xMaxDeg;
+  let bestAngleDeg = (xMinDeg + xMaxDeg) / 2;
+  let bestObjective = Number.POSITIVE_INFINITY;
+
+  // 反復的に中立軸角度の候補を探索して、目的関数が最小となる角度を求める
+  for (let iteration = 0; iteration < 14; iteration++) {
+    const step = Math.pow(10, -iteration);
+    for (let angle = start; angle < end; angle += step) {
+      const objective = evaluateObjective({
+        angleDeg: angle,
+        alpha,
+        gamma,
+        rebarRatio,
+        beta,
+        axialKN,
+        youngRatio,
+      });
+
+      if (Number.isFinite(objective) && objective < bestObjective) {
+        bestObjective = objective;
+        bestAngleDeg = angle;
+      }
+    }
+
+    start = Math.max(xMinDeg, bestAngleDeg - step * 2);
+    end = Math.min(xMaxDeg, bestAngleDeg + step * 2);
+  }
+
+  if (bestAngleDeg < xMinDeg || bestAngleDeg > xMaxDeg) {
+    throw new Error("計算範囲外です。中立軸の位置が有効範囲にありません。");
+  }
+
+  return bestAngleDeg;
+}
+
 /** 強度計算に必要な入力パラメータ */
 interface StrengthMomentSolverInput {
   force3: SectionForce3;
@@ -408,77 +453,37 @@ function evaluateMomentStress(input: StrengthMomentSolverInput, momentKNm: numbe
  * 中立軸角度を求めるソルバー関数
  */
 function solveNeutralAxisAngleDeg(input: NeutralAxisSolverInput): NeutralAxisSolverResult {
-  const { alpha, gamma, rebarRatioPercent, axialKN, momentKNm, outerRadiusMm, youngRatio } = input;
-  const radiusRatio = gamma;
-  const alphaValue = alpha;
-  const rebarRatio = rebarRatioPercent / 100;
-  const momentKNmm = momentKNm * 1000;
-  const beta = axialKN === 0 ? Number.POSITIVE_INFINITY : momentKNmm / (axialKN * outerRadiusMm);
+  const { alpha, gamma, rebarRatioPercent } = input;
 
-  const xMinDeg = radToDeg(Math.acos(alphaValue));
-  const xMaxDeg = radToDeg(Math.acos(-alphaValue));
-  let start = xMinDeg;
-  let end = xMaxDeg;
-  let bestAngleDeg = (xMinDeg + xMaxDeg) / 2;
-  let bestObjective = Number.POSITIVE_INFINITY;
-
-  // 反復計算により中立軸角度を求める
-  for (let iteration = 0; iteration < 14; iteration++) {
-    const step = Math.pow(10, -iteration);
-    for (let angle = start; angle < end; angle += step) {
-      const objective = evaluateObjective({
-        angleDeg: angle,
-        alpha: alphaValue,
-        gamma: radiusRatio,
-        rebarRatio,
-        beta,
-        axialKN,
-        youngRatio,
-      });
-
-      // 目的関数の値が最小となる角度を更新
-      if (Number.isFinite(objective) && objective < bestObjective) {
-        bestObjective = objective;
-        bestAngleDeg = angle;
-      }
-    }
-
-    // 最適な角度の周辺を次の探索範囲とする
-    start = Math.max(xMinDeg, bestAngleDeg - step * 2);
-    end = Math.min(xMaxDeg, bestAngleDeg + step * 2);
-  }
-
-  // 最終的な中立軸角度が有効範囲内にあるかを確認
-  if (bestAngleDeg < xMinDeg || bestAngleDeg > xMaxDeg) {
-    throw new Error("計算範囲外です。中立軸の位置が有効範囲にありません。");
-  }
+  // 中立軸角度の候補を探索して最適な角度を求める
+  const bestAngleDeg = searchBestNeutralAxisAngleDeg(input);
 
   // 中立軸角度をラジアンに変換して内部角度を求める
   const angleRad = degToRad(bestAngleDeg);
-  const innerAngle = computeInnerAngle(angleRad, radiusRatio, alphaValue);
+  const innerAngle = computeInnerAngle(angleRad, gamma, alpha);
 
   // 応力度係数
   const concreteCompressionCoefficient = computeConcreteCompressionCoefficient({
     angleRad,
     innerAngleRad: innerAngle,
-    gamma: radiusRatio,
-    alpha: alphaValue,
-    rebarRatio,
-    youngRatio,
+    gamma,
+    alpha,
+    rebarRatio: rebarRatioPercent / 100,
+    youngRatio: input.youngRatio,
   });
   const steelStressCoefficient = computeSteelStressCoefficient({
     angleRad,
     innerAngleRad: innerAngle,
-    alpha: alphaValue,
+    alpha,
     concreteCompressionCoefficient,
   });
   const shearCoefficient = computeShearCoefficient({
     angleRad,
     innerAngleRad: innerAngle,
-    gamma: radiusRatio,
-    alpha: alphaValue,
-    rebarRatio,
-    youngRatio,
+    gamma,
+    alpha,
+    rebarRatio: rebarRatioPercent / 100,
+    youngRatio: input.youngRatio,
     concreteCompressionCoefficient,
   });
 
