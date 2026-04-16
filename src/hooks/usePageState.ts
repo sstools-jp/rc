@@ -1,6 +1,7 @@
 import { useEffect, useState, type SubmitEventHandler } from "react";
 import {
   AnnularSectionCalculator,
+  AnnularSectionGeometry,
   type AnnularSectionInput,
   type AnnularSectionResult,
   type AnnularSectionValidationIssue,
@@ -176,7 +177,7 @@ function buildInput(form: FormState, sectionForceMode: SectionForceMode): Annula
 
   return {
     force3,
-    geometry: {
+    geometry: AnnularSectionGeometry.fromInput({
       outerRadiusMm: parseNumber(form.outerRadiusMm),
       innerRadiusMm: parseNumber(form.innerRadiusMm),
       rebarRadiusMm: parseNumber(form.rebarRadiusMm),
@@ -184,7 +185,7 @@ function buildInput(form: FormState, sectionForceMode: SectionForceMode): Annula
         form.rebarDiameterMm,
       ) as AnnularSectionInput["geometry"]["rebarDiameterMm"],
       barCount: parseNumber(form.barCount),
-    },
+    }),
     materialParams: {
       youngRatio: parseNumber(form.youngRatio),
       rebarYieldStrengthNPerMm2: parseNumber(form.rebarYieldStrengthNPerMm2),

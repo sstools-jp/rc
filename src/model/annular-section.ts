@@ -2,8 +2,8 @@ import { REBAR_DIAMETERS_MM, getRebarAreaMm2 } from "@/model/rebar";
 import type { RebarDiameterMm } from "@/model/rebar";
 import type { AxialForceSign, SectionForce3, SectionForce6 } from "@/model/section-force";
 
-/** 円環断面の形状を表す型定義 */
-export interface AnnularSectionGeometry {
+/** 円環断面の形状を表す入力型定義 */
+export interface AnnularSectionGeometryInput {
   /** 外径 [mm] */
   outerRadiusMm: number;
   /** 内径 [mm] */
@@ -14,6 +14,79 @@ export interface AnnularSectionGeometry {
   rebarDiameterMm: RebarDiameterMm;
   /** 鉄筋本数 [本] */
   barCount: number;
+}
+
+/** 円環断面の形状を表す値オブジェクト */
+export class AnnularSectionGeometry {
+  readonly outerRadiusMm: number;
+  readonly innerRadiusMm: number;
+  readonly rebarRadiusMm: number;
+  readonly rebarDiameterMm: RebarDiameterMm;
+  readonly barCount: number;
+
+  private constructor(input: AnnularSectionGeometryInput) {
+    this.outerRadiusMm = input.outerRadiusMm;
+    this.innerRadiusMm = input.innerRadiusMm;
+    this.rebarRadiusMm = input.rebarRadiusMm;
+    this.rebarDiameterMm = input.rebarDiameterMm;
+    this.barCount = input.barCount;
+  }
+
+  /** 入力値から値オブジェクトを生成する */
+  static fromInput(input: AnnularSectionGeometryInput): AnnularSectionGeometry {
+    return new AnnularSectionGeometry(input);
+  }
+
+  /** 全断面積 [mm2] */
+  get fullSectionAreaMm2(): number {
+    return Math.PI * this.outerRadiusMm * this.outerRadiusMm;
+  }
+
+  /** 内部断面積 [mm2] */
+  get innerSectionAreaMm2(): number {
+    return Math.PI * this.innerRadiusMm * this.innerRadiusMm;
+  }
+
+  /** 断面積 [mm2] */
+  get sectionAreaMm2(): number {
+    return this.fullSectionAreaMm2 - this.innerSectionAreaMm2;
+  }
+
+  /** 1本あたりの鉄筋断面積 [mm2] */
+  get rebarAreaPerBarMm2(): number {
+    return getRebarAreaMm2(this.rebarDiameterMm);
+  }
+
+  /** 鉄筋総断面積 [mm2] */
+  get totalRebarAreaMm2(): number {
+    return this.rebarAreaPerBarMm2 * this.barCount;
+  }
+
+  /** 鉄筋比 [%] */
+  get rebarRatioPercent(): number {
+    return (this.totalRebarAreaMm2 / this.fullSectionAreaMm2) * 100;
+  }
+
+  /** 中立軸位置の係数 */
+  get alpha(): number {
+    return this.rebarRadiusMm / this.outerRadiusMm;
+  }
+
+  /** 軸力係数 */
+  get gamma(): number {
+    return this.innerRadiusMm / this.outerRadiusMm;
+  }
+
+  /** 入力型へ戻す */
+  toInput(): AnnularSectionGeometryInput {
+    return {
+      outerRadiusMm: this.outerRadiusMm,
+      innerRadiusMm: this.innerRadiusMm,
+      rebarRadiusMm: this.rebarRadiusMm,
+      rebarDiameterMm: this.rebarDiameterMm,
+      barCount: this.barCount,
+    };
+  }
 }
 
 /** 諸係数の型定義 */
@@ -33,7 +106,7 @@ export interface AnnularSectionInput {
   /** 6断面力 */
   force6?: SectionForce6;
   /** 断面形状 */
-  geometry: AnnularSectionGeometry;
+  geometry: AnnularSectionGeometryInput;
   /** 諸係数 */
   materialParams: MaterialParams;
 }
@@ -230,22 +303,9 @@ export class AnnularSectionCalculator {
       throw new Error(message);
     }
 
-    const { geometry, materialParams } = this.input;
+    const geometry = AnnularSectionGeometry.fromInput(this.input.geometry);
+    const { materialParams } = this.input;
     const force3 = resolveSectionForce3(this.input);
-
-    // コンクリート断面積
-    const fullSectionAreaMm2 = Math.PI * geometry.outerRadiusMm * geometry.outerRadiusMm;
-    const innerSectionAreaMm2 = Math.PI * geometry.innerRadiusMm * geometry.innerRadiusMm;
-    const sectionAreaMm2 = fullSectionAreaMm2 - innerSectionAreaMm2;
-
-    // 鉄筋断面積および鉄筋比
-    const rebarAreaPerBarMm2 = getRebarAreaMm2(geometry.rebarDiameterMm);
-    const totalRebarAreaMm2 = rebarAreaPerBarMm2 * geometry.barCount;
-    const rebarRatioPercent = (totalRebarAreaMm2 / fullSectionAreaMm2) * 100;
-
-    // 中立軸位置の係数および軸力係数
-    const alpha = geometry.rebarRadiusMm / geometry.outerRadiusMm;
-    const gamma = geometry.innerRadiusMm / geometry.outerRadiusMm;
 
     /** 曲げモーメント [kN.m] */
     const momentKNm = force3.momentKNm;
@@ -261,14 +321,10 @@ export class AnnularSectionCalculator {
 
     // 中立軸角度
     const solver = solveNeutralAxisAngleDeg({
-      alpha,
-      gamma,
-      rebarRatioPercent,
+      geometry,
+      materialParams,
       axialKN,
       momentKNm,
-      outerRadiusMm: geometry.outerRadiusMm,
-      rebarRadiusMm: geometry.rebarRadiusMm,
-      youngRatio: materialParams.youngRatio,
     });
 
     // 中立軸位置
@@ -303,14 +359,14 @@ export class AnnularSectionCalculator {
     const rebarYieldMomentKNm = calculateRebarYieldMomentKNm(solverInput);
 
     return {
-      sectionAreaMm2,
-      fullSectionAreaMm2,
-      innerSectionAreaMm2,
-      rebarAreaPerBarMm2,
-      totalRebarAreaMm2,
-      rebarRatioPercent,
-      alpha,
-      gamma,
+      sectionAreaMm2: geometry.sectionAreaMm2,
+      fullSectionAreaMm2: geometry.fullSectionAreaMm2,
+      innerSectionAreaMm2: geometry.innerSectionAreaMm2,
+      rebarAreaPerBarMm2: geometry.rebarAreaPerBarMm2,
+      totalRebarAreaMm2: geometry.totalRebarAreaMm2,
+      rebarRatioPercent: geometry.rebarRatioPercent,
+      alpha: geometry.alpha,
+      gamma: geometry.gamma,
       combinedMomentKNm,
       axialForceSign: classifyAxialForce(axialKN),
       youngRatio: materialParams.youngRatio,
@@ -342,14 +398,10 @@ function classifyAxialForce(axialKN: number): AxialForceSign {
 }
 
 interface NeutralAxisSolverInput {
-  alpha: number;
-  gamma: number;
-  rebarRatioPercent: number;
+  geometry: AnnularSectionGeometry;
+  materialParams: MaterialParams;
   axialKN: number;
   momentKNm: number;
-  outerRadiusMm: number;
-  rebarRadiusMm: number;
-  youngRatio: number;
 }
 
 interface NeutralAxisSolverResult {
@@ -361,7 +413,10 @@ interface NeutralAxisSolverResult {
 
 /** 中立軸角度の候補を探索する */
 function searchBestNeutralAxisAngleDeg(input: NeutralAxisSolverInput): number {
-  const { alpha, gamma, rebarRatioPercent, axialKN, momentKNm, outerRadiusMm, youngRatio } = input;
+  const { geometry, axialKN, momentKNm } = input;
+  const { alpha, gamma, rebarRatioPercent, outerRadiusMm } = geometry;
+  const { youngRatio } = input.materialParams;
+
   const rebarRatio = rebarRatioPercent / 100;
   const momentKNmm = momentKNm * 1000;
   const beta = axialKN === 0 ? Number.POSITIVE_INFINITY : momentKNmm / (axialKN * outerRadiusMm);
@@ -425,17 +480,11 @@ interface MomentStressEvaluation {
 /** 曲げモーメントに対する応力度を算出する */
 function evaluateMomentStress(input: StrengthMomentSolverInput, momentKNm: number): MomentStressEvaluation {
   const { force3, geometry, materialParams } = input;
-  const singleRebarAreaMm2 = getRebarAreaMm2(geometry.rebarDiameterMm);
   const solver = solveNeutralAxisAngleDeg({
-    alpha: geometry.rebarRadiusMm / geometry.outerRadiusMm,
-    gamma: geometry.innerRadiusMm / geometry.outerRadiusMm,
-    rebarRatioPercent:
-      ((singleRebarAreaMm2 * geometry.barCount) / (Math.PI * Math.pow(geometry.outerRadiusMm, 2))) * 100,
+    geometry,
+    materialParams,
     axialKN: force3.axialKN,
     momentKNm,
-    outerRadiusMm: geometry.outerRadiusMm,
-    rebarRadiusMm: geometry.rebarRadiusMm,
-    youngRatio: materialParams.youngRatio,
   });
 
   const combinedMomentKNmm = momentKNm * 1000 + force3.axialKN * geometry.outerRadiusMm;
@@ -453,7 +502,9 @@ function evaluateMomentStress(input: StrengthMomentSolverInput, momentKNm: numbe
  * 中立軸角度を求めるソルバー関数
  */
 function solveNeutralAxisAngleDeg(input: NeutralAxisSolverInput): NeutralAxisSolverResult {
-  const { alpha, gamma, rebarRatioPercent } = input;
+  // const { alpha, gamma, rebarRatioPercent } = input;
+  const { geometry, materialParams } = input;
+  const { alpha, gamma, rebarRatioPercent } = geometry;
 
   // 中立軸角度の候補を探索して最適な角度を求める
   const bestAngleDeg = searchBestNeutralAxisAngleDeg(input);
@@ -469,7 +520,7 @@ function solveNeutralAxisAngleDeg(input: NeutralAxisSolverInput): NeutralAxisSol
     gamma,
     alpha,
     rebarRatio: rebarRatioPercent / 100,
-    youngRatio: input.youngRatio,
+    youngRatio: materialParams.youngRatio,
   });
   const steelStressCoefficient = computeSteelStressCoefficient({
     angleRad,
@@ -483,7 +534,7 @@ function solveNeutralAxisAngleDeg(input: NeutralAxisSolverInput): NeutralAxisSol
     gamma,
     alpha,
     rebarRatio: rebarRatioPercent / 100,
-    youngRatio: input.youngRatio,
+    youngRatio: materialParams.youngRatio,
     concreteCompressionCoefficient,
   });
 
