@@ -165,7 +165,7 @@ export interface AnnularSectionResult {
 
 /** 3断面力の入力値を検査する */
 function validateSectionForce3(
-  force3: AnnularSectionInput["force3"],
+  force3: SectionForce3 | undefined,
   issues: AnnularSectionValidationIssue[],
 ): void {
   if (!Number.isFinite(force3?.momentKNm)) {
@@ -176,6 +176,60 @@ function validateSectionForce3(
   }
   if (!Number.isFinite(force3?.axialKN)) {
     issues.push({ field: "force3", message: "軸力は数値で指定してください。" });
+  }
+}
+
+/** 断面形状の入力値を検査する */
+function validateGeometry(
+  geometry: AnnularSectionGeometryInput,
+  issues: AnnularSectionValidationIssue[],
+): void {
+  const { outerRadiusMm, innerRadiusMm, rebarRadiusMm, rebarDiameterMm, barCount } = geometry;
+
+  if (!Number.isFinite(outerRadiusMm) || outerRadiusMm <= 0) {
+    issues.push({ field: "geometry", message: "半径（外）は正の数で指定してください。" });
+  }
+  if (!Number.isFinite(innerRadiusMm) || innerRadiusMm < 0) {
+    issues.push({ field: "geometry", message: "半径（内）は 0 以上で指定してください。" });
+  }
+  if (!Number.isFinite(rebarRadiusMm) || rebarRadiusMm < 0) {
+    issues.push({ field: "geometry", message: "鉄筋の位置（有効半径）は 0 以上で指定してください。" });
+  }
+  if (!Number.isFinite(barCount) || barCount <= 0) {
+    issues.push({ field: "geometry", message: "本数は正の数で指定してください。" });
+  }
+
+  const validDiameters = new Set<number>(REBAR_DIAMETERS_MM);
+  if (!validDiameters.has(rebarDiameterMm)) {
+    issues.push({ field: "materialParams", message: "鉄筋径は D6 から D51 の範囲で指定してください。" });
+  }
+
+  if (Number.isFinite(outerRadiusMm) && Number.isFinite(innerRadiusMm) && innerRadiusMm > outerRadiusMm) {
+    issues.push({ field: "geometry", message: "半径（内）は半径（外）以下で指定してください。" });
+  }
+  if (Number.isFinite(outerRadiusMm) && Number.isFinite(rebarRadiusMm) && rebarRadiusMm > outerRadiusMm) {
+    issues.push({ field: "geometry", message: "鉄筋の位置（有効半径）は半径（外）以下で指定してください。" });
+  }
+  if (Number.isFinite(innerRadiusMm) && Number.isFinite(rebarRadiusMm) && rebarRadiusMm < innerRadiusMm) {
+    issues.push({ field: "geometry", message: "鉄筋の位置（有効半径）は半径（内）以上で指定してください。" });
+  }
+}
+
+/** 諸係数の入力値を検査する */
+function validateMaterialParams(
+  materialParams: AnnularSectionInput["materialParams"],
+  issues: AnnularSectionValidationIssue[],
+): void {
+  const { youngRatio, rebarYieldStrengthNPerMm2, concreteDesignStrengthNPerMm2 } = materialParams;
+
+  if (!Number.isFinite(youngRatio) || youngRatio <= 0) {
+    issues.push({ field: "materialParams", message: "ヤング係数比は正の数で指定してください。" });
+  }
+  if (!Number.isFinite(rebarYieldStrengthNPerMm2) || rebarYieldStrengthNPerMm2 <= 0) {
+    issues.push({ field: "materialParams", message: "鉄筋降伏強度は正の数で指定してください。" });
+  }
+  if (!Number.isFinite(concreteDesignStrengthNPerMm2) || concreteDesignStrengthNPerMm2 <= 0) {
+    issues.push({ field: "materialParams", message: "コンクリート設計基準強度は正の数で指定してください。" });
   }
 }
 
@@ -230,67 +284,12 @@ export class AnnularSectionCalculator {
   /** 入力値の検査 */
   validate(): AnnularSectionValidationIssue[] {
     const issues: AnnularSectionValidationIssue[] = [];
-    const {
-      force3,
-      geometry: { outerRadiusMm, innerRadiusMm, rebarRadiusMm, rebarDiameterMm, barCount },
-      materialParams: { youngRatio, rebarYieldStrengthNPerMm2, concreteDesignStrengthNPerMm2 },
-    } = this.input;
+    const { force3, geometry, materialParams } = this.input;
 
-    // 断面力のバリデーション
     validateSectionForce3(force3, issues);
 
-    // 断面形状のバリデーション
-    if (!Number.isFinite(outerRadiusMm) || outerRadiusMm <= 0) {
-      const message = "半径（外）は正の数で指定してください。";
-      issues.push({ field: "geometry", message });
-    }
-    if (!Number.isFinite(innerRadiusMm) || innerRadiusMm < 0) {
-      const message = "半径（内）は 0 以上で指定してください。";
-      issues.push({ field: "geometry", message });
-    }
-    if (!Number.isFinite(rebarRadiusMm) || rebarRadiusMm < 0) {
-      const message = "鉄筋の位置（有効半径）は 0 以上で指定してください。";
-      issues.push({ field: "geometry", message });
-    }
-    if (!Number.isFinite(barCount) || barCount <= 0) {
-      const message = "本数は正の数で指定してください。";
-      issues.push({ field: "geometry", message });
-    }
-
-    // 諸係数のバリデーション
-    if (!Number.isFinite(youngRatio) || youngRatio <= 0) {
-      const message = "ヤング係数比は正の数で指定してください。";
-      issues.push({ field: "materialParams", message });
-    }
-    if (!Number.isFinite(rebarYieldStrengthNPerMm2) || rebarYieldStrengthNPerMm2 <= 0) {
-      const message = "鉄筋降伏強度は正の数で指定してください。";
-      issues.push({ field: "materialParams", message });
-    }
-    if (!Number.isFinite(concreteDesignStrengthNPerMm2) || concreteDesignStrengthNPerMm2 <= 0) {
-      const message = "コンクリート設計基準強度は正の数で指定してください。";
-      issues.push({ field: "materialParams", message });
-    }
-
-    // 鉄筋径のバリデーション
-    const validDiameters = new Set<number>(REBAR_DIAMETERS_MM);
-    if (!validDiameters.has(rebarDiameterMm)) {
-      const message = "鉄筋径は D6 から D51 の範囲で指定してください。";
-      issues.push({ field: "materialParams", message });
-    }
-
-    // 半径のバリデーション
-    if (Number.isFinite(outerRadiusMm) && Number.isFinite(innerRadiusMm) && innerRadiusMm > outerRadiusMm) {
-      const message = "半径（内）は半径（外）以下で指定してください。";
-      issues.push({ field: "geometry", message });
-    }
-    if (Number.isFinite(outerRadiusMm) && Number.isFinite(rebarRadiusMm) && rebarRadiusMm > outerRadiusMm) {
-      const message = "鉄筋の位置（有効半径）は半径（外）以下で指定してください。";
-      issues.push({ field: "geometry", message });
-    }
-    if (Number.isFinite(innerRadiusMm) && Number.isFinite(rebarRadiusMm) && rebarRadiusMm < innerRadiusMm) {
-      const message = "鉄筋の位置（有効半径）は半径（内）以上で指定してください。";
-      issues.push({ field: "geometry", message });
-    }
+    validateGeometry(geometry, issues);
+    validateMaterialParams(materialParams, issues);
 
     return issues;
   }
