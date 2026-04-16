@@ -90,6 +90,47 @@ export interface AnnularSectionResult {
   rebarYieldMomentKNm: number;
 }
 
+/** 3断面力の入力値を検査する */
+function validateSectionForce3(
+  force3: AnnularSectionInput["force3"],
+  issues: AnnularSectionValidationIssue[],
+): void {
+  if (!Number.isFinite(force3?.momentKNm)) {
+    issues.push({ field: "force3", message: "モーメントは数値で指定してください。" });
+  }
+  if (!Number.isFinite(force3?.shearKN)) {
+    issues.push({ field: "force3", message: "せん断力は数値で指定してください。" });
+  }
+  if (!Number.isFinite(force3?.axialKN)) {
+    issues.push({ field: "force3", message: "軸力は数値で指定してください。" });
+  }
+}
+
+/** 入力から計算用の3断面力を返す */
+function resolveSectionForce3(input: AnnularSectionInput): SectionForce3 {
+  // 3断面力が入力されている場合はそのまま返す
+  if (input.force3) {
+    return input.force3;
+  }
+
+  // 6断面力が入力されている場合
+  const { force6 } = input;
+
+  if (!force6) {
+    throw new Error("断面力が指定されていません。");
+  }
+
+  // ねじりモーメントにアーム長（鉄筋半径）を乗じて換算せん断力を算出
+  const { rebarRadiusMm } = input.geometry;
+  const mxShearKN = (force6.mxKNm * 1000) / rebarRadiusMm;
+
+  return {
+    momentKNm: Math.sqrt(force6.myKNm ** 2 + force6.mzKNm ** 2),
+    shearKN: Math.sqrt(force6.fyKN ** 2 + force6.fzKN ** 2) + mxShearKN,
+    axialKN: force6.fxKN,
+  };
+}
+
 /** 数値計算用の極小値（ゼロ判定用） */
 const EPSILON = 1e-9;
 
@@ -123,18 +164,7 @@ export class AnnularSectionCalculator {
     } = this.input;
 
     // 断面力のバリデーション
-    if (!Number.isFinite(force3?.momentKNm)) {
-      const message = "モーメントは数値で指定してください。";
-      issues.push({ field: "force3", message });
-    }
-    if (!Number.isFinite(force3?.shearKN)) {
-      const message = "せん断力は数値で指定してください。";
-      issues.push({ field: "force3", message });
-    }
-    if (!Number.isFinite(force3?.axialKN)) {
-      const message = "軸力は数値で指定してください。";
-      issues.push({ field: "force3", message });
-    }
+    validateSectionForce3(force3, issues);
 
     // 断面形状のバリデーション
     if (!Number.isFinite(outerRadiusMm) || outerRadiusMm <= 0) {
@@ -200,7 +230,8 @@ export class AnnularSectionCalculator {
       throw new Error(message);
     }
 
-    const { force3, force6, geometry, materialParams } = this.input;
+    const { geometry, materialParams } = this.input;
+    const force3 = resolveSectionForce3(this.input);
 
     // コンクリート断面積
     const fullSectionAreaMm2 = Math.PI * geometry.outerRadiusMm * geometry.outerRadiusMm;
@@ -217,17 +248,13 @@ export class AnnularSectionCalculator {
     const gamma = geometry.innerRadiusMm / geometry.outerRadiusMm;
 
     /** 曲げモーメント [kN.m] */
-    const momentKNm = force3
-      ? force3!.momentKNm
-      : Math.sqrt(force6!.mxKNm ** 2 + force6!.myKNm ** 2 + force6!.mzKNm ** 2);
+    const momentKNm = force3.momentKNm;
     /** 曲げモーメント [N.mm] */
     const momentKNmm = momentKNm * 1000;
-
     /** せん断力 [kN] */
-    const shearKN = force3 ? force3!.shearKN : Math.sqrt(force6!.fyKN ** 2 + force6!.fzKN ** 2);
-
+    const shearKN = force3.shearKN;
     /** 軸力 [kN] */
-    const axialKN = force3 ? force3!.axialKN : force6!.fxKN;
+    const axialKN = force3.axialKN;
 
     /** 換算曲げモーメント [N.mm] （軸力の影響を考慮） */
     const combinedMomentKNmm = momentKNmm + axialKN * geometry.outerRadiusMm;
