@@ -514,6 +514,57 @@ function computeInnerAngle(angleRad: number, gamma: number, alpha: number): numb
   return Math.PI;
 }
 
+/** 軸力が 0 のときの目的関数を評価する */
+function evaluateZeroAxialObjective(input: {
+  angleRad: number;
+  innerAngleRad: number;
+  gamma: number;
+  rebarRatio: number;
+  youngRatio: number;
+}): number {
+  const { angleRad, innerAngleRad, gamma, rebarRatio, youngRatio } = input;
+  const objective =
+    (Math.sin(angleRad) / 3) * (2 + Math.pow(Math.cos(angleRad), 2)) -
+    angleRad * Math.cos(angleRad) -
+    Math.pow(gamma, 3) *
+      ((Math.sin(innerAngleRad) / 3) * (2 + Math.pow(Math.cos(innerAngleRad), 2)) -
+        innerAngleRad * Math.cos(innerAngleRad)) -
+    Math.PI * youngRatio * rebarRatio * Math.cos(angleRad);
+  return Math.abs(objective);
+}
+
+/** 軸力が 0 でないときの目的関数を評価する */
+function evaluateNonZeroAxialObjective(input: {
+  angleRad: number;
+  innerAngleRad: number;
+  alpha: number;
+  gamma: number;
+  rebarRatio: number;
+  beta: number;
+  youngRatio: number;
+}): number {
+  const { angleRad, innerAngleRad, alpha, gamma, rebarRatio, beta, youngRatio } = input;
+  const numerator =
+    angleRad / 4 -
+    Math.sin(angleRad) * Math.cos(angleRad) * (5 / 12 - (1 / 6) * Math.pow(Math.cos(angleRad), 2)) -
+    Math.pow(gamma, 4) *
+      (innerAngleRad / 4 -
+        Math.sin(innerAngleRad) *
+          Math.cos(innerAngleRad) *
+          (5 / 12 - (1 / 6) * Math.pow(Math.cos(innerAngleRad), 2))) +
+    ((Math.PI * youngRatio * rebarRatio) / 2) * Math.pow(alpha, 2);
+
+  const denominator =
+    (Math.sin(angleRad) / 3) * (2 + Math.pow(Math.cos(angleRad), 2)) -
+    angleRad * Math.cos(angleRad) -
+    Math.pow(gamma, 3) *
+      ((Math.sin(innerAngleRad) / 3) * (2 + Math.pow(Math.cos(innerAngleRad), 2)) -
+        innerAngleRad * Math.cos(innerAngleRad)) -
+    Math.PI * youngRatio * rebarRatio * Math.cos(angleRad);
+
+  return Math.abs(beta - numerator / denominator);
+}
+
 /**
  * 中立軸角度を求めるソルバー関数の目的関数
  */
@@ -530,36 +581,27 @@ function evaluateObjective(input: {
   const innerAngleRad = computeInnerAngle(angleRad, input.gamma, input.alpha);
   const isAxialZero = Math.abs(input.axialKN) < EPSILON;
 
+  // 軸力がゼロに近い場合は、軸力の影響を考慮しない目的関数を評価する
   if (isAxialZero) {
-    const objective =
-      (Math.sin(angleRad) / 3) * (2 + Math.pow(Math.cos(angleRad), 2)) -
-      angleRad * Math.cos(angleRad) -
-      Math.pow(input.gamma, 3) *
-        ((Math.sin(innerAngleRad) / 3) * (2 + Math.pow(Math.cos(innerAngleRad), 2)) -
-          innerAngleRad * Math.cos(innerAngleRad)) -
-      Math.PI * input.youngRatio * input.rebarRatio * Math.cos(angleRad);
-    return Math.abs(objective);
+    return evaluateZeroAxialObjective({
+      angleRad,
+      innerAngleRad,
+      gamma: input.gamma,
+      rebarRatio: input.rebarRatio,
+      youngRatio: input.youngRatio,
+    });
   }
 
-  const numerator =
-    angleRad / 4 -
-    Math.sin(angleRad) * Math.cos(angleRad) * (5 / 12 - (1 / 6) * Math.pow(Math.cos(angleRad), 2)) -
-    Math.pow(input.gamma, 4) *
-      (innerAngleRad / 4 -
-        Math.sin(innerAngleRad) *
-          Math.cos(innerAngleRad) *
-          (5 / 12 - (1 / 6) * Math.pow(Math.cos(innerAngleRad), 2))) +
-    ((Math.PI * input.youngRatio * input.rebarRatio) / 2) * Math.pow(input.alpha, 2);
-
-  const denominator =
-    (Math.sin(angleRad) / 3) * (2 + Math.pow(Math.cos(angleRad), 2)) -
-    angleRad * Math.cos(angleRad) -
-    Math.pow(input.gamma, 3) *
-      ((Math.sin(innerAngleRad) / 3) * (2 + Math.pow(Math.cos(innerAngleRad), 2)) -
-        innerAngleRad * Math.cos(innerAngleRad)) -
-    Math.PI * input.youngRatio * input.rebarRatio * Math.cos(angleRad);
-
-  return Math.abs(input.beta - numerator / denominator);
+  // 軸力がゼロでない場合は、軸力の影響を考慮した目的関数を評価する
+  return evaluateNonZeroAxialObjective({
+    angleRad,
+    innerAngleRad,
+    alpha: input.alpha,
+    gamma: input.gamma,
+    rebarRatio: input.rebarRatio,
+    beta: input.beta,
+    youngRatio: input.youngRatio,
+  });
 }
 
 /**
