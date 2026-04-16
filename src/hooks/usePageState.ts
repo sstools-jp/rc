@@ -5,23 +5,48 @@ import {
   type AnnularSectionResult,
   type AnnularSectionValidationIssue,
 } from "@/model/annular-section";
-import type { FormState } from "@/forms/form-state";
+import type {
+  SectionForce3FormState,
+  SectionForce6FormState,
+  GeometryFormState,
+  MaterialParamsFormState,
+  FormState,
+} from "@/forms/form-state";
 import { type SectionForceMode } from "@/components/SectionForceModeSelector";
 import { parseNumber } from "@/utils/number-format";
 
 /** フォームのデフォルト入力値 */
-const DEFAULT_FORM_STATE: FormState = {
+const DEFAULT_SECTION_FORCE3_FORM_STATE: SectionForce3FormState = {
   momentKNm: "",
   shearKN: "",
   axialKN: "",
+};
+const DEFAULT_SECTION_FORCE6_FORM_STATE: SectionForce6FormState = {
+  fxKN: "",
+  fyKN: "",
+  fzKN: "",
+  mxKNm: "",
+  myKNm: "",
+  mzKNm: "",
+};
+const DEFAULT_GEOMETRY_FORM_STATE: GeometryFormState = {
   outerRadiusMm: "",
   innerRadiusMm: "",
   rebarRadiusMm: "",
   rebarDiameterMm: "22",
   barCount: "",
+};
+const DEFAULT_MATERIAL_PARAMS_FORM_STATE: MaterialParamsFormState = {
   youngRatio: "15",
   rebarYieldStrengthNPerMm2: "345",
   concreteDesignStrengthNPerMm2: "30",
+};
+
+const DEFAULT_FORM_STATE: FormState = {
+  ...DEFAULT_SECTION_FORCE3_FORM_STATE,
+  ...DEFAULT_SECTION_FORCE6_FORM_STATE,
+  ...DEFAULT_GEOMETRY_FORM_STATE,
+  ...DEFAULT_MATERIAL_PARAMS_FORM_STATE,
 };
 
 /** 断面力タイプのデフォルト値 */
@@ -46,6 +71,12 @@ function isFormState(value: unknown): value is FormState {
     typeof candidate.momentKNm === "string" &&
     typeof candidate.shearKN === "string" &&
     typeof candidate.axialKN === "string" &&
+    typeof candidate.fxKN === "string" &&
+    typeof candidate.fyKN === "string" &&
+    typeof candidate.fzKN === "string" &&
+    typeof candidate.mxKNm === "string" &&
+    typeof candidate.myKNm === "string" &&
+    typeof candidate.mzKNm === "string" &&
     typeof candidate.outerRadiusMm === "string" &&
     typeof candidate.innerRadiusMm === "string" &&
     typeof candidate.rebarRadiusMm === "string" &&
@@ -55,6 +86,10 @@ function isFormState(value: unknown): value is FormState {
     typeof candidate.rebarYieldStrengthNPerMm2 === "string" &&
     typeof candidate.concreteDesignStrengthNPerMm2 === "string"
   );
+}
+
+function isSectionForceMode(value: unknown): value is SectionForceMode {
+  return value === "3" || value === "6";
 }
 
 /** ローカルストレージからページ状態を読み込む */
@@ -76,27 +111,25 @@ function loadPageState(): StoredPageState {
     }
 
     const parsedValue = JSON.parse(storedValue) as unknown;
+
+    if (typeof parsedValue === "object" && parsedValue !== null) {
+      const candidate = parsedValue as Record<string, unknown>;
+
+      if (isFormState(candidate.form)) {
+        return {
+          form: { ...DEFAULT_FORM_STATE, ...candidate.form },
+          sectionForceMode: isSectionForceMode(candidate.sectionForceMode)
+            ? candidate.sectionForceMode
+            : DEFAULT_SECTION_FORCE_MODE,
+        };
+      }
+    }
+
     if (isFormState(parsedValue)) {
       return {
         form: { ...DEFAULT_FORM_STATE, ...parsedValue },
         sectionForceMode: DEFAULT_SECTION_FORCE_MODE,
       };
-    }
-
-    if (typeof parsedValue === "object" && parsedValue !== null) {
-      const candidate = parsedValue as Record<string, unknown>;
-      const form = candidate.form;
-      const sectionForceMode = candidate.sectionForceMode;
-
-      if (isFormState(form)) {
-        return {
-          form: { ...DEFAULT_FORM_STATE, ...form },
-          sectionForceMode:
-            sectionForceMode === "3" || sectionForceMode === "6"
-              ? sectionForceMode
-              : DEFAULT_SECTION_FORCE_MODE,
-        };
-      }
     }
 
     return {
@@ -125,25 +158,44 @@ function savePageState(form: FormState, sectionForceMode: SectionForceMode): voi
 }
 
 /** フォームの状態から計算用の入力オブジェクトを構築する */
-function buildInput(form: FormState): AnnularSectionInput {
+function buildInput(form: FormState, sectionForceMode: SectionForceMode): AnnularSectionInput {
+  const force3: AnnularSectionInput["force3"] =
+    sectionForceMode === "3"
+      ? {
+          momentKNm: parseNumber(form.momentKNm),
+          shearKN: parseNumber(form.shearKN),
+          axialKN: parseNumber(form.axialKN),
+        }
+      : {
+          momentKNm: Math.sqrt(
+            parseNumber(form.mxKNm) ** 2 + parseNumber(form.myKNm) ** 2 + parseNumber(form.mzKNm) ** 2,
+          ),
+          shearKN: Math.sqrt(parseNumber(form.fyKN) ** 2 + parseNumber(form.fzKN) ** 2),
+          axialKN: parseNumber(form.fxKN),
+        };
+
   return {
-    momentKNm: parseNumber(form.momentKNm),
-    shearKN: parseNumber(form.shearKN),
-    axialKN: parseNumber(form.axialKN),
-    outerRadiusMm: parseNumber(form.outerRadiusMm),
-    innerRadiusMm: parseNumber(form.innerRadiusMm),
-    rebarRadiusMm: parseNumber(form.rebarRadiusMm),
-    rebarDiameterMm: parseNumber(form.rebarDiameterMm) as AnnularSectionInput["rebarDiameterMm"],
-    barCount: parseNumber(form.barCount),
-    youngRatio: parseNumber(form.youngRatio),
-    rebarYieldStrengthNPerMm2: parseNumber(form.rebarYieldStrengthNPerMm2),
-    concreteDesignStrengthNPerMm2: parseNumber(form.concreteDesignStrengthNPerMm2),
+    force3,
+    geometry: {
+      outerRadiusMm: parseNumber(form.outerRadiusMm),
+      innerRadiusMm: parseNumber(form.innerRadiusMm),
+      rebarRadiusMm: parseNumber(form.rebarRadiusMm),
+      rebarDiameterMm: parseNumber(
+        form.rebarDiameterMm,
+      ) as AnnularSectionInput["geometry"]["rebarDiameterMm"],
+      barCount: parseNumber(form.barCount),
+    },
+    materialParams: {
+      youngRatio: parseNumber(form.youngRatio),
+      rebarYieldStrengthNPerMm2: parseNumber(form.rebarYieldStrengthNPerMm2),
+      concreteDesignStrengthNPerMm2: parseNumber(form.concreteDesignStrengthNPerMm2),
+    },
   };
 }
 
 /** フォームの状態から計算結果を生成し、入力に問題がある場合は `null` を返す */
-function createResult(form: FormState): AnnularSectionResult | null {
-  const calculator = new AnnularSectionCalculator(buildInput(form));
+function createResult(form: FormState, sectionForceMode: SectionForceMode): AnnularSectionResult | null {
+  const calculator = new AnnularSectionCalculator(buildInput(form, sectionForceMode));
   const validationIssues = calculator.validate();
 
   if (validationIssues.length > 0) {
@@ -183,7 +235,7 @@ export function useAnnularSectionPageState(): UseAnnularSectionPageStateResult {
   const initialPageState = loadPageState();
   const [form, setForm] = useState<FormState>(initialPageState.form);
   const [result, setResult] = useState<AnnularSectionResult | null>(() =>
-    createResult(initialPageState.form),
+    createResult(initialPageState.form, initialPageState.sectionForceMode),
   );
   const [issues, setIssues] = useState<AnnularSectionValidationIssue[]>([]);
   const [statusMessage, setStatusMessage] = useState("入力を待機しています。");
@@ -199,7 +251,7 @@ export function useAnnularSectionPageState(): UseAnnularSectionPageStateResult {
   const handleSubmit: SubmitEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault();
 
-    const input = buildInput(form);
+    const input = buildInput(form, sectionForceMode);
     const calculator = new AnnularSectionCalculator(input);
     const validationIssues = calculator.validate();
 
@@ -218,7 +270,7 @@ export function useAnnularSectionPageState(): UseAnnularSectionPageStateResult {
       setStatusMessage("計算が完了しました。");
     } catch (error) {
       const message = error instanceof Error ? error.message : "計算に失敗しました。";
-      setIssues([{ field: "momentKNm", message }]);
+      setIssues([{ field: "force3", message }]);
       setResult(null);
       setIsPrintPreviewOpen(false);
       setStatusMessage(message);
@@ -227,7 +279,7 @@ export function useAnnularSectionPageState(): UseAnnularSectionPageStateResult {
 
   const handleReset = () => {
     setForm(DEFAULT_FORM_STATE);
-    setResult(createResult(DEFAULT_FORM_STATE));
+    setResult(createResult(DEFAULT_FORM_STATE, DEFAULT_SECTION_FORCE_MODE));
     setIssues([]);
     setStatusMessage("入力を待機しています。");
     setIsPrintPreviewOpen(false);
@@ -235,7 +287,7 @@ export function useAnnularSectionPageState(): UseAnnularSectionPageStateResult {
   };
 
   const updateField = (field: keyof FormState) => (value: string) => {
-    setForm((current) => ({ ...current, [field]: value }));
+    setForm((current: FormState) => ({ ...current, [field]: value }));
   };
 
   return {
