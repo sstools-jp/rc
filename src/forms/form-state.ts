@@ -35,7 +35,7 @@ export type GeometryFormState = {
   barCount: string;
 };
 
-export type MaterialPropertiesFormState = {
+export type MaterialParamsFormState = {
   /** 鉄筋降伏強度 [N/mm2] */
   rebarYieldStrengthNPerMm2: string;
   /** コンクリート設計基準強度 [N/mm2] */
@@ -47,4 +47,4 @@ export type MaterialPropertiesFormState = {
 export type FormState = SectionForce3FormState &
   SectionForce6FormState &
   GeometryFormState &
-  MaterialPropertiesFormState;
+  MaterialParamsFormState;
