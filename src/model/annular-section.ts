@@ -377,6 +377,33 @@ interface MomentStressEvaluation {
   rebarStressNPerMm2: number;
 }
 
+/** 曲げモーメントに対する応力度を算出する */
+function evaluateMomentStress(input: StrengthMomentSolverInput, momentKNm: number): MomentStressEvaluation {
+  const { force3, geometry, materialParams } = input;
+  const singleRebarAreaMm2 = getRebarAreaMm2(geometry.rebarDiameterMm);
+  const solver = solveNeutralAxisAngleDeg({
+    alpha: geometry.rebarRadiusMm / geometry.outerRadiusMm,
+    gamma: geometry.innerRadiusMm / geometry.outerRadiusMm,
+    rebarRatioPercent:
+      ((singleRebarAreaMm2 * geometry.barCount) / (Math.PI * Math.pow(geometry.outerRadiusMm, 2))) * 100,
+    axialKN: force3.axialKN,
+    momentKNm,
+    outerRadiusMm: geometry.outerRadiusMm,
+    rebarRadiusMm: geometry.rebarRadiusMm,
+    youngRatio: materialParams.youngRatio,
+  });
+
+  const combinedMomentKNmm = momentKNm * 1000 + force3.axialKN * geometry.outerRadiusMm;
+  const combinedMomentNmm = combinedMomentKNmm * 1000;
+  const scale = combinedMomentNmm / Math.pow(geometry.outerRadiusMm, 3);
+
+  return {
+    momentKNm,
+    concreteCompressionStressNPerMm2: scale * solver.concreteCompressionCoefficient,
+    rebarStressNPerMm2: scale * solver.steelStressCoefficient * materialParams.youngRatio,
+  };
+}
+
 /**
  * 中立軸角度を求めるソルバー関数
  */
@@ -696,41 +723,8 @@ function solveMomentForTargetStressKNm(
   stressSelector: (state: MomentStressState) => number,
   solverName: string,
 ): number {
-  const { force3, geometry, materialParams } = input;
-
   // 曲げモーメントに対して、コンクリート圧縮応力度と鉄筋応力度を計算
-  const evaluate = (momentKNm: number): MomentStressEvaluation => {
-    const singleRebarAreaMm2 = getRebarAreaMm2(geometry.rebarDiameterMm);
-    const solver = solveNeutralAxisAngleDeg({
-      alpha: geometry.rebarRadiusMm / geometry.outerRadiusMm,
-      gamma: geometry.innerRadiusMm / geometry.outerRadiusMm,
-      rebarRatioPercent:
-        ((singleRebarAreaMm2 * geometry.barCount) / (Math.PI * Math.pow(geometry.outerRadiusMm, 2))) * 100,
-      axialKN: force3.axialKN,
-      momentKNm,
-      outerRadiusMm: geometry.outerRadiusMm,
-      rebarRadiusMm: geometry.rebarRadiusMm,
-      youngRatio: materialParams.youngRatio,
-    });
-
-    // 換算曲げモーメントを計算
-    const combinedMomentKNmm = momentKNm * 1000 + force3.axialKN * geometry.outerRadiusMm;
-    const combinedMomentNmm = combinedMomentKNmm * 1000;
-    const state: MomentStressState = {
-      concreteCompressionStressNPerMm2:
-        (combinedMomentNmm / Math.pow(geometry.outerRadiusMm, 3)) * solver.concreteCompressionCoefficient,
-      rebarStressNPerMm2:
-        (combinedMomentNmm / Math.pow(geometry.outerRadiusMm, 3)) *
-        solver.steelStressCoefficient *
-        materialParams.youngRatio,
-    };
-
-    return {
-      momentKNm,
-      concreteCompressionStressNPerMm2: state.concreteCompressionStressNPerMm2,
-      rebarStressNPerMm2: state.rebarStressNPerMm2,
-    };
-  };
+  const evaluate = (momentKNm: number): MomentStressEvaluation => evaluateMomentStress(input, momentKNm);
 
   // 初期の下限と上限を設定して、二分探索で目標応力度に到達する曲げモーメントを求める
   const lowerMomentKNm = 0;
@@ -747,7 +741,7 @@ function solveMomentForTargetStressKNm(
 
   // 上限の曲げモーメントを設定して評価する
   // 目標応力度に到達するまで、上限を倍増させて探索する
-  let upperMomentKNm = Math.max(1, (targetStressNPerMm2 * Math.pow(geometry.outerRadiusMm, 3)) / 1000);
+  let upperMomentKNm = Math.max(1, (targetStressNPerMm2 * Math.pow(input.geometry.outerRadiusMm, 3)) / 1000);
   let upperEvaluation = evaluate(upperMomentKNm);
   let upperStress = stressSelector({
     concreteCompressionStressNPerMm2: upperEvaluation.concreteCompressionStressNPerMm2,
