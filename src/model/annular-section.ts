@@ -1,9 +1,9 @@
 export const REBAR_DIAMETERS_MM = [6, 8, 10, 13, 16, 19, 22, 25, 29, 32, 35, 38, 41, 51] as const;
 
-// 鉄筋径を表す型
+/** 鉄筋径を表す型 */
 export type RebarDiameterMm = (typeof REBAR_DIAMETERS_MM)[number];
 
-// 鉄筋径に対応する断面積[mm2]を定義
+/** 鉄筋径に対応する断面積[mm2]を定義 */
 export const REBAR_AREAS_MM2: Readonly<Record<RebarDiameterMm, number>> = {
   6: 31.67,
   8: 49.51,
@@ -21,7 +21,7 @@ export const REBAR_AREAS_MM2: Readonly<Record<RebarDiameterMm, number>> = {
   51: 2027,
 };
 
-// 軸力の符号を表す型
+/** 軸力の符号を表す型 */
 export type AxialForceSign = "compression" | "tension" | "zero";
 
 // 入力データの型定義
@@ -40,14 +40,13 @@ export interface AnnularSectionInput {
   concreteDesignStrengthNPerMm2: number; // コンクリート設計基準強度 [N/mm2]
 }
 
-// 検算結果の型定義
+/** 検算結果の型定義 */
 export interface AnnularSectionValidationIssue {
   field: keyof AnnularSectionInput;
   message: string;
 }
 
-// 計算結果の型定義
-// prettier-ignore
+/** 計算結果の型定義 */
 export interface AnnularSectionResult {
   sectionAreaMm2:                   number;   // 断面積 [mm2]
   fullSectionAreaMm2:               number;   // 全断面積 [mm2]
@@ -74,15 +73,15 @@ export interface AnnularSectionResult {
   rebarYieldMomentKNm:              number;   // 鉄筋降伏曲げモーメント [kN.m]
 }
 
-// 数値計算用の極小値（ゼロ判定用）
+/** 数値計算用の極小値（ゼロ判定用） */
 const EPSILON = 1e-9;
 
-// ラジアン変換のヘルパー
+/** ラジアン変換のヘルパー */
 function degToRad(deg: number): number {
   return deg * (Math.PI / 180);
 }
 
-// 角度変換のヘルパー
+/** 角度変換のヘルパー */
 function radToDeg(rad: number): number {
   return rad * (180 / Math.PI);
 }
@@ -97,7 +96,7 @@ export class AnnularSectionCalculator {
     this.input = input;
   }
 
-  // 入力値の検査
+  /** 入力値の検査 */
   validate(): AnnularSectionValidationIssue[] {
     const issues: AnnularSectionValidationIssue[] = [];
     const {
@@ -126,6 +125,8 @@ export class AnnularSectionCalculator {
       const message = "軸力は数値で指定してください。";
       issues.push({ field: "axialKN", message });
     }
+
+    // 断面形状のバリデーション
     if (!Number.isFinite(outerRadiusMm) || outerRadiusMm <= 0) {
       const message = "半径（外）は正の数で指定してください。";
       issues.push({ field: "outerRadiusMm", message });
@@ -142,6 +143,8 @@ export class AnnularSectionCalculator {
       const message = "本数は正の数で指定してください。";
       issues.push({ field: "barCount", message });
     }
+
+    // 諸係数のバリデーション
     if (!Number.isFinite(youngRatio) || youngRatio <= 0) {
       const message = "ヤング係数比は正の数で指定してください。";
       issues.push({ field: "youngRatio", message });
@@ -155,12 +158,14 @@ export class AnnularSectionCalculator {
       issues.push({ field: "concreteDesignStrengthNPerMm2", message });
     }
 
+    // 鉄筋径のバリデーション
     const validDiameters = new Set<number>(REBAR_DIAMETERS_MM);
     if (!validDiameters.has(rebarDiameterMm)) {
       const message = "鉄筋径は D6 から D51 の範囲で指定してください。";
       issues.push({ field: "rebarDiameterMm", message });
     }
 
+    // 半径のバリデーション
     if (Number.isFinite(outerRadiusMm) && Number.isFinite(innerRadiusMm) && innerRadiusMm > outerRadiusMm) {
       const message = "半径（内）は半径（外）以下で指定してください。";
       issues.push({ field: "innerRadiusMm", message });
@@ -179,9 +184,7 @@ export class AnnularSectionCalculator {
     return issues;
   }
 
-  /**
-   * 計算処理
-   */
+  /** 計算処理 */
   calculate(): AnnularSectionResult {
     const issues = this.validate();
     if (issues.length > 0) {
@@ -308,6 +311,7 @@ interface NeutralAxisSolverResult {
   shearCoefficient: number;
 }
 
+/** 強度計算に必要な入力パラメータ */
 interface StrengthMomentSolverInput {
   momentKNm: number;
   axialKN: number;

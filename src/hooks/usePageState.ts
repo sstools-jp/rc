@@ -35,7 +35,7 @@ type StoredPageState = {
   sectionForceMode: SectionForceMode;
 };
 
-/** ローカルストレージからフォームの状態を読み込むための型ガード */
+/** フォーム状態の型ガード */
 function isFormState(value: unknown): value is FormState {
   if (typeof value !== "object" || value === null) {
     return false;
