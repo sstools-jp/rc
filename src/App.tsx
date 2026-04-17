@@ -69,6 +69,7 @@ function App() {
       <PrintPreviewModal
         open={isPrintPreviewOpen}
         form={committedForm}
+        sectionForceMode={sectionForceMode}
         result={result}
         onClose={closePrintPreview}
       />

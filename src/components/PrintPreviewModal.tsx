@@ -4,6 +4,7 @@ import type { AnnularSectionResult } from "@/model/annular-section";
 import type { FormState } from "@/forms/form-state";
 import { AppButton } from "@/components/AppButton";
 import { SymbolText } from "@/components/SymbolText";
+import { type SectionForceMode } from "@/components/SectionForceModeSelector";
 import { formatNumber, parseNumber } from "@/utils/number-format";
 
 type PrintPreviewModalProps = {
@@ -11,6 +12,8 @@ type PrintPreviewModalProps = {
   open: boolean;
   /** フォームの状態 */
   form: FormState;
+  /** 断面力モード */
+  sectionForceMode: SectionForceMode;
   /** 計算結果 */
   result: AnnularSectionResult | null;
   /** モーダルを閉じるためのハンドラ */
@@ -42,9 +45,7 @@ type PreviewTableProps = {
   includeSectionLabel: boolean;
 };
 
-/**
- * 項目と値のテーブルを表示するコンポーネント
- */
+/** 項目と値のテーブルを表示するコンポーネント */
 function PreviewTable({ title, sections, valueHeader, includeSectionLabel }: PreviewTableProps) {
   return (
     <section>
@@ -99,33 +100,76 @@ function PreviewTable({ title, sections, valueHeader, includeSectionLabel }: Pre
   );
 }
 
-/**
- * フォームの入力値から印刷用のセクションデータを構築する関数
- */
-function buildInputPreviewSections(form: FormState): PrintPreviewSection[] {
+/** フォームの入力値から印刷用のセクションデータを構築する関数 */
+function buildInputPreviewSections(
+  form: FormState,
+  sectionForceMode: SectionForceMode,
+): PrintPreviewSection[] {
+  const forceRows =
+    sectionForceMode === "3"
+      ? [
+          {
+            label: "曲げモーメント",
+            symbol: "M",
+            unit: "kN.m",
+            value: formatNumber(parseNumber(form.my_KNm), 2),
+          },
+          {
+            label: "せん断力",
+            symbol: "S",
+            unit: "kN",
+            value: formatNumber(parseNumber(form.fz_KN), 2),
+          },
+          {
+            label: "軸力（引張を正）",
+            symbol: "N",
+            unit: "kN",
+            value: formatNumber(parseNumber(form.fx_KN), 2),
+          },
+        ]
+      : [
+          {
+            label: "軸力",
+            symbol: "Fx",
+            unit: "kN",
+            value: formatNumber(parseNumber(form.fx_KN), 2),
+          },
+          {
+            label: "せん断力（面外）",
+            symbol: "Fy",
+            unit: "kN",
+            value: formatNumber(parseNumber(form.fy_KN), 2),
+          },
+          {
+            label: "せん断力（面内）",
+            symbol: "Fz",
+            unit: "kN",
+            value: formatNumber(parseNumber(form.fz_KN), 2),
+          },
+          {
+            label: "ねじりモーメント",
+            symbol: "Mx",
+            unit: "kN.m",
+            value: formatNumber(parseNumber(form.mx_KNm), 2),
+          },
+          {
+            label: "曲げモーメント（面内）",
+            symbol: "My",
+            unit: "kN.m",
+            value: formatNumber(parseNumber(form.my_KNm), 2),
+          },
+          {
+            label: "曲げモーメント（面外）",
+            symbol: "Mz",
+            unit: "kN.m",
+            value: formatNumber(parseNumber(form.mz_KNm), 2),
+          },
+        ];
+
   return [
     {
       title: "断面力",
-      rows: [
-        {
-          label: "曲げモーメント",
-          symbol: "M",
-          unit: "kN.m",
-          value: formatNumber(parseNumber(form.my_KNm), 2),
-        },
-        {
-          label: "せん断力",
-          symbol: "S",
-          unit: "kN",
-          value: formatNumber(parseNumber(form.fz_KN), 2),
-        },
-        {
-          label: "軸力（引張を正）",
-          symbol: "N",
-          unit: "kN",
-          value: formatNumber(parseNumber(form.fx_KN), 2),
-        },
-      ],
+      rows: forceRows,
     },
     {
       title: "寸法",
@@ -407,13 +451,11 @@ async function printElementContent(sourceElement: HTMLElement): Promise<void> {
   iframe.remove();
 }
 
-/**
- * 印刷プレビュー用モーダルを表示するコンポーネント
- */
-export function PrintPreviewModal({ open, form, result, onClose }: PrintPreviewModalProps) {
+/** 印刷プレビュー用モーダルを表示するコンポーネント */
+export function PrintPreviewModal({ open, form, sectionForceMode, result, onClose }: PrintPreviewModalProps) {
   const [copyError, setCopyError] = useState<string | null>(null);
   const printContentRef = useRef<HTMLDivElement | null>(null);
-  const inputSections = buildInputPreviewSections(form);
+  const inputSections = buildInputPreviewSections(form, sectionForceMode);
   const resultSections = buildResultPreviewSections(result);
   const canCopy = result !== null;
 
