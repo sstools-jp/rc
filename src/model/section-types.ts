@@ -1,12 +1,10 @@
 import type { RebarDiameterMm } from "@/model/rebar";
-import type { SectionForce3, SectionForce6 } from "@/model/section-force";
+import type { SectionForce } from "@/model/section-force";
 
 /** 円環断面の入力全体を表す型定義 */
 export interface AnnularSectionInput {
-  /** 3断面力 */
-  force3?: SectionForce3;
-  /** 6断面力 */
-  force6?: SectionForce6;
+  /** 断面力 */
+  force: SectionForce;
   /** 断面形状 */
   geometry: AnnularSectionGeometryInput;
   /** 諸係数 */

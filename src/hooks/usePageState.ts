@@ -6,8 +6,7 @@ import {
   type AnnularSectionValidationIssue,
 } from "@/model/annular-section";
 import type {
-  SectionForce3FormState,
-  SectionForce6FormState,
+  SectionForceFormState,
   GeometryFormState,
   MaterialParamsFormState,
   FormState,
@@ -16,13 +15,8 @@ import type { AnnularSectionInput } from "@/model/section-types";
 import { type SectionForceMode } from "@/components/SectionForceModeSelector";
 import { parseNumber } from "@/utils/number-format";
 
-/** フォームのデフォルト入力値 */
-const DEFAULT_SECTION_FORCE3_FORM_STATE: SectionForce3FormState = {
-  momentKNm: "",
-  shearKN: "",
-  axialKN: "",
-};
-const DEFAULT_SECTION_FORCE6_FORM_STATE: SectionForce6FormState = {
+/** 断面力のデフォルト入力値 */
+const DEFAULT_SECTION_FORCE_FORM_STATE: SectionForceFormState = {
   fxKN: "",
   fyKN: "",
   fzKN: "",
@@ -30,6 +24,8 @@ const DEFAULT_SECTION_FORCE6_FORM_STATE: SectionForce6FormState = {
   myKNm: "",
   mzKNm: "",
 };
+
+/** 断面形状のデフォルト入力値 */
 const DEFAULT_GEOMETRY_FORM_STATE: GeometryFormState = {
   outerRadiusMm: "",
   innerRadiusMm: "",
@@ -37,15 +33,17 @@ const DEFAULT_GEOMETRY_FORM_STATE: GeometryFormState = {
   rebarDiameterMm: "22",
   barCount: "",
 };
+
+/** 諸係数のデフォルト入力値  */
 const DEFAULT_MATERIAL_PARAMS_FORM_STATE: MaterialParamsFormState = {
   youngRatio: "15",
   rebarYieldStrengthNPerMm2: "345",
   concreteDesignStrengthNPerMm2: "30",
 };
 
+/** フォームのデフォルト入力値 */
 const DEFAULT_FORM_STATE: FormState = {
-  ...DEFAULT_SECTION_FORCE3_FORM_STATE,
-  ...DEFAULT_SECTION_FORCE6_FORM_STATE,
+  ...DEFAULT_SECTION_FORCE_FORM_STATE,
   ...DEFAULT_GEOMETRY_FORM_STATE,
   ...DEFAULT_MATERIAL_PARAMS_FORM_STATE,
 };
@@ -160,23 +158,27 @@ function savePageState(form: FormState, sectionForceMode: SectionForceMode): voi
 
 /** フォームの状態から計算用の入力オブジェクトを構築する */
 function buildInput(form: FormState, sectionForceMode: SectionForceMode): AnnularSectionInput {
-  const force3: AnnularSectionInput["force3"] =
+  const force: AnnularSectionInput["force"] =
     sectionForceMode === "3"
       ? {
-          momentKNm: parseNumber(form.momentKNm),
-          shearKN: parseNumber(form.shearKN),
-          axialKN: parseNumber(form.axialKN),
+          fxKN: parseNumber(form.fxKN),
+          fyKN: 0,
+          fzKN: parseNumber(form.fzKN),
+          mxKNm: 0,
+          myKNm: parseNumber(form.myKNm),
+          mzKNm: 0,
         }
       : {
-          momentKNm: Math.sqrt(
-            parseNumber(form.mxKNm) ** 2 + parseNumber(form.myKNm) ** 2 + parseNumber(form.mzKNm) ** 2,
-          ),
-          shearKN: Math.sqrt(parseNumber(form.fyKN) ** 2 + parseNumber(form.fzKN) ** 2),
-          axialKN: parseNumber(form.fxKN),
+          fxKN: parseNumber(form.fxKN),
+          fyKN: parseNumber(form.fyKN),
+          fzKN: parseNumber(form.fzKN),
+          mxKNm: parseNumber(form.mxKNm),
+          myKNm: parseNumber(form.myKNm),
+          mzKNm: parseNumber(form.mzKNm),
         };
 
   return {
-    force3,
+    force,
     geometry: AnnularSectionGeometry.fromInput({
       outerRadiusMm: parseNumber(form.outerRadiusMm),
       innerRadiusMm: parseNumber(form.innerRadiusMm),
@@ -271,7 +273,7 @@ export function useAnnularSectionPageState(): UseAnnularSectionPageStateResult {
       setStatusMessage("計算が完了しました。");
     } catch (error) {
       const message = error instanceof Error ? error.message : "計算に失敗しました。";
-      setIssues([{ field: "force3", message }]);
+      setIssues([{ field: "force", message }]);
       setResult(null);
       setIsPrintPreviewOpen(false);
       setStatusMessage(message);

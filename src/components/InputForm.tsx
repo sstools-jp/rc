@@ -63,13 +63,13 @@ export function AnnularSectionInputFormPanel({
             {sectionForceMode === "3" && (
               <tbody className="text-md">
                 <FieldRow label="曲げモーメント" symbol="M" unit="kN.m">
-                  <FieldInput value={form.momentKNm} onChange={onChangeField("momentKNm")} />
+                  <FieldInput value={form.myKNm} onChange={onChangeField("myKNm")} />
                 </FieldRow>
                 <FieldRow label="せん断力" symbol="S" unit="kN">
-                  <FieldInput value={form.shearKN} onChange={onChangeField("shearKN")} />
+                  <FieldInput value={form.fzKN} onChange={onChangeField("fzKN")} />
                 </FieldRow>
-                <FieldRow label="軸力（圧縮を正）" symbol="N" unit="kN">
-                  <FieldInput value={form.axialKN} onChange={onChangeField("axialKN")} />
+                <FieldRow label="軸力（引張を正）" symbol="N" unit="kN">
+                  <FieldInput value={form.fxKN} onChange={onChangeField("fxKN")} />
                 </FieldRow>
               </tbody>
             )}

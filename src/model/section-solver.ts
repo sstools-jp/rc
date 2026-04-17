@@ -1,6 +1,6 @@
 import type { AnnularSectionGeometry } from "@/model/annular-section";
+import { resolveSectionForceComponents, type SectionForce } from "@/model/section-force";
 import type { MaterialParams } from "@/model/section-types";
-import type { SectionForce3 } from "@/model/section-force";
 
 /** 中立軸ソルバーの入力 */
 export interface NeutralAxisSolverInput {
@@ -28,8 +28,8 @@ export interface NeutralAxisSolverResult {
 
 /** 強度計算に必要な入力パラメータ */
 export interface StrengthMomentSolverInput {
-  /** 3断面力 */
-  force3: SectionForce3;
+  /** 断面力 */
+  force: SectionForce;
   /** 円環断面形状 */
   geometry: AnnularSectionGeometry;
   /** 諸係数 */
@@ -136,16 +136,17 @@ export function calculateConcreteUltimateMomentKNm(input: StrengthMomentSolverIn
 
 /** 曲げモーメントに対する応力度を算出する */
 function evaluateMomentStress(input: StrengthMomentSolverInput, momentKNm: number): MomentStressEvaluation {
-  const { force3, geometry, materialParams } = input;
+  const { force, geometry, materialParams } = input;
+  const resolvedForce = resolveSectionForceComponents(force, geometry.rebarRadiusMm);
   const solver = solveNeutralAxisAngleDeg({
     geometry,
     materialParams,
-    axialKN: force3.axialKN,
+    axialKN: resolvedForce.axialKN,
     momentKNm,
   });
 
   // 曲げモーメントを N.mm に変換
-  const combinedMomentKNmm = momentKNm * 1000 + force3.axialKN * geometry.outerRadiusMm;
+  const combinedMomentKNmm = momentKNm * 1000 + resolvedForce.axialKN * geometry.outerRadiusMm;
   const combinedMomentNmm = combinedMomentKNmm * 1000;
 
   // 応力度を計算

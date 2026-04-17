@@ -1,6 +1,11 @@
 import { REBAR_DIAMETERS_MM, getRebarAreaMm2 } from "@/model/rebar";
 import type { RebarDiameterMm } from "@/model/rebar";
-import type { AxialForceSign, SectionForce3 } from "@/model/section-force";
+import {
+  resolveSectionForceComponents,
+  type AxialForceSign,
+  type SectionForce,
+  type SectionForceComponents,
+} from "@/model/section-force";
 import type { AnnularSectionGeometryInput, AnnularSectionInput, MaterialParams } from "@/model/section-types";
 import {
   calculateConcreteUltimateMomentKNm,
@@ -134,19 +139,28 @@ export interface AnnularSectionResult {
   rebarYieldMomentKNm: number;
 }
 
-/** 3断面力の入力値を検査する */
-function validateSectionForce3(
-  force3: SectionForce3 | undefined,
+/** 断面力の入力値を検査する */
+function validateSectionForce(
+  force: SectionForce | undefined,
   issues: AnnularSectionValidationIssue[],
 ): void {
-  if (!Number.isFinite(force3?.momentKNm)) {
-    issues.push({ field: "force3", message: "モーメントは数値で指定してください。" });
+  if (!Number.isFinite(force?.fxKN)) {
+    issues.push({ field: "force", message: "軸力は数値で指定してください。" });
   }
-  if (!Number.isFinite(force3?.shearKN)) {
-    issues.push({ field: "force3", message: "せん断力は数値で指定してください。" });
+  if (!Number.isFinite(force?.fyKN)) {
+    issues.push({ field: "force", message: "せん断力（面外）は数値で指定してください。" });
   }
-  if (!Number.isFinite(force3?.axialKN)) {
-    issues.push({ field: "force3", message: "軸力は数値で指定してください。" });
+  if (!Number.isFinite(force?.fzKN)) {
+    issues.push({ field: "force", message: "せん断力（面内）は数値で指定してください。" });
+  }
+  if (!Number.isFinite(force?.mxKNm)) {
+    issues.push({ field: "force", message: "ねじりモーメントは数値で指定してください。" });
+  }
+  if (!Number.isFinite(force?.myKNm)) {
+    issues.push({ field: "force", message: "曲げモーメント（面内）は数値で指定してください。" });
+  }
+  if (!Number.isFinite(force?.mzKNm)) {
+    issues.push({ field: "force", message: "曲げモーメント（面外）は数値で指定してください。" });
   }
 }
 
@@ -204,28 +218,18 @@ function validateMaterialParams(
   }
 }
 
-/** 入力から計算用の3断面力を返す */
-function resolveSectionForce3(input: AnnularSectionInput): SectionForce3 {
-  // 3断面力が入力されている場合はそのまま返す
-  if (input.force3) {
-    return input.force3;
-  }
-
-  // 6断面力が入力されている場合
-  const { force6 } = input;
-
-  if (!force6) {
+/** 入力から計算用の3成分へ要約する */
+function resolveSectionForceSummary(input: AnnularSectionInput): SectionForceComponents {
+  if (!input.force) {
     throw new Error("断面力が指定されていません。");
   }
 
-  // ねじりモーメントにアーム長（鉄筋半径）を乗じて換算せん断力を算出
-  const { rebarRadiusMm } = input.geometry;
-  const mxShearKN = (force6.mxKNm * 1000) / rebarRadiusMm;
+  const components = resolveSectionForceComponents(input.force, input.geometry.rebarRadiusMm);
 
   return {
-    momentKNm: Math.sqrt(force6.myKNm ** 2 + force6.mzKNm ** 2),
-    shearKN: Math.sqrt(force6.fyKN ** 2 + force6.fzKN ** 2) + mxShearKN,
-    axialKN: force6.fxKN,
+    momentKNm: components.momentKNm,
+    shearKN: components.shearKN,
+    axialKN: components.axialKN,
   };
 }
 
@@ -245,9 +249,9 @@ export class AnnularSectionCalculator {
   /** 入力値の検査 */
   validate(): AnnularSectionValidationIssue[] {
     const issues: AnnularSectionValidationIssue[] = [];
-    const { force3, geometry, materialParams } = this.input;
+    const { force, geometry, materialParams } = this.input;
 
-    validateSectionForce3(force3, issues);
+    validateSectionForce(force, issues);
 
     validateGeometry(geometry, issues);
     validateMaterialParams(materialParams, issues);
@@ -290,7 +294,7 @@ export class AnnularSectionCalculator {
       alpha: context.geometry.alpha,
       gamma: context.geometry.gamma,
       combinedMomentKNm: context.combinedMomentKNm,
-      axialForceSign: classifyAxialForce(context.axialKN),
+      axialForceSign: classifyAxialForce(context.force.fxKN),
       youngRatio: context.materialParams.youngRatio,
       // 中立軸
       neutralAxisAngleDeg: solver.neutralAxisAngleDeg,
@@ -316,8 +320,10 @@ interface SectionCalculationContext {
   geometry: AnnularSectionGeometry;
   /** 諸係数 */
   materialParams: MaterialParams;
-  /** 3断面力 */
-  force3: SectionForce3;
+  /** 断面力 */
+  force: SectionForce;
+  /** 3成分へ要約した断面力 */
+  forceComponents: SectionForceComponents;
   /** モーメント [kN.m] */
   momentKNm: number;
   shearKN: number;
@@ -347,16 +353,22 @@ interface SectionStrengthState {
 /** 計算に必要な入力と荷重状態をまとめる */
 function createCalculationContext(input: AnnularSectionInput): SectionCalculationContext {
   const geometry = AnnularSectionGeometry.fromInput(input.geometry);
-  const force3 = resolveSectionForce3(input);
-  const momentKNm = force3.momentKNm;
-  const shearKN = force3.shearKN;
-  const axialKN = force3.axialKN;
+  if (!input.force) {
+    throw new Error("断面力が指定されていません。");
+  }
+
+  const force = input.force;
+  const forceComponents = resolveSectionForceSummary(input);
+  const momentKNm = forceComponents.momentKNm;
+  const shearKN = forceComponents.shearKN;
+  const axialKN = forceComponents.axialKN;
   const combinedMomentKNmm = momentKNm * 1000 + axialKN * geometry.outerRadiusMm;
 
   return {
     geometry,
     materialParams: input.materialParams,
-    force3,
+    force,
+    forceComponents,
     momentKNm,
     shearKN,
     axialKN,
@@ -400,11 +412,7 @@ function calculateStressState(
 /** 耐力の状態を算出する */
 function calculateStrengthState(context: SectionCalculationContext): SectionStrengthState {
   const solverInput: StrengthMomentSolverInput = {
-    force3: {
-      momentKNm: context.momentKNm,
-      shearKN: context.shearKN,
-      axialKN: context.axialKN,
-    },
+    force: context.force,
     geometry: context.geometry,
     materialParams: context.materialParams,
   };
@@ -420,10 +428,10 @@ function calculateStrengthState(context: SectionCalculationContext): SectionStre
  */
 function classifyAxialForce(axialKN: number): AxialForceSign {
   if (axialKN > EPSILON) {
-    return "compression";
+    return "tension";
   }
   if (axialKN < -EPSILON) {
-    return "tension";
+    return "compression";
   }
   return "zero";
 }

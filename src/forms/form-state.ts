@@ -1,13 +1,5 @@
-export type SectionForce3FormState = {
-  /** 曲げモーメント [kN.m] */
-  momentKNm: string;
-  /** せん断力 [kN] */
-  shearKN: string;
-  /** 軸力（圧縮力） [kN] */
-  axialKN: string;
-};
-
-export type SectionForce6FormState = {
+/** 断面力のフォーム状態の型定義 */
+export type SectionForceFormState = {
   /** 軸力 [kN] */
   fxKN: string;
   /** せん断力（面外） [kN] */
@@ -22,6 +14,7 @@ export type SectionForce6FormState = {
   mzKNm: string;
 };
 
+/** 断面形状のフォーム状態の型定義 */
 export type GeometryFormState = {
   /** 外径 [mm] */
   outerRadiusMm: string;
@@ -35,6 +28,7 @@ export type GeometryFormState = {
   barCount: string;
 };
 
+/** 諸係数のフォーム状態の型定義 */
 export type MaterialParamsFormState = {
   /** 鉄筋降伏強度 [N/mm2] */
   rebarYieldStrengthNPerMm2: string;
@@ -44,7 +38,5 @@ export type MaterialParamsFormState = {
   youngRatio: string;
 };
 
-export type FormState = SectionForce3FormState &
-  SectionForce6FormState &
-  GeometryFormState &
-  MaterialParamsFormState;
+/** フォームの状態を表す型定義 */
+export type FormState = SectionForceFormState & GeometryFormState & MaterialParamsFormState;
