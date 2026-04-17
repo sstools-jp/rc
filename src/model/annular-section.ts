@@ -279,25 +279,31 @@ export class AnnularSectionCalculator {
     const strengthState = calculateStrengthState(context);
 
     return {
+      // 断面形状
       sectionAreaMm2: context.geometry.sectionAreaMm2,
       fullSectionAreaMm2: context.geometry.fullSectionAreaMm2,
       innerSectionAreaMm2: context.geometry.innerSectionAreaMm2,
       rebarAreaPerBarMm2: context.geometry.rebarAreaPerBarMm2,
       totalRebarAreaMm2: context.geometry.totalRebarAreaMm2,
       rebarRatioPercent: context.geometry.rebarRatioPercent,
+      // 係数
       alpha: context.geometry.alpha,
       gamma: context.geometry.gamma,
       combinedMomentKNm: context.combinedMomentKNm,
       axialForceSign: classifyAxialForce(context.axialKN),
       youngRatio: context.materialParams.youngRatio,
+      // 中立軸
       neutralAxisAngleDeg: solver.neutralAxisAngleDeg,
       neutralAxisPositionMm,
+      // 応力度係数
       concreteCompressionCoefficient: solver.concreteCompressionCoefficient,
       steelStressCoefficient: solver.steelStressCoefficient,
       shearCoefficient: solver.shearCoefficient,
+      // 発生応力度
       concreteCompressionStressNPerMm2: stressState.concreteCompressionStressNPerMm2,
       rebarStressNPerMm2: stressState.rebarStressNPerMm2,
       concreteShearStressNPerMm2: stressState.concreteShearStressNPerMm2,
+      // 終局耐力
       concreteUltimateMomentKNm: strengthState.concreteUltimateMomentKNm,
       rebarYieldMomentKNm: strengthState.rebarYieldMomentKNm,
     };
