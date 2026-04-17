@@ -20,13 +20,13 @@ const REBAR_DATA = [
 export const REBAR_DIAMETERS_MM = REBAR_DATA.map((rebar) => rebar.d);
 
 /** 鉄筋径を表す型 */
-export type RebarDiameterMm = (typeof REBAR_DATA)[number]["d"];
+export type RebarDiameter_Mm = (typeof REBAR_DATA)[number]["d"];
 
 /** 鉄筋径から断面積を取得する関数 */
-export function getRebarAreaMm2(diameterMm: RebarDiameterMm): number {
-  const rebar = REBAR_DATA.find((r) => r.d === diameterMm);
+export function getRebarAreaMm2(diameter_Mm: RebarDiameter_Mm): number {
+  const rebar = REBAR_DATA.find((r) => r.d === diameter_Mm);
   if (!rebar) {
-    throw new Error(`鉄筋径 ${diameterMm} mm の断面積データが見つかりません。`);
+    throw new Error(`鉄筋径 ${diameter_Mm} mm の断面積データが見つかりません。`);
   }
   return rebar.area_Mm2;
 }

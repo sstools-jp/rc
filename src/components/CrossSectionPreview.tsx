@@ -26,45 +26,45 @@ type CrossSectionPreviewProps = {
  */
 export function CrossSectionPreview({ form, result }: CrossSectionPreviewProps) {
   // 寸法を取得
-  const outerRadiusMm = parseNumber(form.outerRadiusMm);
-  const innerRadiusMm = parseNumber(form.innerRadiusMm);
-  const rebarRadiusMm = parseNumber(form.rebarRadiusMm);
-  const rebarDiameterMm = parseNumber(form.rebarDiameterMm);
+  const outerRadius_Mm = parseNumber(form.outerRadius_Mm);
+  const innerRadius_Mm = parseNumber(form.innerRadius_Mm);
+  const rebarRadius_Mm = parseNumber(form.rebarRadius_Mm);
+  const rebarDiameter_Mm = parseNumber(form.rebarDiameter_Mm);
   const barCount = Math.max(0, Math.round(parseNumber(form.barCount)));
 
   // ジオメトリが有効かどうかを判定
   const geometryIsValid =
-    Number.isFinite(outerRadiusMm) &&
-    outerRadiusMm > 0 &&
-    Number.isFinite(innerRadiusMm) &&
-    innerRadiusMm >= 0 &&
-    innerRadiusMm <= outerRadiusMm &&
-    Number.isFinite(rebarRadiusMm) &&
-    rebarRadiusMm >= innerRadiusMm &&
-    rebarRadiusMm <= outerRadiusMm;
+    Number.isFinite(outerRadius_Mm) &&
+    outerRadius_Mm > 0 &&
+    Number.isFinite(innerRadius_Mm) &&
+    innerRadius_Mm >= 0 &&
+    innerRadius_Mm <= outerRadius_Mm &&
+    Number.isFinite(rebarRadius_Mm) &&
+    rebarRadius_Mm >= innerRadius_Mm &&
+    rebarRadius_Mm <= outerRadius_Mm;
 
   // 表示用の基本半径
   const baseOuterRadius = 200;
 
   // 表示用の寸法を計算（外径半径は固定し、入力寸法を倍率変換する）
-  const displayOuterRadiusMm = Number.isFinite(outerRadiusMm) && outerRadiusMm > 0 ? outerRadiusMm : 100;
-  const displayScale = baseOuterRadius / displayOuterRadiusMm;
+  const displayOuterRadius_Mm = Number.isFinite(outerRadius_Mm) && outerRadius_Mm > 0 ? outerRadius_Mm : 100;
+  const displayScale = baseOuterRadius / displayOuterRadius_Mm;
   const displayOuterRadius = baseOuterRadius;
   const displayInnerRadius =
-    Number.isFinite(innerRadiusMm) && innerRadiusMm >= 0 ? innerRadiusMm * displayScale : 0;
+    Number.isFinite(innerRadius_Mm) && innerRadius_Mm >= 0 ? innerRadius_Mm * displayScale : 0;
   const displayRebarRadius =
-    Number.isFinite(rebarRadiusMm) && rebarRadiusMm >= 0 ? rebarRadiusMm * displayScale : 0;
-  const displayRebarDiameterMm =
-    Number.isFinite(rebarDiameterMm) && rebarDiameterMm > 0
-      ? rebarDiameterMm * displayScale * 2
+    Number.isFinite(rebarRadius_Mm) && rebarRadius_Mm >= 0 ? rebarRadius_Mm * displayScale : 0;
+  const displayRebarDiameter_Mm =
+    Number.isFinite(rebarDiameter_Mm) && rebarDiameter_Mm > 0
+      ? rebarDiameter_Mm * displayScale * 2
       : 12 * displayScale;
 
   // SVGのviewBoxの半径を計算（断面が見切れないようにmarginを追加）
   const margin = Math.max(displayOuterRadius * 0.18, 14);
   const viewBoxRadius = displayOuterRadius + margin;
   const neutralAxisLine =
-    result && Number.isFinite(result.neutralAxis.neutralAxisPositionMm)
-      ? -result.neutralAxis.neutralAxisPositionMm * displayScale
+    result && Number.isFinite(result.neutralAxis.neutralAxisPosition_Mm)
+      ? -result.neutralAxis.neutralAxisPosition_Mm * displayScale
       : null;
 
   // 描画用パラメータ
@@ -99,7 +99,7 @@ export function CrossSectionPreview({ form, result }: CrossSectionPreviewProps) 
                 const angle = (index / barCount) * Math.PI * 2 - Math.PI / 2;
                 const point = polarToCartesian(displayRebarRadius, angle);
                 const maxBarRadius = (Math.PI * 2 * displayRebarRadius) / barCount / 2;
-                const barRadius = Math.min(displayRebarDiameterMm / 2, maxBarRadius);
+                const barRadius = Math.min(displayRebarDiameter_Mm / 2, maxBarRadius);
 
                 return (
                   <circle

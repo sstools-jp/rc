@@ -14,31 +14,33 @@ import type {
 import type { AnnularSectionInput } from "@/model/section-types";
 import { type SectionForceMode } from "@/components/SectionForceModeSelector";
 import { parseNumber } from "@/utils/number-format";
+import type { RebarDiameter_Mm } from "@/model/rebar";
+import type { ConcreteDesignStrength_NPerMm2 } from "@/model/concrete";
 
 /** 断面力のデフォルト入力値 */
 const DEFAULT_SECTION_FORCE_FORM_STATE: SectionForceFormState = {
-  fxKN: "",
-  fyKN: "",
-  fzKN: "",
-  mxKNm: "",
-  myKNm: "",
-  mzKNm: "",
+  fx_KN: "",
+  fy_KN: "",
+  fz_KN: "",
+  mx_KNm: "",
+  my_KNm: "",
+  mz_KNm: "",
 };
 
 /** 断面形状のデフォルト入力値 */
 const DEFAULT_GEOMETRY_FORM_STATE: GeometryFormState = {
-  outerRadiusMm: "",
-  innerRadiusMm: "",
-  rebarRadiusMm: "",
-  rebarDiameterMm: "22",
+  outerRadius_Mm: "",
+  innerRadius_Mm: "",
+  rebarRadius_Mm: "",
+  rebarDiameter_Mm: "22",
   barCount: "",
 };
 
 /** 諸係数のデフォルト入力値  */
 const DEFAULT_MATERIAL_PARAMS_FORM_STATE: MaterialParamsFormState = {
   youngRatio: "15",
-  rebarYieldStrengthNPerMm2: "345",
-  concreteDesignStrengthNPerMm2: "30",
+  rebarYieldStrength_NPerMm2: "345",
+  concreteDesignStrength_NPerMm2: "30",
 };
 
 /** フォームのデフォルト入力値 */
@@ -67,23 +69,20 @@ function isFormState(value: unknown): value is FormState {
 
   const candidate = value as Record<string, unknown>;
   return (
-    typeof candidate.momentKNm === "string" &&
-    typeof candidate.shearKN === "string" &&
-    typeof candidate.axialKN === "string" &&
-    typeof candidate.fxKN === "string" &&
-    typeof candidate.fyKN === "string" &&
-    typeof candidate.fzKN === "string" &&
-    typeof candidate.mxKNm === "string" &&
-    typeof candidate.myKNm === "string" &&
-    typeof candidate.mzKNm === "string" &&
-    typeof candidate.outerRadiusMm === "string" &&
-    typeof candidate.innerRadiusMm === "string" &&
-    typeof candidate.rebarRadiusMm === "string" &&
-    typeof candidate.rebarDiameterMm === "string" &&
+    typeof candidate.fx_KN === "string" &&
+    typeof candidate.fy_KN === "string" &&
+    typeof candidate.fz_KN === "string" &&
+    typeof candidate.mx_KNm === "string" &&
+    typeof candidate.my_KNm === "string" &&
+    typeof candidate.mz_KNm === "string" &&
+    typeof candidate.outerRadius_Mm === "string" &&
+    typeof candidate.innerRadius_Mm === "string" &&
+    typeof candidate.rebarRadius_Mm === "string" &&
+    typeof candidate.rebarDiameter_Mm === "string" &&
     typeof candidate.barCount === "string" &&
     typeof candidate.youngRatio === "string" &&
-    typeof candidate.rebarYieldStrengthNPerMm2 === "string" &&
-    typeof candidate.concreteDesignStrengthNPerMm2 === "string"
+    typeof candidate.rebarYieldStrength_NPerMm2 === "string" &&
+    typeof candidate.concreteDesignStrength_NPerMm2 === "string"
   );
 }
 
@@ -161,39 +160,37 @@ function buildInput(form: FormState, sectionForceMode: SectionForceMode): Annula
   const force: AnnularSectionInput["force"] =
     sectionForceMode === "3"
       ? {
-          fxKN: parseNumber(form.fxKN),
-          fyKN: 0,
-          fzKN: parseNumber(form.fzKN),
-          mxKNm: 0,
-          myKNm: parseNumber(form.myKNm),
-          mzKNm: 0,
+          fx_KN: parseNumber(form.fx_KN),
+          fy_KN: 0,
+          fz_KN: parseNumber(form.fz_KN),
+          mx_KNm: 0,
+          my_KNm: parseNumber(form.my_KNm),
+          mz_KNm: 0,
         }
       : {
-          fxKN: parseNumber(form.fxKN),
-          fyKN: parseNumber(form.fyKN),
-          fzKN: parseNumber(form.fzKN),
-          mxKNm: parseNumber(form.mxKNm),
-          myKNm: parseNumber(form.myKNm),
-          mzKNm: parseNumber(form.mzKNm),
+          fx_KN: parseNumber(form.fx_KN),
+          fy_KN: parseNumber(form.fy_KN),
+          fz_KN: parseNumber(form.fz_KN),
+          mx_KNm: parseNumber(form.mx_KNm),
+          my_KNm: parseNumber(form.my_KNm),
+          mz_KNm: parseNumber(form.mz_KNm),
         };
 
   return {
     force,
     geometry: AnnularSectionGeometry.fromInput({
-      outerRadiusMm: parseNumber(form.outerRadiusMm),
-      innerRadiusMm: parseNumber(form.innerRadiusMm),
-      rebarRadiusMm: parseNumber(form.rebarRadiusMm),
-      rebarDiameterMm: parseNumber(
-        form.rebarDiameterMm,
-      ) as AnnularSectionInput["geometry"]["rebarDiameterMm"],
+      outerRadius_Mm: parseNumber(form.outerRadius_Mm),
+      innerRadius_Mm: parseNumber(form.innerRadius_Mm),
+      rebarRadius_Mm: parseNumber(form.rebarRadius_Mm),
+      rebarDiameter_Mm: parseNumber(form.rebarDiameter_Mm) as RebarDiameter_Mm,
       barCount: parseNumber(form.barCount),
     }),
     materialParams: {
       youngRatio: parseNumber(form.youngRatio),
-      rebarYieldStrengthNPerMm2: parseNumber(form.rebarYieldStrengthNPerMm2),
+      rebarYieldStrength_NPerMm2: parseNumber(form.rebarYieldStrength_NPerMm2),
       concreteDesignStrength_NPerMm2: parseNumber(
-        form.concreteDesignStrengthNPerMm2,
-      ) as AnnularSectionInput["materialParams"]["concreteDesignStrength_NPerMm2"],
+        form.concreteDesignStrength_NPerMm2,
+      ) as ConcreteDesignStrength_NPerMm2,
     },
   };
 }

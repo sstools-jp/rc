@@ -4,37 +4,37 @@ export type AxialForceSign = "compression" | "tension" | "zero";
 /** 断面力の型定義 */
 export interface SectionForce {
   /** 軸力 [kN] */
-  fxKN: number;
+  fx_KN: number;
   /** せん断力（面外） [kN] */
-  fyKN: number;
+  fy_KN: number;
   /** せん断力（面内） [kN] */
-  fzKN: number;
+  fz_KN: number;
   /** ねじりモーメント [kN.m] */
-  mxKNm: number;
+  mx_KNm: number;
   /** 曲げモーメント（面内） [kN.m] */
-  myKNm: number;
+  my_KNm: number;
   /** 曲げモーメント（面外） [kN.m] */
-  mzKNm: number;
+  mz_KNm: number;
 }
 
 /** 断面力の換算値 */
 export interface SectionForceComponents {
   /** 曲げモーメント [kN.m] */
-  momentKNm: number;
+  moment_KNm: number;
   /** せん断力 [kN] */
-  shearKN: number;
+  shear_KN: number;
   /** 軸力（圧縮を正） [kN] */
-  axialKN: number;
+  axial_KN: number;
 }
 
 /** 断面力を 3 成分に換算する */
 export function resolveSectionForceComponents(
   force: SectionForce,
-  rebarRadiusMm: number,
+  rebarRadius_Mm: number,
 ): SectionForceComponents {
   return {
-    momentKNm: Math.sqrt(force.myKNm ** 2 + force.mzKNm ** 2),
-    shearKN: Math.sqrt(force.fyKN ** 2 + force.fzKN ** 2) + (force.mxKNm * 1000) / rebarRadiusMm,
-    axialKN: -force.fxKN,
+    moment_KNm: Math.sqrt(force.my_KNm ** 2 + force.mz_KNm ** 2),
+    shear_KN: Math.sqrt(force.fy_KN ** 2 + force.fz_KN ** 2) + (force.mx_KNm * 1000) / rebarRadius_Mm,
+    axial_KN: -force.fx_KN,
   };
 }

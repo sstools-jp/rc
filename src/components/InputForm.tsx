@@ -64,13 +64,13 @@ export function AnnularSectionInputFormPanel({
             {sectionForceMode === "3" && (
               <tbody className="text-md">
                 <FieldRow label="曲げモーメント" symbol="M" unit="kN.m">
-                  <FieldInput value={form.myKNm} onChange={onChangeField("myKNm")} />
+                  <FieldInput value={form.my_KNm} onChange={onChangeField("my_KNm")} />
                 </FieldRow>
                 <FieldRow label="せん断力" symbol="S" unit="kN">
-                  <FieldInput value={form.fzKN} onChange={onChangeField("fzKN")} />
+                  <FieldInput value={form.fz_KN} onChange={onChangeField("fz_KN")} />
                 </FieldRow>
                 <FieldRow label="軸力（引張を正）" symbol="N" unit="kN">
-                  <FieldInput value={form.fxKN} onChange={onChangeField("fxKN")} />
+                  <FieldInput value={form.fx_KN} onChange={onChangeField("fx_KN")} />
                 </FieldRow>
               </tbody>
             )}
@@ -78,22 +78,22 @@ export function AnnularSectionInputFormPanel({
             {sectionForceMode === "6" && (
               <tbody className="text-md">
                 <FieldRow label="軸力" symbol="Fx" unit="kN">
-                  <FieldInput value={form.fxKN} onChange={onChangeField("fxKN")} />
+                  <FieldInput value={form.fx_KN} onChange={onChangeField("fx_KN")} />
                 </FieldRow>
                 <FieldRow label="せん断力（面外）" symbol="Fy" unit="kN">
-                  <FieldInput value={form.fyKN} onChange={onChangeField("fyKN")} />
+                  <FieldInput value={form.fy_KN} onChange={onChangeField("fy_KN")} />
                 </FieldRow>
                 <FieldRow label="せん断力（面内）" symbol="Fz" unit="kN">
-                  <FieldInput value={form.fzKN} onChange={onChangeField("fzKN")} />
+                  <FieldInput value={form.fz_KN} onChange={onChangeField("fz_KN")} />
                 </FieldRow>
                 <FieldRow label="ねじりモーメント" symbol="Mx" unit="kN.m">
-                  <FieldInput value={form.mxKNm} onChange={onChangeField("mxKNm")} />
+                  <FieldInput value={form.mx_KNm} onChange={onChangeField("mx_KNm")} />
                 </FieldRow>
                 <FieldRow label="曲げモーメント（面内）" symbol="My" unit="kN.m">
-                  <FieldInput value={form.myKNm} onChange={onChangeField("myKNm")} />
+                  <FieldInput value={form.my_KNm} onChange={onChangeField("my_KNm")} />
                 </FieldRow>
                 <FieldRow label="曲げモーメント（面外）" symbol="Mz" unit="kN.m">
-                  <FieldInput value={form.mzKNm} onChange={onChangeField("mzKNm")} />
+                  <FieldInput value={form.mz_KNm} onChange={onChangeField("mz_KNm")} />
                 </FieldRow>
               </tbody>
             )}
@@ -121,18 +121,18 @@ export function AnnularSectionInputFormPanel({
             </thead>
             <tbody className="text-md">
               <FieldRow label="外径半径" symbol="r" unit="mm">
-                <FieldInput value={form.outerRadiusMm} onChange={onChangeField("outerRadiusMm")} />
+                <FieldInput value={form.outerRadius_Mm} onChange={onChangeField("outerRadius_Mm")} />
               </FieldRow>
               <FieldRow label="内径半径" symbol="r0" unit="mm">
-                <FieldInput value={form.innerRadiusMm} onChange={onChangeField("innerRadiusMm")} />
+                <FieldInput value={form.innerRadius_Mm} onChange={onChangeField("innerRadius_Mm")} />
               </FieldRow>
               <FieldRow label="鉄筋位置（有効半径）" symbol="rs" unit="mm">
-                <FieldInput value={form.rebarRadiusMm} onChange={onChangeField("rebarRadiusMm")} />
+                <FieldInput value={form.rebarRadius_Mm} onChange={onChangeField("rebarRadius_Mm")} />
               </FieldRow>
               <FieldRow label="鉄筋径" symbol="D" unit="-">
                 <FieldSelect
-                  value={form.rebarDiameterMm}
-                  onChange={onChangeField("rebarDiameterMm")}
+                  value={form.rebarDiameter_Mm}
+                  onChange={onChangeField("rebarDiameter_Mm")}
                   options={REBAR_DIAMETERS_MM.map((diameter) => ({
                     value: String(diameter),
                     label: `D${diameter}`,
@@ -149,14 +149,14 @@ export function AnnularSectionInputFormPanel({
               </FieldRow>
               <FieldRow label="鉄筋降伏強度" symbol="σsy" unit="N/mm²">
                 <FieldInput
-                  value={form.rebarYieldStrengthNPerMm2}
-                  onChange={onChangeField("rebarYieldStrengthNPerMm2")}
+                  value={form.rebarYieldStrength_NPerMm2}
+                  onChange={onChangeField("rebarYieldStrength_NPerMm2")}
                 />
               </FieldRow>
               <FieldRow label="コンクリート設計基準強度" symbol="σck" unit="N/mm²">
                 <FieldSelect
-                  value={form.concreteDesignStrengthNPerMm2}
-                  onChange={onChangeField("concreteDesignStrengthNPerMm2")}
+                  value={form.concreteDesignStrength_NPerMm2}
+                  onChange={onChangeField("concreteDesignStrength_NPerMm2")}
                   options={CONCRETE_DESIGN_STRENGTHS_N_PER_MM2.map((strength) => ({
                     value: String(strength),
                     label: String(strength),

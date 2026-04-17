@@ -44,12 +44,12 @@ export function AnnularSectionResultPanel({
         <ResultCell label="中立軸角度" value={formatNumber(neutralAxis?.neutralAxisAngleDeg, 4)} unit="deg" />
         <ResultCell
           label="中立軸位置"
-          value={formatNumber(neutralAxis?.neutralAxisPositionMm, 1)}
+          value={formatNumber(neutralAxis?.neutralAxisPosition_Mm, 1)}
           unit="mm"
         />
         <ResultCell
           label="換算曲げモーメント"
-          value={formatNumber(loading?.combinedMomentKNm, 1)}
+          value={formatNumber(loading?.combinedMoment_KNm, 1)}
           unit="kN.m"
         />
       </CollapsibleSection>
@@ -57,18 +57,18 @@ export function AnnularSectionResultPanel({
       <CollapsibleSection title="発生応力度" defaultOpen>
         <ResultCell
           label="コンクリート圧縮応力度"
-          value={formatNumber(stress?.concreteCompressionStressNPerMm2, 1)}
+          value={formatNumber(stress?.concreteCompressionStress_NPerMm2, 1)}
           unit="N/mm²"
         />
-        <ResultCell label="鉄筋応力度" value={formatNumber(stress?.rebarStressNPerMm2, 1)} unit="N/mm²" />
+        <ResultCell label="鉄筋応力度" value={formatNumber(stress?.rebarStress_NPerMm2, 1)} unit="N/mm²" />
         <ResultCell
           label="コンクリートせん断応力度"
-          value={formatNumber(stress?.concreteShearStressNPerMm2, 1)}
+          value={formatNumber(stress?.concreteShearStress_NPerMm2, 1)}
           unit="N/mm²"
         />
         <ResultCell
           label="鉄筋せん断応力度"
-          value={formatNumber(stress?.rebarShearStressNPerMm2, 1)}
+          value={formatNumber(stress?.rebarShearStress_NPerMm2, 1)}
           unit="N/mm²"
         />
       </CollapsibleSection>
@@ -76,18 +76,18 @@ export function AnnularSectionResultPanel({
       <CollapsibleSection title="終局耐力" defaultOpen>
         <ResultCell
           label="コンクリート終局曲げモーメント"
-          value={formatNumber(strength?.concreteUltimateMomentKNm, 0)}
+          value={formatNumber(strength?.concreteUltimateMoment_KNm, 0)}
           unit="kN.m"
         />
         <ResultCell
           label="鉄筋降伏曲げモーメント"
-          value={formatNumber(strength?.rebarYieldMomentKNm, 0)}
+          value={formatNumber(strength?.rebarYieldMoment_KNm, 0)}
           unit="kN.m"
         />
       </CollapsibleSection>
 
       <CollapsibleSection title="断面情報" defaultOpen>
-        <ResultCell label="鉄筋総断面積" value={formatNumber(section?.totalRebarAreaMm2, 0)} unit="mm²" />
+        <ResultCell label="鉄筋総断面積" value={formatNumber(section?.totalRebarArea_Mm2, 0)} unit="mm²" />
         <ResultCell label="鉄筋比" value={formatNumber(section?.rebarRatioPercent, 2)} unit="%" />
       </CollapsibleSection>
 
