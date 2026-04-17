@@ -243,10 +243,16 @@ function buildResultPreviewSections(result: AnnularSectionResult | null): PrintP
           value: formatNumber(stress?.rebarStress_NPerMm2, 2),
         },
         {
-          label: "コンクリート最大せん断応力度",
+          label: "コンクリートせん断応力度",
           symbol: "τc",
           unit: "N/mm²",
           value: formatNumber(stress?.concreteShearStress_NPerMm2, 2),
+        },
+        {
+          label: "鉄筋せん断応力度",
+          symbol: "τs",
+          unit: "N/mm²",
+          value: formatNumber(stress?.rebarShearStress_NPerMm2, 2),
         },
       ],
     },
