@@ -2,7 +2,6 @@ import { useEffect, useState, type SubmitEventHandler } from "react";
 import {
   AnnularSectionCalculator,
   AnnularSectionGeometry,
-  type AnnularSectionInput,
   type AnnularSectionResult,
   type AnnularSectionValidationIssue,
 } from "@/model/annular-section";
@@ -13,6 +12,7 @@ import type {
   MaterialParamsFormState,
   FormState,
 } from "@/forms/form-state";
+import type { AnnularSectionInput } from "@/model/section-types";
 import { type SectionForceMode } from "@/components/SectionForceModeSelector";
 import { parseNumber } from "@/utils/number-format";
 
