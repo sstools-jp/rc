@@ -57,18 +57,18 @@ export function AnnularSectionResultPanel({
       <CollapsibleSection title="発生応力度" defaultOpen>
         <ResultCell
           label="コンクリート圧縮応力度"
-          value={formatNumber(stress?.concreteCompressionStress_NPerMm2, 1)}
+          value={formatNumber(stress?.concreteCompressionStress_NPerMm2, 2)}
           unit="N/mm²"
         />
-        <ResultCell label="鉄筋応力度" value={formatNumber(stress?.rebarStress_NPerMm2, 1)} unit="N/mm²" />
+        <ResultCell label="鉄筋応力度" value={formatNumber(stress?.rebarStress_NPerMm2, 2)} unit="N/mm²" />
         <ResultCell
           label="コンクリートせん断応力度"
-          value={formatNumber(stress?.concreteShearStress_NPerMm2, 1)}
+          value={formatNumber(stress?.concreteShearStress_NPerMm2, 2)}
           unit="N/mm²"
         />
         <ResultCell
           label="鉄筋せん断応力度"
-          value={formatNumber(stress?.rebarShearStress_NPerMm2, 1)}
+          value={formatNumber(stress?.rebarShearStress_NPerMm2, 2)}
           unit="N/mm²"
         />
       </CollapsibleSection>
