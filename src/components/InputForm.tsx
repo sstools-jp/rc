@@ -308,6 +308,9 @@ function FieldInput({ value, onChange, onBlur, inputMode = "decimal", step }: Fi
       step={step}
       className={className}
       value={value}
+      onFocus={(event) => {
+        event.currentTarget.select();
+      }}
       onKeyDown={(event) => {
         if (event.key === "ArrowUp" || event.key === "ArrowDown") {
           event.preventDefault();
