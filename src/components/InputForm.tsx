@@ -199,7 +199,6 @@ export function AnnularSectionInputFormPanel({
                   onChange={onChangeField("barCount")}
                   onBlur={onCommitField("barCount")}
                   inputMode="decimal"
-                  step="any"
                 />
               </FieldRow>
               <FieldRow label="鉄筋降伏強度" symbol="σsy" unit="N/mm²">
@@ -292,11 +291,10 @@ type FieldInputProps = {
   onChange: (value: string) => void;
   onBlur: (value: string) => void;
   inputMode?: "decimal" | "numeric";
-  step?: string;
 };
 
 /** 数値入力用のコンポーネント */
-function FieldInput({ value, onChange, onBlur, inputMode = "decimal", step }: FieldInputProps) {
+function FieldInput({ value, onChange, onBlur, inputMode = "decimal" }: FieldInputProps) {
   const className = clsx(
     "w-full [appearance:textfield] px-1 py-0.5 text-right font-mono outline-none placeholder:text-slate-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
   );
@@ -305,7 +303,7 @@ function FieldInput({ value, onChange, onBlur, inputMode = "decimal", step }: Fi
     <input
       type="number"
       inputMode={inputMode}
-      step={step}
+      step="any"
       className={className}
       value={value}
       onFocus={(event) => {
