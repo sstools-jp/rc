@@ -19,6 +19,8 @@ type AnnularSectionInputFormProps = {
   onReset: () => void;
   /** フォームのフィールド更新ハンドラ */
   onChangeField: (field: keyof FormState) => (value: string) => void;
+  /** フォームのフィールド確定ハンドラ */
+  onCommitField: (field: keyof FormState) => (value: string) => void;
   /** 断面力タイプ */
   sectionForceMode: SectionForceMode;
   /** 断面力タイプ更新ハンドラ */
@@ -32,6 +34,7 @@ export function AnnularSectionInputFormPanel({
   onSubmit,
   onReset,
   onChangeField,
+  onCommitField,
   sectionForceMode,
   onChangeSectionForceMode,
 }: AnnularSectionInputFormProps) {
@@ -64,13 +67,25 @@ export function AnnularSectionInputFormPanel({
             {sectionForceMode === "3" && (
               <tbody className="text-md">
                 <FieldRow label="曲げモーメント" symbol="M" unit="kN.m">
-                  <FieldInput value={form.my_KNm} onChange={onChangeField("my_KNm")} />
+                  <FieldInput
+                    value={form.my_KNm}
+                    onChange={onChangeField("my_KNm")}
+                    onBlur={onCommitField("my_KNm")}
+                  />
                 </FieldRow>
                 <FieldRow label="せん断力" symbol="S" unit="kN">
-                  <FieldInput value={form.fz_KN} onChange={onChangeField("fz_KN")} />
+                  <FieldInput
+                    value={form.fz_KN}
+                    onChange={onChangeField("fz_KN")}
+                    onBlur={onCommitField("fz_KN")}
+                  />
                 </FieldRow>
                 <FieldRow label="軸力（引張を正）" symbol="N" unit="kN">
-                  <FieldInput value={form.fx_KN} onChange={onChangeField("fx_KN")} />
+                  <FieldInput
+                    value={form.fx_KN}
+                    onChange={onChangeField("fx_KN")}
+                    onBlur={onCommitField("fx_KN")}
+                  />
                 </FieldRow>
               </tbody>
             )}
@@ -78,22 +93,46 @@ export function AnnularSectionInputFormPanel({
             {sectionForceMode === "6" && (
               <tbody className="text-md">
                 <FieldRow label="軸力" symbol="Fx" unit="kN">
-                  <FieldInput value={form.fx_KN} onChange={onChangeField("fx_KN")} />
+                  <FieldInput
+                    value={form.fx_KN}
+                    onChange={onChangeField("fx_KN")}
+                    onBlur={onCommitField("fx_KN")}
+                  />
                 </FieldRow>
                 <FieldRow label="せん断力（面外）" symbol="Fy" unit="kN">
-                  <FieldInput value={form.fy_KN} onChange={onChangeField("fy_KN")} />
+                  <FieldInput
+                    value={form.fy_KN}
+                    onChange={onChangeField("fy_KN")}
+                    onBlur={onCommitField("fy_KN")}
+                  />
                 </FieldRow>
                 <FieldRow label="せん断力（面内）" symbol="Fz" unit="kN">
-                  <FieldInput value={form.fz_KN} onChange={onChangeField("fz_KN")} />
+                  <FieldInput
+                    value={form.fz_KN}
+                    onChange={onChangeField("fz_KN")}
+                    onBlur={onCommitField("fz_KN")}
+                  />
                 </FieldRow>
                 <FieldRow label="ねじりモーメント" symbol="Mx" unit="kN.m">
-                  <FieldInput value={form.mx_KNm} onChange={onChangeField("mx_KNm")} />
+                  <FieldInput
+                    value={form.mx_KNm}
+                    onChange={onChangeField("mx_KNm")}
+                    onBlur={onCommitField("mx_KNm")}
+                  />
                 </FieldRow>
                 <FieldRow label="曲げモーメント（面内）" symbol="My" unit="kN.m">
-                  <FieldInput value={form.my_KNm} onChange={onChangeField("my_KNm")} />
+                  <FieldInput
+                    value={form.my_KNm}
+                    onChange={onChangeField("my_KNm")}
+                    onBlur={onCommitField("my_KNm")}
+                  />
                 </FieldRow>
                 <FieldRow label="曲げモーメント（面外）" symbol="Mz" unit="kN.m">
-                  <FieldInput value={form.mz_KNm} onChange={onChangeField("mz_KNm")} />
+                  <FieldInput
+                    value={form.mz_KNm}
+                    onChange={onChangeField("mz_KNm")}
+                    onBlur={onCommitField("mz_KNm")}
+                  />
                 </FieldRow>
               </tbody>
             )}
@@ -121,18 +160,33 @@ export function AnnularSectionInputFormPanel({
             </thead>
             <tbody className="text-md">
               <FieldRow label="外径半径" symbol="r" unit="mm">
-                <FieldInput value={form.outerRadius_Mm} onChange={onChangeField("outerRadius_Mm")} />
+                <FieldInput
+                  value={form.outerRadius_Mm}
+                  onChange={onChangeField("outerRadius_Mm")}
+                  onBlur={onCommitField("outerRadius_Mm")}
+                />
               </FieldRow>
               <FieldRow label="内径半径" symbol="r0" unit="mm">
-                <FieldInput value={form.innerRadius_Mm} onChange={onChangeField("innerRadius_Mm")} />
+                <FieldInput
+                  value={form.innerRadius_Mm}
+                  onChange={onChangeField("innerRadius_Mm")}
+                  onBlur={onCommitField("innerRadius_Mm")}
+                />
               </FieldRow>
               <FieldRow label="鉄筋位置（有効半径）" symbol="rs" unit="mm">
-                <FieldInput value={form.rebarRadius_Mm} onChange={onChangeField("rebarRadius_Mm")} />
+                <FieldInput
+                  value={form.rebarRadius_Mm}
+                  onChange={onChangeField("rebarRadius_Mm")}
+                  onBlur={onCommitField("rebarRadius_Mm")}
+                />
               </FieldRow>
               <FieldRow label="鉄筋径" symbol="D" unit="-">
                 <FieldSelect
                   value={form.rebarDiameter_Mm}
-                  onChange={onChangeField("rebarDiameter_Mm")}
+                  onChange={(value) => {
+                    onChangeField("rebarDiameter_Mm")(value);
+                    onCommitField("rebarDiameter_Mm")(value);
+                  }}
                   options={REBAR_DIAMETERS_MM.map((diameter) => ({
                     value: String(diameter),
                     label: `D${diameter}`,
@@ -143,6 +197,7 @@ export function AnnularSectionInputFormPanel({
                 <FieldInput
                   value={form.barCount}
                   onChange={onChangeField("barCount")}
+                  onBlur={onCommitField("barCount")}
                   inputMode="decimal"
                   step="any"
                 />
@@ -151,12 +206,16 @@ export function AnnularSectionInputFormPanel({
                 <FieldInput
                   value={form.rebarYieldStrength_NPerMm2}
                   onChange={onChangeField("rebarYieldStrength_NPerMm2")}
+                  onBlur={onCommitField("rebarYieldStrength_NPerMm2")}
                 />
               </FieldRow>
               <FieldRow label="コンクリート設計基準強度" symbol="σck" unit="N/mm²">
                 <FieldSelect
                   value={form.concreteDesignStrength_NPerMm2}
-                  onChange={onChangeField("concreteDesignStrength_NPerMm2")}
+                  onChange={(value) => {
+                    onChangeField("concreteDesignStrength_NPerMm2")(value);
+                    onCommitField("concreteDesignStrength_NPerMm2")(value);
+                  }}
                   options={CONCRETE_DESIGN_STRENGTHS_N_PER_MM2.map((strength) => ({
                     value: String(strength),
                     label: String(strength),
@@ -164,7 +223,11 @@ export function AnnularSectionInputFormPanel({
                 />
               </FieldRow>
               <FieldRow label="ヤング係数比" symbol="n" unit="-">
-                <FieldInput value={form.youngRatio} onChange={onChangeField("youngRatio")} />
+                <FieldInput
+                  value={form.youngRatio}
+                  onChange={onChangeField("youngRatio")}
+                  onBlur={onCommitField("youngRatio")}
+                />
               </FieldRow>
             </tbody>
           </table>
@@ -227,12 +290,13 @@ function FieldRow({ label, symbol, unit, children }: FieldRowProps) {
 type FieldInputProps = {
   value: string;
   onChange: (value: string) => void;
+  onBlur: (value: string) => void;
   inputMode?: "decimal" | "numeric";
   step?: string;
 };
 
 /** 数値入力用のコンポーネント */
-function FieldInput({ value, onChange, inputMode = "decimal", step }: FieldInputProps) {
+function FieldInput({ value, onChange, onBlur, inputMode = "decimal", step }: FieldInputProps) {
   const className = clsx(
     "w-full [appearance:textfield] px-1 py-0.5 text-right font-mono outline-none placeholder:text-slate-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
   );
@@ -251,6 +315,7 @@ function FieldInput({ value, onChange, inputMode = "decimal", step }: FieldInput
       }}
       onWheel={(event) => event.currentTarget.blur()}
       onChange={(event) => onChange(event.target.value)}
+      onBlur={(event) => onBlur(event.currentTarget.value)}
     />
   );
 }

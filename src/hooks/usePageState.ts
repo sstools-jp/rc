@@ -1,4 +1,4 @@
-import { useEffect, useState, type SubmitEventHandler } from "react";
+import { useState, type SubmitEventHandler } from "react";
 import {
   AnnularSectionCalculator,
   AnnularSectionGeometry,
@@ -59,6 +59,12 @@ const FORM_STORAGE_KEY = "rc:annular-section-form";
 type StoredPageState = {
   form: FormState;
   sectionForceMode: SectionForceMode;
+};
+
+type PageCalculationState = {
+  result: AnnularSectionResult | null;
+  issues: AnnularSectionValidationIssue[];
+  statusMessage: string;
 };
 
 /** フォーム状態の型ガード */
@@ -211,9 +217,41 @@ function createResult(form: FormState, sectionForceMode: SectionForceMode): Annu
   }
 }
 
+/** フォームの状態から画面に表示する計算状態を生成する */
+function evaluatePageState(form: FormState, sectionForceMode: SectionForceMode): PageCalculationState {
+  const calculator = new AnnularSectionCalculator(buildInput(form, sectionForceMode));
+  const validationIssues = calculator.validate();
+
+  if (validationIssues.length > 0) {
+    return {
+      result: null,
+      issues: validationIssues,
+      statusMessage: "入力値を確認してください。",
+    };
+  }
+
+  try {
+    return {
+      result: calculator.calculate(),
+      issues: [],
+      statusMessage: "計算が完了しました。",
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "計算に失敗しました。";
+
+    return {
+      result: null,
+      issues: [{ field: "force", message }],
+      statusMessage: message,
+    };
+  }
+}
+
 type UseAnnularSectionPageStateResult = {
-  /** フォームの状態 */
+  /** 入力中のフォームの状態 */
   form: FormState;
+  /** 確定済みのフォームの状態 */
+  committedForm: FormState;
   /** 計算結果 */
   result: AnnularSectionResult | null;
   /** 検証問題リスト */
@@ -227,6 +265,7 @@ type UseAnnularSectionPageStateResult = {
   handleSubmit: SubmitEventHandler<HTMLFormElement>;
   handleReset: () => void;
   updateField: (field: keyof FormState) => (value: string) => void;
+  commitField: (field: keyof FormState) => (value: string) => void;
   updateSectionForceMode: (value: SectionForceMode) => void;
   openPrintPreview: () => void;
   closePrintPreview: () => void;
@@ -236,6 +275,7 @@ type UseAnnularSectionPageStateResult = {
 export function useAnnularSectionPageState(): UseAnnularSectionPageStateResult {
   const initialPageState = loadPageState();
   const [form, setForm] = useState<FormState>(initialPageState.form);
+  const [committedForm, setCommittedForm] = useState<FormState>(initialPageState.form);
   const [result, setResult] = useState<AnnularSectionResult | null>(() =>
     createResult(initialPageState.form, initialPageState.sectionForceMode),
   );
@@ -246,54 +286,45 @@ export function useAnnularSectionPageState(): UseAnnularSectionPageStateResult {
     initialPageState.sectionForceMode,
   );
 
-  useEffect(() => {
-    savePageState(form, sectionForceMode);
-  }, [form, sectionForceMode]);
+  /** フォームの状態を確定し、計算結果を更新する共通処理 */
+  const applyCommittedState = (nextForm: FormState, nextSectionForceMode: SectionForceMode) => {
+    setCommittedForm(nextForm);
+    savePageState(nextForm, nextSectionForceMode);
 
+    const nextState = evaluatePageState(nextForm, nextSectionForceMode);
+    setResult(nextState.result);
+    setIssues(nextState.issues);
+    setStatusMessage(nextState.statusMessage);
+  };
+
+  /** フォームの送信イベントハンドラー */
   const handleSubmit: SubmitEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault();
 
-    const input = buildInput(form, sectionForceMode);
-    const calculator = new AnnularSectionCalculator(input);
-    const validationIssues = calculator.validate();
-
-    if (validationIssues.length > 0) {
-      setIssues(validationIssues);
-      setResult(null);
-      setIsPrintPreviewOpen(false);
-      setStatusMessage("入力値を確認してください。");
-      return;
-    }
-
-    try {
-      const nextResult = calculator.calculate();
-      setResult(nextResult);
-      setIssues([]);
-      setStatusMessage("計算が完了しました。");
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "計算に失敗しました。";
-      setIssues([{ field: "force", message }]);
-      setResult(null);
-      setIsPrintPreviewOpen(false);
-      setStatusMessage(message);
-    }
+    applyCommittedState(form, sectionForceMode);
   };
 
+  /** フォームのリセットイベントハンドラー */
   const handleReset = () => {
     setForm(DEFAULT_FORM_STATE);
-    setResult(createResult(DEFAULT_FORM_STATE, DEFAULT_SECTION_FORCE_MODE));
-    setIssues([]);
-    setStatusMessage("入力を待機しています。");
+    applyCommittedState(DEFAULT_FORM_STATE, DEFAULT_SECTION_FORCE_MODE);
     setIsPrintPreviewOpen(false);
     setSectionForceMode(DEFAULT_SECTION_FORCE_MODE);
   };
 
+  /** フォームの特定のフィールドを更新する関数 */
   const updateField = (field: keyof FormState) => (value: string) => {
     setForm((current: FormState) => ({ ...current, [field]: value }));
   };
 
+  /** フォームの特定のフィールドを確定する関数 */
+  const commitField = (field: keyof FormState) => (value: string) => {
+    applyCommittedState({ ...committedForm, [field]: value }, sectionForceMode);
+  };
+
   return {
     form,
+    committedForm,
     result,
     issues,
     statusMessage,
@@ -302,7 +333,11 @@ export function useAnnularSectionPageState(): UseAnnularSectionPageStateResult {
     handleSubmit,
     handleReset,
     updateField,
-    updateSectionForceMode: setSectionForceMode,
+    commitField,
+    updateSectionForceMode: (value: SectionForceMode) => {
+      setSectionForceMode(value);
+      applyCommittedState(committedForm, value);
+    },
     openPrintPreview: () => setIsPrintPreviewOpen(true),
     closePrintPreview: () => setIsPrintPreviewOpen(false),
   };

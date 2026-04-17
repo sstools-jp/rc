@@ -7,6 +7,7 @@ import { FaGithub } from "react-icons/fa";
 function App() {
   const {
     form,
+    committedForm,
     result,
     issues,
     statusMessage,
@@ -15,6 +16,7 @@ function App() {
     handleSubmit,
     handleReset,
     updateField,
+    commitField,
     updateSectionForceMode,
     openPrintPreview,
     closePrintPreview,
@@ -51,15 +53,25 @@ function App() {
           onSubmit={handleSubmit}
           onReset={handleReset}
           onChangeField={updateField}
+          onCommitField={commitField}
           sectionForceMode={sectionForceMode}
           onChangeSectionForceMode={updateSectionForceMode}
         />
 
         {/* 結果表示パネル */}
-        <AnnularSectionResultPanel form={form} result={result} onOpenPrintPreview={openPrintPreview} />
+        <AnnularSectionResultPanel
+          form={committedForm}
+          result={result}
+          onOpenPrintPreview={openPrintPreview}
+        />
       </main>
 
-      <PrintPreviewModal open={isPrintPreviewOpen} form={form} result={result} onClose={closePrintPreview} />
+      <PrintPreviewModal
+        open={isPrintPreviewOpen}
+        form={committedForm}
+        result={result}
+        onClose={closePrintPreview}
+      />
 
       <StatusBar message={statusMessage} />
     </div>
