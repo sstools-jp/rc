@@ -22,7 +22,7 @@ describe("AnnularSectionCalculator", () => {
       materialParams: {
         youngRatio: 15, // ヤング係数比
         rebarYieldStrengthNPerMm2: 345, // 鉄筋降伏強度 [N/mm2]
-        concreteDesignStrengthNPerMm2: 30, // コンクリート設計基準強度 [N/mm2]
+        concreteDesignStrength_NPerMm2: 30, // コンクリート設計基準強度 [N/mm2]
       },
     });
 
@@ -40,7 +40,8 @@ describe("AnnularSectionCalculator", () => {
     expect(neutralAxis.shearCoefficient).toBeCloseTo(1.2053, 4); // コンクリートせん断応力度の係数
     expect(stress.concreteCompressionStressNPerMm2).toBeCloseTo(8.53, 2); // コンクリート曲げ圧縮応力度 [N/mm2]
     expect(stress.rebarStressNPerMm2).toBeCloseTo(328.7, 1); // 鉄筋曲げ引張応力度 [N/mm2]
-    expect(stress.concreteShearStressNPerMm2).toBeCloseTo(0.377, 3); // コンクリートせん断応力度 [N/mm2]
+    expect(stress.concreteShearStressNPerMm2).toBeCloseTo(0.37, 3); // コンクリートせん断応力度 [N/mm2]
+    expect(stress.rebarShearStressNPerMm2).toBeCloseTo(0.007, 3); // 鉄筋せん断応力度 [N/mm2]
   });
 
   it("計算結果の照合 (2)", () => {
@@ -63,7 +64,7 @@ describe("AnnularSectionCalculator", () => {
       materialParams: {
         youngRatio: 15, // ヤング係数比
         rebarYieldStrengthNPerMm2: 345, // 鉄筋降伏強度 [N/mm2]
-        concreteDesignStrengthNPerMm2: 30, // コンクリート設計基準強度 [N/mm2]
+        concreteDesignStrength_NPerMm2: 30, // コンクリート設計基準強度 [N/mm2]
       },
     });
 
@@ -82,6 +83,39 @@ describe("AnnularSectionCalculator", () => {
     expect(stress.concreteCompressionStressNPerMm2).toBeCloseTo(1.6, 1); // コンクリート曲げ圧縮応力度 [N/mm2]
     expect(stress.rebarStressNPerMm2).toBeCloseTo(0.3, 1); // 鉄筋曲げ引張応力度 [N/mm2]
     expect(stress.concreteShearStressNPerMm2).toBeCloseTo(0.011, 3); // コンクリートせん断応力度 [N/mm2]
+    expect(stress.rebarShearStressNPerMm2).toBeCloseTo(0, 3); // 鉄筋せん断応力度 [N/mm2]
+  });
+
+  it("コンクリート設計基準強度を変更した場合のせん断応力度の照合", () => {
+    const calculator = new AnnularSectionCalculator({
+      force: {
+        fxKN: -500, // 軸力 [kN]
+        fyKN: 0, // せん断力（面外） [kN]
+        fzKN: 200, // せん断力（面内） [kN]
+        mxKNm: 0, // ねじりモーメント [kN.m]
+        myKNm: 1250, // 曲げモーメント（面内） [kN.m]
+        mzKNm: 0, // 曲げモーメント（面外） [kN.m]
+      },
+      geometry: {
+        outerRadiusMm: 800, // 外径 [mm]
+        innerRadiusMm: 600, // 内径 [mm]
+        rebarRadiusMm: 700, // 鉄筋半径 [mm]
+        rebarDiameterMm: 22, // 鉄筋径 [mm]
+        barCount: 16, // 鉄筋本数
+      },
+      materialParams: {
+        youngRatio: 15, // ヤング係数比
+        rebarYieldStrengthNPerMm2: 345, // 鉄筋降伏強度 [N/mm2]
+        concreteDesignStrength_NPerMm2: 24, // コンクリート設計基準強度 [N/mm2]
+      },
+    });
+
+    const result = calculator.calculate(); // 円環断面を計算
+    const stress = result.stress;
+
+    // 計算結果を検証
+    expect(stress.concreteShearStressNPerMm2).toBeCloseTo(0.35, 3); // コンクリートせん断応力度 [N/mm2]
+    expect(stress.rebarShearStressNPerMm2).toBeCloseTo(0.027, 3); // 鉄筋せん断応力度 [N/mm2]
   });
 
   it("計算結果の照合 (曲げモーメントのみ)", () => {
@@ -104,7 +138,7 @@ describe("AnnularSectionCalculator", () => {
       materialParams: {
         youngRatio: 15, // ヤング係数比
         rebarYieldStrengthNPerMm2: 345, // 鉄筋降伏強度 [N/mm2]
-        concreteDesignStrengthNPerMm2: 30, // コンクリート設計基準強度 [N/mm2]
+        concreteDesignStrength_NPerMm2: 30, // コンクリート設計基準強度 [N/mm2]
       },
     });
 
@@ -123,6 +157,7 @@ describe("AnnularSectionCalculator", () => {
     expect(stress.concreteCompressionStressNPerMm2).toBeCloseTo(0, 1); // コンクリート曲げ圧縮応力度 [N/mm2]
     expect(stress.rebarStressNPerMm2).toBeCloseTo(0.1, 1); // 鉄筋曲げ引張応力度 [N/mm2]
     expect(stress.concreteShearStressNPerMm2).toBeCloseTo(0, 3); // コンクリートせん断応力度 [N/mm2]
+    expect(stress.rebarShearStressNPerMm2).toBeCloseTo(0, 3); // 鉄筋せん断応力度 [N/mm2]
   });
 
   it("不正な入力の場合はエラー", () => {
@@ -145,7 +180,7 @@ describe("AnnularSectionCalculator", () => {
       materialParams: {
         youngRatio: 15, // ヤング係数比
         rebarYieldStrengthNPerMm2: 345, // 鉄筋降伏強度 [N/mm2]
-        concreteDesignStrengthNPerMm2: 30, // コンクリート設計基準強度 [N/mm2]
+        concreteDesignStrength_NPerMm2: 30, // コンクリート設計基準強度 [N/mm2]
       },
     });
 
@@ -172,7 +207,7 @@ describe("AnnularSectionCalculator", () => {
       materialParams: {
         youngRatio: 15, // ヤング係数比
         rebarYieldStrengthNPerMm2: 345, // 鉄筋降伏強度 [N/mm2]
-        concreteDesignStrengthNPerMm2: 30, // コンクリート設計基準強度 [N/mm2]
+        concreteDesignStrength_NPerMm2: 30, // コンクリート設計基準強度 [N/mm2]
       },
     });
 

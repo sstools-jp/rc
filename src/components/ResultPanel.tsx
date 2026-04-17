@@ -66,6 +66,11 @@ export function AnnularSectionResultPanel({
           value={formatNumber(stress?.concreteShearStressNPerMm2, 1)}
           unit="N/mm²"
         />
+        <ResultCell
+          label="鉄筋せん断応力度"
+          value={formatNumber(stress?.rebarShearStressNPerMm2, 1)}
+          unit="N/mm²"
+        />
       </CollapsibleSection>
 
       <CollapsibleSection title="終局耐力" defaultOpen>

@@ -1,4 +1,5 @@
 import type { RebarDiameterMm } from "@/model/rebar";
+import type { ConcreteDesignStrength_NPerMm2 } from "@/model/concrete";
 import type { SectionForce } from "@/model/section-force";
 
 /** 円環断面の入力全体を表す型定義 */
@@ -32,5 +33,5 @@ export interface MaterialParams {
   /** 鉄筋降伏強度 [N/mm2] */
   rebarYieldStrengthNPerMm2: number;
   /** コンクリート設計基準強度 [N/mm2] */
-  concreteDesignStrengthNPerMm2: number;
+  concreteDesignStrength_NPerMm2: ConcreteDesignStrength_NPerMm2;
 }

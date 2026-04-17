@@ -1,5 +1,6 @@
 import { REBAR_DIAMETERS_MM, getRebarAreaMm2 } from "@/model/rebar";
 import type { RebarDiameterMm } from "@/model/rebar";
+import { getTauC_NPerMm2 } from "@/model/concrete";
 import {
   resolveSectionForceComponents,
   type AxialForceSign,
@@ -211,10 +212,10 @@ function validateGeometry(
 
 /** 諸係数の入力値を検査する */
 function validateMaterialParams(
-  materialParams: AnnularSectionInput["materialParams"],
+  materialParams: MaterialParams,
   issues: AnnularSectionValidationIssue[],
 ): void {
-  const { youngRatio, rebarYieldStrengthNPerMm2, concreteDesignStrengthNPerMm2 } = materialParams;
+  const { youngRatio, rebarYieldStrengthNPerMm2, concreteDesignStrength_NPerMm2 } = materialParams;
 
   if (!Number.isFinite(youngRatio) || youngRatio <= 0) {
     issues.push({ field: "materialParams", message: "ヤング係数比は正の数で指定してください。" });
@@ -222,7 +223,7 @@ function validateMaterialParams(
   if (!Number.isFinite(rebarYieldStrengthNPerMm2) || rebarYieldStrengthNPerMm2 <= 0) {
     issues.push({ field: "materialParams", message: "鉄筋降伏強度は正の数で指定してください。" });
   }
-  if (!Number.isFinite(concreteDesignStrengthNPerMm2) || concreteDesignStrengthNPerMm2 <= 0) {
+  if (!Number.isFinite(concreteDesignStrength_NPerMm2) || concreteDesignStrength_NPerMm2 <= 0) {
     issues.push({ field: "materialParams", message: "コンクリート設計基準強度は正の数で指定してください。" });
   }
 }
@@ -345,6 +346,8 @@ interface SectionStressState {
   rebarStressNPerMm2: number;
   /** コンクリートせん断応力度 [N/mm2] */
   concreteShearStressNPerMm2: number;
+  /** 鉄筋せん断応力度 [N/mm2] */
+  rebarShearStressNPerMm2: number;
 }
 
 /** 耐力の状態をまとめる型定義 */
@@ -403,14 +406,29 @@ function calculateStressState(
   const outerRadiusMm = context.geometry.outerRadiusMm;
   const scale = combinedMomentNmm / Math.pow(outerRadiusMm, 3);
 
+  /** コンクリート圧縮応力度 [N/mm2] */
+  const concreteCompressionStressNPerMm2 = scale * solver.concreteCompressionCoefficient;
+
+  /** 鉄筋応力度 [N/mm2] */
+  const rebarStressNPerMm2 = scale * solver.steelStressCoefficient * context.materialParams.youngRatio;
+
+  // せん断応力度 [N/mm2] の算出
+  const shearStressNPerMm2 =
+    ((context.shearKN * 1000) / Math.pow(outerRadiusMm, 2)) * solver.shearCoefficient;
+
+  // コンクリートが負担できる平均せん断応力度の基本値 τc の超過分を鉄筋が負担する
+  const tauC_NPerMm2 = getTauC_NPerMm2(context.materialParams.concreteDesignStrength_NPerMm2);
+
+  /** コンクリートせん断応力度 [N/mm2] */
+  const concreteShearStressNPerMm2 = Math.min(shearStressNPerMm2, tauC_NPerMm2);
+  /** 鉄筋せん断応力度 [N/mm2] */
+  const rebarShearStressNPerMm2 = shearStressNPerMm2 > tauC_NPerMm2 ? shearStressNPerMm2 - tauC_NPerMm2 : 0;
+
   return {
-    /** コンクリート圧縮応力度 [N/mm2] */
-    concreteCompressionStressNPerMm2: scale * solver.concreteCompressionCoefficient,
-    /** 鉄筋応力度 [N/mm2] */
-    rebarStressNPerMm2: scale * solver.steelStressCoefficient * context.materialParams.youngRatio,
-    /** コンクリートせん断応力度 [N/mm2] */
-    concreteShearStressNPerMm2:
-      ((context.shearKN * 1000) / Math.pow(outerRadiusMm, 2)) * solver.shearCoefficient,
+    concreteCompressionStressNPerMm2,
+    rebarStressNPerMm2,
+    concreteShearStressNPerMm2,
+    rebarShearStressNPerMm2,
   };
 }
 

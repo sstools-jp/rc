@@ -19,10 +19,10 @@ export const CONCRETE_DATA = [
 export const CONCRETE_DESIGN_STRENGTHS_N_PER_MM2 = CONCRETE_DATA.map((c) => c.sigmaCk_NPerMm2);
 
 /** コンクリート設計基準強度を表す型 */
-export type ConcreteDesignStrengthNPerMm2 = (typeof CONCRETE_DATA)[number]["sigmaCk_NPerMm2"];
+export type ConcreteDesignStrength_NPerMm2 = (typeof CONCRETE_DATA)[number]["sigmaCk_NPerMm2"];
 
 /** コンクリート設計基準強度から平均せん断応力度の基本値を取得する関数 */
-export function getTauCNPerMm2(concreteDesignStrengthNPerMm2: ConcreteDesignStrengthNPerMm2): number {
+export function getTauC_NPerMm2(concreteDesignStrengthNPerMm2: ConcreteDesignStrength_NPerMm2): number {
   const concrete = CONCRETE_DATA.find((c) => c.sigmaCk_NPerMm2 === concreteDesignStrengthNPerMm2);
   if (!concrete) {
     throw new Error(

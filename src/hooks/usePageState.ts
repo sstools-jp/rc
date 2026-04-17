@@ -191,7 +191,9 @@ function buildInput(form: FormState, sectionForceMode: SectionForceMode): Annula
     materialParams: {
       youngRatio: parseNumber(form.youngRatio),
       rebarYieldStrengthNPerMm2: parseNumber(form.rebarYieldStrengthNPerMm2),
-      concreteDesignStrengthNPerMm2: parseNumber(form.concreteDesignStrengthNPerMm2),
+      concreteDesignStrength_NPerMm2: parseNumber(
+        form.concreteDesignStrengthNPerMm2,
+      ) as AnnularSectionInput["materialParams"]["concreteDesignStrength_NPerMm2"],
     },
   };
 }
