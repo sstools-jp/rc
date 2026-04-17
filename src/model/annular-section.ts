@@ -382,13 +382,18 @@ function calculateStressState(
   context: SectionCalculationContext,
   solver: NeutralAxisSolverResult,
 ): SectionStressState {
-  const scale = (context.combinedMomentKNmm * 1000) / Math.pow(context.geometry.outerRadiusMm, 3);
+  const combinedMomentNmm = context.combinedMomentKNmm * 1000;
+  const outerRadiusMm = context.geometry.outerRadiusMm;
+  const scale = combinedMomentNmm / Math.pow(outerRadiusMm, 3);
 
   return {
+    /** コンクリート圧縮応力度 [N/mm2] */
     concreteCompressionStressNPerMm2: scale * solver.concreteCompressionCoefficient,
+    /** 鉄筋応力度 [N/mm2] */
     rebarStressNPerMm2: scale * solver.steelStressCoefficient * context.materialParams.youngRatio,
+    /** コンクリートせん断応力度 [N/mm2] */
     concreteShearStressNPerMm2:
-      ((context.shearKN * 1000) / Math.pow(context.geometry.outerRadiusMm, 2)) * solver.shearCoefficient,
+      ((context.shearKN * 1000) / Math.pow(outerRadiusMm, 2)) * solver.shearCoefficient,
   };
 }
 
