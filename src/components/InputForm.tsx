@@ -4,6 +4,7 @@ import { AppButton } from "@/components/AppButton";
 import { SymbolText } from "@/components/SymbolText";
 import { SectionForceModeSelector, type SectionForceMode } from "@/components/SectionForceModeSelector";
 import { type AnnularSectionValidationIssue } from "@/model/annular-section";
+import { CONCRETE_DESIGN_STRENGTHS_N_PER_MM2 } from "@/model/concrete";
 import { REBAR_DIAMETERS_MM } from "@/model/rebar";
 import type { FormState } from "@/forms/form-state";
 
@@ -153,9 +154,13 @@ export function AnnularSectionInputFormPanel({
                 />
               </FieldRow>
               <FieldRow label="コンクリート設計基準強度" symbol="σck" unit="N/mm²">
-                <FieldInput
+                <FieldSelect
                   value={form.concreteDesignStrengthNPerMm2}
                   onChange={onChangeField("concreteDesignStrengthNPerMm2")}
+                  options={CONCRETE_DESIGN_STRENGTHS_N_PER_MM2.map((strength) => ({
+                    value: String(strength),
+                    label: String(strength),
+                  }))}
                 />
               </FieldRow>
               <FieldRow label="ヤング係数比" symbol="n" unit="-">
