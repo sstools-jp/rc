@@ -412,15 +412,18 @@ function calculateStressState(
   /** 鉄筋応力度 [N/mm2] */
   const rebarStress_NPerMm2 = scale * solver.steelStressCoefficient * context.materialParams.youngRatio;
 
-  // せん断応力度 [N/mm2] の算出
+  /** せん断応力度 [N/mm2]  */
   const shearStress_NPerMm2 =
-    ((context.shear_KN * 1000) / Math.pow(outerRadius_Mm, 2)) * solver.shearCoefficient;
+    ((context.shear_KN * 1000) / Math.pow(outerRadius_Mm, 2)) * solver.shearCoefficient +
+    // ねじりモーメントによるせん断応力度を加味する
+    (context.force.mx_KNm * 1000) / outerRadius_Mm;
 
   // コンクリートが負担できる平均せん断応力度の基本値 τc の超過分を鉄筋が負担する
   const tauC_NPerMm2 = getTauC_NPerMm2(context.materialParams.concreteDesignStrength_NPerMm2);
 
   /** コンクリートせん断応力度 [N/mm2] */
   const concreteShearStress_NPerMm2 = Math.min(shearStress_NPerMm2, tauC_NPerMm2);
+
   /** 鉄筋せん断応力度 [N/mm2] */
   const rebarShearStress_NPerMm2 =
     shearStress_NPerMm2 > tauC_NPerMm2 ? shearStress_NPerMm2 - tauC_NPerMm2 : 0;
