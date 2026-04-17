@@ -2,7 +2,9 @@ import clsx from "clsx";
 import type { ReactNode, SubmitEventHandler } from "react";
 import { AppButton } from "@/components/AppButton";
 import { SymbolText } from "@/components/SymbolText";
-import { REBAR_DIAMETERS_MM, type AnnularSectionValidationIssue } from "@/model/annular-section";
+import { SectionForceModeSelector, type SectionForceMode } from "@/components/SectionForceModeSelector";
+import { type AnnularSectionValidationIssue } from "@/model/annular-section";
+import { REBAR_DIAMETERS_MM } from "@/model/rebar";
 import type { FormState } from "@/forms/form-state";
 
 type AnnularSectionInputFormProps = {
@@ -16,6 +18,10 @@ type AnnularSectionInputFormProps = {
   onReset: () => void;
   /** フォームのフィールド更新ハンドラ */
   onChangeField: (field: keyof FormState) => (value: string) => void;
+  /** 断面力タイプ */
+  sectionForceMode: SectionForceMode;
+  /** 断面力タイプ更新ハンドラ */
+  onChangeSectionForceMode: (value: SectionForceMode) => void;
 };
 
 /** 入力フォームパネル */
@@ -25,39 +31,94 @@ export function AnnularSectionInputFormPanel({
   onSubmit,
   onReset,
   onChangeField,
+  sectionForceMode,
+  onChangeSectionForceMode,
 }: AnnularSectionInputFormProps) {
   return (
     <section className="flex w-120 flex-col gap-4 rounded-sm border border-slate-300 bg-white p-5">
-      <h2 className="text-xl">断面力・寸法・鉄筋</h2>
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
-        <div className="overflow-hidden border border-slate-200 bg-slate-50/80">
-          <table className="w-full border-collapse">
-            <thead className="">
-              <tr className="border-b border-slate-200 text-sm text-slate-500">
-                <th scope="col" className="py-1">
-                  項目
+        <section className="flex flex-col gap-1">
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="text-xl">断面力</h2>
+            <SectionForceModeSelector value={sectionForceMode} onChange={onChangeSectionForceMode} />
+          </div>
+          <table className="border-collapse overflow-hidden border border-slate-400 bg-slate-50/80">
+            <thead className="bg-slate-200/50 text-sm">
+              <tr className="border-b border-slate-400 text-slate-500">
+                <th scope="col" className="border-x border-slate-400 py-1">
+                  項目名
                 </th>
-                <th scope="col" className="py-1">
+                <th scope="col" className="border-x border-slate-400 py-1">
                   記号
                 </th>
-                <th scope="col" className="py-1">
+                <th scope="col" className="border-x border-slate-400 py-1">
                   単位
                 </th>
-                <th scope="col" className="py-1">
+                <th scope="col" className="border-x border-slate-400 py-1">
                   入力値
                 </th>
               </tr>
             </thead>
-            <tbody>
-              <FieldRow label="曲げモーメント" symbol="M" unit="kN.m">
-                <FieldInput value={form.momentKNm} onChange={onChangeField("momentKNm")} />
-              </FieldRow>
-              <FieldRow label="せん断力" symbol="S" unit="kN">
-                <FieldInput value={form.shearKN} onChange={onChangeField("shearKN")} />
-              </FieldRow>
-              <FieldRow label="軸力（圧縮を正）" symbol="N" unit="kN">
-                <FieldInput value={form.axialKN} onChange={onChangeField("axialKN")} />
-              </FieldRow>
+            {/* 3断面力 */}
+            {sectionForceMode === "3" && (
+              <tbody className="text-md">
+                <FieldRow label="曲げモーメント" symbol="M" unit="kN.m">
+                  <FieldInput value={form.myKNm} onChange={onChangeField("myKNm")} />
+                </FieldRow>
+                <FieldRow label="せん断力" symbol="S" unit="kN">
+                  <FieldInput value={form.fzKN} onChange={onChangeField("fzKN")} />
+                </FieldRow>
+                <FieldRow label="軸力（引張を正）" symbol="N" unit="kN">
+                  <FieldInput value={form.fxKN} onChange={onChangeField("fxKN")} />
+                </FieldRow>
+              </tbody>
+            )}
+            {/* 6断面力 */}
+            {sectionForceMode === "6" && (
+              <tbody className="text-md">
+                <FieldRow label="軸力" symbol="Fx" unit="kN">
+                  <FieldInput value={form.fxKN} onChange={onChangeField("fxKN")} />
+                </FieldRow>
+                <FieldRow label="せん断力（面外）" symbol="Fy" unit="kN">
+                  <FieldInput value={form.fyKN} onChange={onChangeField("fyKN")} />
+                </FieldRow>
+                <FieldRow label="せん断力（面内）" symbol="Fz" unit="kN">
+                  <FieldInput value={form.fzKN} onChange={onChangeField("fzKN")} />
+                </FieldRow>
+                <FieldRow label="ねじりモーメント" symbol="Mx" unit="kN.m">
+                  <FieldInput value={form.mxKNm} onChange={onChangeField("mxKNm")} />
+                </FieldRow>
+                <FieldRow label="曲げモーメント（面内）" symbol="My" unit="kN.m">
+                  <FieldInput value={form.myKNm} onChange={onChangeField("myKNm")} />
+                </FieldRow>
+                <FieldRow label="曲げモーメント（面外）" symbol="Mz" unit="kN.m">
+                  <FieldInput value={form.mzKNm} onChange={onChangeField("mzKNm")} />
+                </FieldRow>
+              </tbody>
+            )}
+          </table>
+        </section>
+
+        <section className="flex flex-col gap-1">
+          <h2 className="text-xl">寸法・鉄筋</h2>
+          <table className="border-collapse overflow-hidden border border-slate-400 bg-slate-50/80">
+            <thead className="bg-slate-200/50 text-sm">
+              <tr className="border-b border-slate-400 text-slate-500">
+                <th scope="col" className="border-x border-slate-400 py-1">
+                  項目名
+                </th>
+                <th scope="col" className="border-x border-slate-400 py-1">
+                  記号
+                </th>
+                <th scope="col" className="border-x border-slate-400 py-1">
+                  単位
+                </th>
+                <th scope="col" className="border-x border-slate-400 py-1">
+                  入力値
+                </th>
+              </tr>
+            </thead>
+            <tbody className="text-md">
               <FieldRow label="外径半径" symbol="r" unit="mm">
                 <FieldInput value={form.outerRadiusMm} onChange={onChangeField("outerRadiusMm")} />
               </FieldRow>
@@ -102,7 +163,7 @@ export function AnnularSectionInputFormPanel({
               </FieldRow>
             </tbody>
           </table>
-        </div>
+        </section>
 
         <div className="flex flex-row gap-3">
           <AppButton type="submit" variant="primary">
@@ -143,13 +204,17 @@ type FieldRowProps = {
 /** 入力用の行コンポーネント */
 function FieldRow({ label, symbol, unit, children }: FieldRowProps) {
   return (
-    <tr className="border-b border-slate-200 last:border-b-0">
-      <td className="px-2 py-1">{label}</td>
-      <td className="px-1 py-1 text-center font-mono">
+    <tr className="border-b border-slate-400 last:border-b-0">
+      {/* 項目名 */}
+      <td className="border-x border-slate-400 px-2 py-1">{label}</td>
+      {/* 記号 */}
+      <td className="w-12 border-x border-slate-400 px-1 py-1 text-center font-mono">
         <SymbolText value={symbol} />
       </td>
-      <td className="px-1 py-1 text-center font-mono">{unit}</td>
-      <td className="w-26 px-1 py-1">{children}</td>
+      {/* 単位 */}
+      <td className="w-16 border-x border-slate-400 px-1 py-1 text-center font-mono">{unit}</td>
+      {/* 入力値 */}
+      <td className="w-24 border-x border-slate-400 bg-white">{children}</td>
     </tr>
   );
 }
@@ -164,7 +229,7 @@ type FieldInputProps = {
 /** 数値入力用のコンポーネント */
 function FieldInput({ value, onChange, inputMode = "decimal", step }: FieldInputProps) {
   const className = clsx(
-    "w-full border border-slate-300 bg-white px-1 py-0.5 text-right font-mono outline-none placeholder:text-slate-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15",
+    "w-full [appearance:textfield] px-1 py-0.5 text-right font-mono outline-none placeholder:text-slate-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
   );
 
   return (
@@ -174,6 +239,12 @@ function FieldInput({ value, onChange, inputMode = "decimal", step }: FieldInput
       step={step}
       className={className}
       value={value}
+      onKeyDown={(event) => {
+        if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+          event.preventDefault();
+        }
+      }}
+      onWheel={(event) => event.currentTarget.blur()}
       onChange={(event) => onChange(event.target.value)}
     />
   );
@@ -193,7 +264,7 @@ type FieldSelectProps = {
 /** 選択入力用のコンポーネント */
 function FieldSelect({ value, onChange, options }: FieldSelectProps) {
   const className = clsx(
-    "w-full border border-slate-300 bg-white px-1 py-0.5 text-right font-mono outline-none placeholder:text-slate-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15",
+    "w-full px-1 py-0.5 text-right font-mono outline-none placeholder:text-slate-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15",
   );
 
   return (

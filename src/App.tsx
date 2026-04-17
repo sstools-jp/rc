@@ -11,9 +11,11 @@ function App() {
     issues,
     statusMessage,
     isPrintPreviewOpen,
+    sectionForceMode,
     handleSubmit,
     handleReset,
     updateField,
+    updateSectionForceMode,
     openPrintPreview,
     closePrintPreview,
   } = useAnnularSectionPageState();
@@ -49,6 +51,8 @@ function App() {
           onSubmit={handleSubmit}
           onReset={handleReset}
           onChangeField={updateField}
+          sectionForceMode={sectionForceMode}
+          onChangeSectionForceMode={updateSectionForceMode}
         />
 
         {/* 結果表示パネル */}

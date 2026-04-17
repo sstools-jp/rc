@@ -1,91 +1,249 @@
-export const REBAR_DIAMETERS_MM = [6, 8, 10, 13, 16, 19, 22, 25, 29, 32, 35, 38, 41, 51] as const;
+import { REBAR_DIAMETERS_MM, getRebarAreaMm2 } from "@/model/rebar";
+import type { RebarDiameterMm } from "@/model/rebar";
+import {
+  resolveSectionForceComponents,
+  type AxialForceSign,
+  type SectionForce,
+  type SectionForceComponents,
+} from "@/model/section-force";
+import type { AnnularSectionGeometryInput, AnnularSectionInput, MaterialParams } from "@/model/section-types";
+import {
+  calculateConcreteUltimateMomentKNm,
+  calculateRebarYieldMomentKNm,
+  solveNeutralAxisAngleDeg,
+} from "@/model/section-solver";
+import type { NeutralAxisSolverResult, StrengthMomentSolverInput } from "@/model/section-solver";
 
-// 鉄筋径を表す型
-export type RebarDiameterMm = (typeof REBAR_DIAMETERS_MM)[number];
+/** 円環断面の形状を表す値オブジェクト */
+export class AnnularSectionGeometry {
+  readonly outerRadiusMm: number;
+  readonly innerRadiusMm: number;
+  readonly rebarRadiusMm: number;
+  readonly rebarDiameterMm: RebarDiameterMm;
+  readonly barCount: number;
 
-// 鉄筋径に対応する断面積[mm2]を定義
-export const REBAR_AREAS_MM2: Readonly<Record<RebarDiameterMm, number>> = {
-  6: 31.67,
-  8: 49.51,
-  10: 71.33,
-  13: 126.7,
-  16: 198.6,
-  19: 286.5,
-  22: 387.1,
-  25: 506.7,
-  29: 642.4,
-  32: 794.2,
-  35: 956.6,
-  38: 1140,
-  41: 1340,
-  51: 2027,
-};
+  private constructor(input: AnnularSectionGeometryInput) {
+    this.outerRadiusMm = input.outerRadiusMm;
+    this.innerRadiusMm = input.innerRadiusMm;
+    this.rebarRadiusMm = input.rebarRadiusMm;
+    this.rebarDiameterMm = input.rebarDiameterMm;
+    this.barCount = input.barCount;
+  }
 
-// 軸力の符号を表す型
-export type AxialForceSign = "compression" | "tension" | "zero";
+  /** 入力値から値オブジェクトを生成する */
+  static fromInput(input: AnnularSectionGeometryInput): AnnularSectionGeometry {
+    return new AnnularSectionGeometry(input);
+  }
 
-// 入力データの型定義
-// prettier-ignore
-export interface AnnularSectionInput {
-  momentKNm:      number; // 曲げモーメント [kN.m]
-  shearKN:        number; // せん断力 [kN]
-  axialKN:        number; // 軸力 [kN]
-  outerRadiusMm:  number; // 外径 [mm]
-  innerRadiusMm:  number; // 内径 [mm]
-  rebarRadiusMm:  number; // 鉄筋の位置（有効半径） [mm]
-  rebarDiameterMm: RebarDiameterMm; // 鉄筋径 [mm]
-  barCount:       number; // 鉄筋の本数
-  youngRatio:     number; // ヤング係数比（鋼材のヤング係数 / コンクリートのヤング係数）
-  rebarYieldStrengthNPerMm2: number; // 鉄筋降伏強度 [N/mm2]
-  concreteDesignStrengthNPerMm2: number; // コンクリート設計基準強度 [N/mm2]
+  /** 全断面積 [mm2] */
+  get fullSectionAreaMm2(): number {
+    return Math.PI * this.outerRadiusMm * this.outerRadiusMm;
+  }
+
+  /** 内部断面積 [mm2] */
+  get innerSectionAreaMm2(): number {
+    return Math.PI * this.innerRadiusMm * this.innerRadiusMm;
+  }
+
+  /** 断面積 [mm2] */
+  get sectionAreaMm2(): number {
+    return this.fullSectionAreaMm2 - this.innerSectionAreaMm2;
+  }
+
+  /** 1本あたりの鉄筋断面積 [mm2] */
+  get rebarAreaPerBarMm2(): number {
+    return getRebarAreaMm2(this.rebarDiameterMm);
+  }
+
+  /** 鉄筋総断面積 [mm2] */
+  get totalRebarAreaMm2(): number {
+    return this.rebarAreaPerBarMm2 * this.barCount;
+  }
+
+  /** 鉄筋比 [%] */
+  get rebarRatioPercent(): number {
+    return (this.totalRebarAreaMm2 / this.fullSectionAreaMm2) * 100;
+  }
+
+  /** 中立軸位置の係数 */
+  get alpha(): number {
+    return this.rebarRadiusMm / this.outerRadiusMm;
+  }
+
+  /** 軸力係数 */
+  get gamma(): number {
+    return this.innerRadiusMm / this.outerRadiusMm;
+  }
+
+  /** 入力型へ戻す */
+  toInput(): AnnularSectionGeometryInput {
+    return {
+      outerRadiusMm: this.outerRadiusMm,
+      innerRadiusMm: this.innerRadiusMm,
+      rebarRadiusMm: this.rebarRadiusMm,
+      rebarDiameterMm: this.rebarDiameterMm,
+      barCount: this.barCount,
+    };
+  }
 }
 
-// 検算結果の型定義
+/** 検算結果の型定義 */
 export interface AnnularSectionValidationIssue {
   field: keyof AnnularSectionInput;
   message: string;
 }
 
-// 計算結果の型定義
-// prettier-ignore
+/** 計算結果の型定義 */
+export interface AnnularSectionSectionResult {
+  /** 断面積 [mm2] */
+  sectionAreaMm2: number;
+  /** 全断面積 [mm2] */
+  fullSectionAreaMm2: number;
+  /** 内部断面積 [mm2] */
+  innerSectionAreaMm2: number;
+  /** 1本あたりの鉄筋断面積 [mm2] */
+  rebarAreaPerBarMm2: number;
+  /** 鉄筋総断面積 [mm2] */
+  totalRebarAreaMm2: number;
+  /** 鉄筋比 [%] */
+  rebarRatioPercent: number;
+  /** 中立軸位置の係数 */
+  alpha: number;
+  /** 軸力係数 */
+  gamma: number;
+}
+
+/** 荷重状態の結果定義 */
+export interface AnnularSectionLoadingResult {
+  /** 換算曲げモーメント [kN.m] */
+  combinedMomentKNm: number;
+  /** 軸力の符号 */
+  axialForceSign: AxialForceSign;
+}
+
+/** 中立軸の結果定義 */
+export interface AnnularSectionNeutralAxisResult {
+  /** 中立軸角度 [deg] */
+  neutralAxisAngleDeg: number;
+  /** 中立軸位置 [mm] */
+  neutralAxisPositionMm: number;
+  /** コンクリート圧縮応力度係数 */
+  concreteCompressionCoefficient: number;
+  /** 鋼材応力度係数 */
+  steelStressCoefficient: number;
+  /** せん断応力度係数 */
+  shearCoefficient: number;
+}
+
 export interface AnnularSectionResult {
-  sectionAreaMm2:                   number;   // 断面積 [mm2]
-  fullSectionAreaMm2:               number;   // 全断面積 [mm2]
-  innerSectionAreaMm2:              number;   // 内部断面積 [mm2]
-  rebarAreaPerBarMm2:               number;   // 1本あたりの鉄筋断面積 [mm2]
-  totalRebarAreaMm2:                number;   // 鉄筋総断面積 [mm2]
-  rebarRatioPercent:                number;   // 鉄筋比 [%]
-  alpha:                            number;   // 中立軸位置の係数
-  gamma:                            number;   // 軸力係数
-  combinedMomentKNm:                number;   // 換算曲げモーメント [kN.m]
-  axialForceSign: AxialForceSign;             // 軸力の符号
-  youngRatio:                       number;   // ヤング係数比
-  neutralAxisAngleDeg:              number;   // 中立軸角度 [deg]
-  neutralAxisPositionMm:            number;   // 中立軸位置 [mm]
-  concreteCompressionCoefficient:   number;   // コンクリート圧縮応力度係数
-  steelStressCoefficient:           number;   // 鋼材応力度係数
-  shearCoefficient:                 number;   // せん断応力度係数
-  // 応力度
-  concreteCompressionStressNPerMm2: number;   // コンクリート圧縮応力度 [N/mm2]
-  rebarStressNPerMm2:               number;   // 鉄筋応力度 [N/mm2]
-  concreteShearStressNPerMm2:       number;   // コンクリートせん断応力度 [N/mm2]
-  // 終局耐力
-  concreteUltimateMomentKNm:        number;   // コンクリート終局曲げモーメント [kN.m]
-  rebarYieldMomentKNm:              number;   // 鉄筋降伏曲げモーメント [kN.m]
+  /** 断面形状の結果 */
+  section: AnnularSectionSectionResult;
+  /** 荷重状態の結果 */
+  loading: AnnularSectionLoadingResult;
+  /** 中立軸の結果 */
+  neutralAxis: AnnularSectionNeutralAxisResult;
+  /** 応力度の結果 */
+  stress: SectionStressState;
+  /** 耐力の結果 */
+  strength: SectionStrengthState;
 }
 
-// 数値計算用の極小値（ゼロ判定用）
+/** 断面力の入力値を検査する */
+function validateSectionForce(
+  force: SectionForce | undefined,
+  issues: AnnularSectionValidationIssue[],
+): void {
+  if (!Number.isFinite(force?.fxKN)) {
+    issues.push({ field: "force", message: "軸力は数値で指定してください。" });
+  }
+  if (!Number.isFinite(force?.fyKN)) {
+    issues.push({ field: "force", message: "せん断力（面外）は数値で指定してください。" });
+  }
+  if (!Number.isFinite(force?.fzKN)) {
+    issues.push({ field: "force", message: "せん断力（面内）は数値で指定してください。" });
+  }
+  if (!Number.isFinite(force?.mxKNm)) {
+    issues.push({ field: "force", message: "ねじりモーメントは数値で指定してください。" });
+  }
+  if (!Number.isFinite(force?.myKNm)) {
+    issues.push({ field: "force", message: "曲げモーメント（面内）は数値で指定してください。" });
+  }
+  if (!Number.isFinite(force?.mzKNm)) {
+    issues.push({ field: "force", message: "曲げモーメント（面外）は数値で指定してください。" });
+  }
+}
+
+/** 断面形状の入力値を検査する */
+function validateGeometry(
+  geometry: AnnularSectionGeometryInput,
+  issues: AnnularSectionValidationIssue[],
+): void {
+  const { outerRadiusMm, innerRadiusMm, rebarRadiusMm, rebarDiameterMm, barCount } = geometry;
+
+  if (!Number.isFinite(outerRadiusMm) || outerRadiusMm <= 0) {
+    issues.push({ field: "geometry", message: "半径（外）は正の数で指定してください。" });
+  }
+  if (!Number.isFinite(innerRadiusMm) || innerRadiusMm < 0) {
+    issues.push({ field: "geometry", message: "半径（内）は 0 以上で指定してください。" });
+  }
+  if (!Number.isFinite(rebarRadiusMm) || rebarRadiusMm < 0) {
+    issues.push({ field: "geometry", message: "鉄筋の位置（有効半径）は 0 以上で指定してください。" });
+  }
+  if (!Number.isFinite(barCount) || barCount <= 0) {
+    issues.push({ field: "geometry", message: "本数は正の数で指定してください。" });
+  }
+
+  const validDiameters = new Set<number>(REBAR_DIAMETERS_MM);
+  if (!validDiameters.has(rebarDiameterMm)) {
+    issues.push({ field: "materialParams", message: "鉄筋径は D6 から D51 の範囲で指定してください。" });
+  }
+
+  if (Number.isFinite(outerRadiusMm) && Number.isFinite(innerRadiusMm) && innerRadiusMm > outerRadiusMm) {
+    issues.push({ field: "geometry", message: "半径（内）は半径（外）以下で指定してください。" });
+  }
+  if (Number.isFinite(outerRadiusMm) && Number.isFinite(rebarRadiusMm) && rebarRadiusMm > outerRadiusMm) {
+    issues.push({ field: "geometry", message: "鉄筋の位置（有効半径）は半径（外）以下で指定してください。" });
+  }
+  if (Number.isFinite(innerRadiusMm) && Number.isFinite(rebarRadiusMm) && rebarRadiusMm < innerRadiusMm) {
+    issues.push({ field: "geometry", message: "鉄筋の位置（有効半径）は半径（内）以上で指定してください。" });
+  }
+}
+
+/** 諸係数の入力値を検査する */
+function validateMaterialParams(
+  materialParams: AnnularSectionInput["materialParams"],
+  issues: AnnularSectionValidationIssue[],
+): void {
+  const { youngRatio, rebarYieldStrengthNPerMm2, concreteDesignStrengthNPerMm2 } = materialParams;
+
+  if (!Number.isFinite(youngRatio) || youngRatio <= 0) {
+    issues.push({ field: "materialParams", message: "ヤング係数比は正の数で指定してください。" });
+  }
+  if (!Number.isFinite(rebarYieldStrengthNPerMm2) || rebarYieldStrengthNPerMm2 <= 0) {
+    issues.push({ field: "materialParams", message: "鉄筋降伏強度は正の数で指定してください。" });
+  }
+  if (!Number.isFinite(concreteDesignStrengthNPerMm2) || concreteDesignStrengthNPerMm2 <= 0) {
+    issues.push({ field: "materialParams", message: "コンクリート設計基準強度は正の数で指定してください。" });
+  }
+}
+
+/** 入力から計算用の3成分へ要約する */
+function resolveSectionForceSummary(input: AnnularSectionInput): SectionForceComponents {
+  if (!input.force) {
+    throw new Error("断面力が指定されていません。");
+  }
+
+  const components = resolveSectionForceComponents(input.force, input.geometry.rebarRadiusMm);
+
+  return {
+    momentKNm: components.momentKNm,
+    shearKN: components.shearKN,
+    axialKN: components.axialKN,
+  };
+}
+
+/** 数値計算用の極小値（ゼロ判定用） */
 const EPSILON = 1e-9;
-
-// ラジアン変換のヘルパー
-function degToRad(deg: number): number {
-  return deg * (Math.PI / 180);
-}
-
-// 角度変換のヘルパー
-function radToDeg(rad: number): number {
-  return rad * (180 / Math.PI);
-}
 
 /**
  * 円環断面の計算クラス
@@ -97,91 +255,20 @@ export class AnnularSectionCalculator {
     this.input = input;
   }
 
-  // 入力値の検査
+  /** 入力値の検査 */
   validate(): AnnularSectionValidationIssue[] {
     const issues: AnnularSectionValidationIssue[] = [];
-    const {
-      momentKNm,
-      shearKN,
-      axialKN,
-      outerRadiusMm,
-      innerRadiusMm,
-      rebarRadiusMm,
-      rebarDiameterMm,
-      barCount,
-      youngRatio,
-      rebarYieldStrengthNPerMm2,
-      concreteDesignStrengthNPerMm2,
-    } = this.input;
+    const { force, geometry, materialParams } = this.input;
 
-    if (!Number.isFinite(momentKNm)) {
-      const message = "モーメントは数値で指定してください。";
-      issues.push({ field: "momentKNm", message });
-    }
-    if (!Number.isFinite(shearKN)) {
-      const message = "せん断力は数値で指定してください。";
-      issues.push({ field: "shearKN", message });
-    }
-    if (!Number.isFinite(axialKN)) {
-      const message = "軸力は数値で指定してください。";
-      issues.push({ field: "axialKN", message });
-    }
-    if (!Number.isFinite(outerRadiusMm) || outerRadiusMm <= 0) {
-      const message = "半径（外）は正の数で指定してください。";
-      issues.push({ field: "outerRadiusMm", message });
-    }
-    if (!Number.isFinite(innerRadiusMm) || innerRadiusMm < 0) {
-      const message = "半径（内）は 0 以上で指定してください。";
-      issues.push({ field: "innerRadiusMm", message });
-    }
-    if (!Number.isFinite(rebarRadiusMm) || rebarRadiusMm < 0) {
-      const message = "鉄筋の位置（有効半径）は 0 以上で指定してください。";
-      issues.push({ field: "rebarRadiusMm", message });
-    }
-    if (!Number.isFinite(barCount) || barCount <= 0) {
-      const message = "本数は正の数で指定してください。";
-      issues.push({ field: "barCount", message });
-    }
-    if (!Number.isFinite(youngRatio) || youngRatio <= 0) {
-      const message = "ヤング係数比は正の数で指定してください。";
-      issues.push({ field: "youngRatio", message });
-    }
-    if (!Number.isFinite(rebarYieldStrengthNPerMm2) || rebarYieldStrengthNPerMm2 <= 0) {
-      const message = "鉄筋降伏強度は正の数で指定してください。";
-      issues.push({ field: "rebarYieldStrengthNPerMm2", message });
-    }
-    if (!Number.isFinite(concreteDesignStrengthNPerMm2) || concreteDesignStrengthNPerMm2 <= 0) {
-      const message = "コンクリート設計基準強度は正の数で指定してください。";
-      issues.push({ field: "concreteDesignStrengthNPerMm2", message });
-    }
+    validateSectionForce(force, issues);
 
-    const validDiameters = new Set<number>(REBAR_DIAMETERS_MM);
-    if (!validDiameters.has(rebarDiameterMm)) {
-      const message = "鉄筋径は D6 から D51 の範囲で指定してください。";
-      issues.push({ field: "rebarDiameterMm", message });
-    }
-
-    if (Number.isFinite(outerRadiusMm) && Number.isFinite(innerRadiusMm) && innerRadiusMm > outerRadiusMm) {
-      const message = "半径（内）は半径（外）以下で指定してください。";
-      issues.push({ field: "innerRadiusMm", message });
-    }
-
-    if (Number.isFinite(outerRadiusMm) && Number.isFinite(rebarRadiusMm) && rebarRadiusMm > outerRadiusMm) {
-      const message = "鉄筋の位置（有効半径）は半径（外）以下で指定してください。";
-      issues.push({ field: "rebarRadiusMm", message });
-    }
-
-    if (Number.isFinite(innerRadiusMm) && Number.isFinite(rebarRadiusMm) && rebarRadiusMm < innerRadiusMm) {
-      const message = "鉄筋の位置（有効半径）は半径（内）以上で指定してください。";
-      issues.push({ field: "rebarRadiusMm", message });
-    }
+    validateGeometry(geometry, issues);
+    validateMaterialParams(materialParams, issues);
 
     return issues;
   }
 
-  /**
-   * 計算処理
-   */
+  /** 計算処理 */
   calculate(): AnnularSectionResult {
     const issues = this.validate();
     if (issues.length > 0) {
@@ -189,92 +276,156 @@ export class AnnularSectionCalculator {
       throw new Error(message);
     }
 
-    const {
-      momentKNm,
-      shearKN,
-      axialKN,
-      outerRadiusMm,
-      innerRadiusMm,
-      rebarRadiusMm,
-      rebarDiameterMm,
-      barCount,
-      youngRatio,
-    } = this.input;
+    // 入力と荷重状態をまとめる
+    const context = createCalculationContext(this.input);
 
-    // コンクリート断面積
-    const fullSectionAreaMm2 = Math.PI * outerRadiusMm * outerRadiusMm;
-    const innerSectionAreaMm2 = Math.PI * innerRadiusMm * innerRadiusMm;
-    const sectionAreaMm2 = fullSectionAreaMm2 - innerSectionAreaMm2;
+    // 中立軸角度を求めるソルバーを実行
+    const solver = solveNeutralAxisAngleDeg(context);
 
-    // 鉄筋断面積および鉄筋比
-    const rebarAreaPerBarMm2 = REBAR_AREAS_MM2[rebarDiameterMm];
-    const totalRebarAreaMm2 = rebarAreaPerBarMm2 * barCount;
-    const rebarRatioPercent = (totalRebarAreaMm2 / fullSectionAreaMm2) * 100;
+    /** 中立軸位置 [mm] */
+    const neutralAxisPositionMm = calculateNeutralAxisPositionMm(context.geometry, solver);
 
-    // 中立軸位置の係数および軸力係数
-    const alpha = rebarRadiusMm / outerRadiusMm;
-    const gamma = innerRadiusMm / outerRadiusMm;
+    // 応力度を算出
+    const stress = calculateStressState(context, solver);
 
-    // 換算曲げモーメント
-    const momentKNmm = momentKNm * 1000;
-    const combinedMomentKNmm = momentKNmm + axialKN * outerRadiusMm;
-
-    // 中立軸角度
-    const solver = solveNeutralAxisAngleDeg({
-      alpha,
-      gamma,
-      rebarRatioPercent,
-      axialKN,
-      momentKNm,
-      outerRadiusMm,
-      rebarRadiusMm,
-      youngRatio,
-    });
-
-    // 中立軸位置
-    const neutralAxisPositionMm =
-      (solver.concreteCompressionCoefficient /
-        (solver.concreteCompressionCoefficient + solver.steelStressCoefficient)) *
-      (outerRadiusMm + rebarRadiusMm);
-
-    // 応力度
-    const combinedMomentKNm = combinedMomentKNmm / 1000;
-    const combinedMomentNmm = combinedMomentKNmm * 1000;
-    const concreteCompressionStressNPerMm2 =
-      (combinedMomentNmm / Math.pow(outerRadiusMm, 3)) * solver.concreteCompressionCoefficient;
-    const rebarStressNPerMm2 =
-      (combinedMomentNmm / Math.pow(outerRadiusMm, 3)) * solver.steelStressCoefficient * youngRatio;
-    const concreteShearStressNPerMm2 =
-      ((shearKN * 1000) / Math.pow(outerRadiusMm, 2)) * solver.shearCoefficient;
-
-    // 終局耐力
-    const concreteUltimateMomentKNm = calculateConcreteUltimateMomentKNm(this.input);
-    const rebarYieldMomentKNm = calculateRebarYieldMomentKNm(this.input);
+    // 耐力を算出
+    const strength = calculateStrengthState(context);
 
     return {
-      sectionAreaMm2,
-      fullSectionAreaMm2,
-      innerSectionAreaMm2,
-      rebarAreaPerBarMm2,
-      totalRebarAreaMm2,
-      rebarRatioPercent,
-      alpha,
-      gamma,
-      combinedMomentKNm,
-      axialForceSign: classifyAxialForce(axialKN),
-      youngRatio,
-      neutralAxisAngleDeg: solver.neutralAxisAngleDeg,
-      neutralAxisPositionMm,
-      concreteCompressionCoefficient: solver.concreteCompressionCoefficient,
-      steelStressCoefficient: solver.steelStressCoefficient,
-      shearCoefficient: solver.shearCoefficient,
-      concreteCompressionStressNPerMm2,
-      rebarStressNPerMm2,
-      concreteShearStressNPerMm2,
-      concreteUltimateMomentKNm,
-      rebarYieldMomentKNm,
+      section: {
+        sectionAreaMm2: context.geometry.sectionAreaMm2,
+        fullSectionAreaMm2: context.geometry.fullSectionAreaMm2,
+        innerSectionAreaMm2: context.geometry.innerSectionAreaMm2,
+        rebarAreaPerBarMm2: context.geometry.rebarAreaPerBarMm2,
+        totalRebarAreaMm2: context.geometry.totalRebarAreaMm2,
+        rebarRatioPercent: context.geometry.rebarRatioPercent,
+        alpha: context.geometry.alpha,
+        gamma: context.geometry.gamma,
+      },
+      loading: {
+        combinedMomentKNm: context.combinedMomentKNm,
+        axialForceSign: classifyAxialForce(context.force.fxKN),
+      },
+      neutralAxis: {
+        neutralAxisAngleDeg: solver.neutralAxisAngleDeg,
+        neutralAxisPositionMm,
+        concreteCompressionCoefficient: solver.concreteCompressionCoefficient,
+        steelStressCoefficient: solver.steelStressCoefficient,
+        shearCoefficient: solver.shearCoefficient,
+      },
+      stress,
+      strength,
     };
   }
+}
+
+/** フォームの状態を表す型定義 */
+interface SectionCalculationContext {
+  /** 断面形状 */
+  geometry: AnnularSectionGeometry;
+  /** 諸係数 */
+  materialParams: MaterialParams;
+  /** 断面力 */
+  force: SectionForce;
+  /** 3成分に換算した断面力 */
+  forceComponents: SectionForceComponents;
+  /** モーメント [kN.m] */
+  momentKNm: number;
+  shearKN: number;
+  axialKN: number;
+  combinedMomentKNmm: number;
+  combinedMomentKNm: number;
+}
+
+/** 応力度の状態をまとめる型定義 */
+interface SectionStressState {
+  /** コンクリート圧縮応力度 [N/mm2] */
+  concreteCompressionStressNPerMm2: number;
+  /** 鉄筋応力度 [N/mm2] */
+  rebarStressNPerMm2: number;
+  /** コンクリートせん断応力度 [N/mm2] */
+  concreteShearStressNPerMm2: number;
+}
+
+/** 耐力の状態をまとめる型定義 */
+interface SectionStrengthState {
+  /** コンクリート終局曲げモーメント [kN.m] */
+  concreteUltimateMomentKNm: number;
+  /** 鉄筋降伏曲げモーメント [kN.m] */
+  rebarYieldMomentKNm: number;
+}
+
+/** 計算に必要な入力と荷重状態をまとめる */
+function createCalculationContext(input: AnnularSectionInput): SectionCalculationContext {
+  const geometry = AnnularSectionGeometry.fromInput(input.geometry);
+  if (!input.force) {
+    throw new Error("断面力が指定されていません。");
+  }
+
+  const force = input.force;
+  const forceComponents = resolveSectionForceSummary(input);
+  const momentKNm = forceComponents.momentKNm;
+  const shearKN = forceComponents.shearKN;
+  const axialKN = forceComponents.axialKN;
+  const combinedMomentKNmm = momentKNm * 1000 + axialKN * geometry.outerRadiusMm;
+
+  return {
+    geometry,
+    materialParams: input.materialParams,
+    force,
+    forceComponents,
+    momentKNm,
+    shearKN,
+    axialKN,
+    combinedMomentKNmm,
+    combinedMomentKNm: combinedMomentKNmm / 1000,
+  };
+}
+
+/** 中立軸位置 [mm] を算出する */
+function calculateNeutralAxisPositionMm(
+  geometry: AnnularSectionGeometry,
+  solver: NeutralAxisSolverResult,
+): number {
+  return (
+    (solver.concreteCompressionCoefficient /
+      (solver.concreteCompressionCoefficient + solver.steelStressCoefficient)) *
+    (geometry.outerRadiusMm + geometry.rebarRadiusMm)
+  );
+}
+
+/** 応力度の状態を算出する */
+function calculateStressState(
+  context: SectionCalculationContext,
+  solver: NeutralAxisSolverResult,
+): SectionStressState {
+  const combinedMomentNmm = context.combinedMomentKNmm * 1000;
+  const outerRadiusMm = context.geometry.outerRadiusMm;
+  const scale = combinedMomentNmm / Math.pow(outerRadiusMm, 3);
+
+  return {
+    /** コンクリート圧縮応力度 [N/mm2] */
+    concreteCompressionStressNPerMm2: scale * solver.concreteCompressionCoefficient,
+    /** 鉄筋応力度 [N/mm2] */
+    rebarStressNPerMm2: scale * solver.steelStressCoefficient * context.materialParams.youngRatio,
+    /** コンクリートせん断応力度 [N/mm2] */
+    concreteShearStressNPerMm2:
+      ((context.shearKN * 1000) / Math.pow(outerRadiusMm, 2)) * solver.shearCoefficient,
+  };
+}
+
+/** 耐力の状態を算出する */
+function calculateStrengthState(context: SectionCalculationContext): SectionStrengthState {
+  const solverInput: StrengthMomentSolverInput = {
+    force: context.force,
+    geometry: context.geometry,
+    materialParams: context.materialParams,
+  };
+
+  return {
+    concreteUltimateMomentKNm: calculateConcreteUltimateMomentKNm(solverInput),
+    rebarYieldMomentKNm: calculateRebarYieldMomentKNm(solverInput),
+  };
 }
 
 /**
@@ -282,479 +433,10 @@ export class AnnularSectionCalculator {
  */
 function classifyAxialForce(axialKN: number): AxialForceSign {
   if (axialKN > EPSILON) {
-    return "compression";
-  }
-  if (axialKN < -EPSILON) {
     return "tension";
   }
+  if (axialKN < -EPSILON) {
+    return "compression";
+  }
   return "zero";
-}
-
-interface NeutralAxisSolverInput {
-  alpha: number;
-  gamma: number;
-  rebarRatioPercent: number;
-  axialKN: number;
-  momentKNm: number;
-  outerRadiusMm: number;
-  rebarRadiusMm: number;
-  youngRatio: number;
-}
-
-interface NeutralAxisSolverResult {
-  neutralAxisAngleDeg: number;
-  concreteCompressionCoefficient: number;
-  steelStressCoefficient: number;
-  shearCoefficient: number;
-}
-
-interface StrengthMomentSolverInput {
-  momentKNm: number;
-  axialKN: number;
-  outerRadiusMm: number;
-  innerRadiusMm: number;
-  rebarRadiusMm: number;
-  rebarDiameterMm: RebarDiameterMm;
-  barCount: number;
-  youngRatio: number;
-  rebarYieldStrengthNPerMm2: number;
-  concreteDesignStrengthNPerMm2: number;
-}
-
-interface MomentStressState {
-  concreteCompressionStressNPerMm2: number;
-  rebarStressNPerMm2: number;
-}
-
-interface MomentStressEvaluation {
-  momentKNm: number;
-  concreteCompressionStressNPerMm2: number;
-  rebarStressNPerMm2: number;
-}
-
-/**
- * 中立軸角度を求めるソルバー関数
- */
-function solveNeutralAxisAngleDeg(input: NeutralAxisSolverInput): NeutralAxisSolverResult {
-  const { alpha, gamma, rebarRatioPercent, axialKN, momentKNm, outerRadiusMm, youngRatio } = input;
-  const radiusRatio = gamma;
-  const alphaValue = alpha;
-  const rebarRatio = rebarRatioPercent / 100;
-  const momentKNmm = momentKNm * 1000;
-  const beta = axialKN === 0 ? Number.POSITIVE_INFINITY : momentKNmm / (axialKN * outerRadiusMm);
-
-  const xMinDeg = radToDeg(Math.acos(alphaValue));
-  const xMaxDeg = radToDeg(Math.acos(-alphaValue));
-  let start = xMinDeg;
-  let end = xMaxDeg;
-  let bestAngleDeg = (xMinDeg + xMaxDeg) / 2;
-  let bestObjective = Number.POSITIVE_INFINITY;
-
-  // 反復計算により中立軸角度を求める
-  for (let iteration = 0; iteration < 14; iteration++) {
-    const step = Math.pow(10, -iteration);
-    for (let angle = start; angle < end; angle += step) {
-      const objective = evaluateObjective({
-        angleDeg: angle,
-        alpha: alphaValue,
-        gamma: radiusRatio,
-        rebarRatio,
-        beta,
-        axialKN,
-        youngRatio,
-      });
-
-      // 目的関数の値が最小となる角度を更新
-      if (Number.isFinite(objective) && objective < bestObjective) {
-        bestObjective = objective;
-        bestAngleDeg = angle;
-      }
-    }
-
-    // 最適な角度の周辺を次の探索範囲とする
-    start = Math.max(xMinDeg, bestAngleDeg - step * 2);
-    end = Math.min(xMaxDeg, bestAngleDeg + step * 2);
-  }
-
-  // 最終的な中立軸角度が有効範囲内にあるかを確認
-  if (bestAngleDeg < xMinDeg || bestAngleDeg > xMaxDeg) {
-    throw new Error("計算範囲外です。中立軸の位置が有効範囲にありません。");
-  }
-
-  // 中立軸角度をラジアンに変換して内部角度を求める
-  const angleRad = degToRad(bestAngleDeg);
-  const innerAngle = computeInnerAngle(angleRad, radiusRatio, alphaValue);
-
-  // 応力度係数
-  const concreteCompressionCoefficient = computeConcreteCompressionCoefficient({
-    angleRad,
-    innerAngleRad: innerAngle,
-    gamma: radiusRatio,
-    alpha: alphaValue,
-    rebarRatio,
-    youngRatio,
-  });
-  const steelStressCoefficient = computeSteelStressCoefficient({
-    angleRad,
-    innerAngleRad: innerAngle,
-    alpha: alphaValue,
-    concreteCompressionCoefficient,
-  });
-  const shearCoefficient = computeShearCoefficient({
-    angleRad,
-    innerAngleRad: innerAngle,
-    gamma: radiusRatio,
-    alpha: alphaValue,
-    rebarRatio,
-    youngRatio,
-    concreteCompressionCoefficient,
-  });
-
-  return {
-    neutralAxisAngleDeg: bestAngleDeg,
-    concreteCompressionCoefficient,
-    steelStressCoefficient,
-    shearCoefficient,
-  };
-}
-
-/**
- * 中立軸角度の計算に必要な内部角度を求める関数
- */
-function computeInnerAngle(angleRad: number, gamma: number, alpha: number): number {
-  if (gamma === 0) {
-    return 0;
-  }
-  if (angleRad <= Math.acos(gamma)) {
-    return 0;
-  }
-  if (angleRad <= Math.acos(-gamma)) {
-    return Math.acos((1 / gamma) * Math.cos(angleRad));
-  }
-  if (angleRad <= Math.acos(-alpha)) {
-    return Math.PI;
-  }
-  return Math.PI;
-}
-
-/**
- * 中立軸角度を求めるソルバー関数の目的関数
- */
-function evaluateObjective(input: {
-  angleDeg: number;
-  alpha: number;
-  gamma: number;
-  rebarRatio: number;
-  beta: number;
-  axialKN: number;
-  youngRatio: number;
-}): number {
-  const angleRad = degToRad(input.angleDeg);
-  const innerAngleRad = computeInnerAngle(angleRad, input.gamma, input.alpha);
-  const isAxialZero = Math.abs(input.axialKN) < EPSILON;
-
-  if (isAxialZero) {
-    const objective =
-      (Math.sin(angleRad) / 3) * (2 + Math.pow(Math.cos(angleRad), 2)) -
-      angleRad * Math.cos(angleRad) -
-      Math.pow(input.gamma, 3) *
-        ((Math.sin(innerAngleRad) / 3) * (2 + Math.pow(Math.cos(innerAngleRad), 2)) -
-          innerAngleRad * Math.cos(innerAngleRad)) -
-      Math.PI * input.youngRatio * input.rebarRatio * Math.cos(angleRad);
-    return Math.abs(objective);
-  }
-
-  const numerator =
-    angleRad / 4 -
-    Math.sin(angleRad) * Math.cos(angleRad) * (5 / 12 - (1 / 6) * Math.pow(Math.cos(angleRad), 2)) -
-    Math.pow(input.gamma, 4) *
-      (innerAngleRad / 4 -
-        Math.sin(innerAngleRad) *
-          Math.cos(innerAngleRad) *
-          (5 / 12 - (1 / 6) * Math.pow(Math.cos(innerAngleRad), 2))) +
-    ((Math.PI * input.youngRatio * input.rebarRatio) / 2) * Math.pow(input.alpha, 2);
-
-  const denominator =
-    (Math.sin(angleRad) / 3) * (2 + Math.pow(Math.cos(angleRad), 2)) -
-    angleRad * Math.cos(angleRad) -
-    Math.pow(input.gamma, 3) *
-      ((Math.sin(innerAngleRad) / 3) * (2 + Math.pow(Math.cos(innerAngleRad), 2)) -
-        innerAngleRad * Math.cos(innerAngleRad)) -
-    Math.PI * input.youngRatio * input.rebarRatio * Math.cos(angleRad);
-
-  return Math.abs(input.beta - numerator / denominator);
-}
-
-/**
- * コンクリート圧縮応力度係数の計算関数
- *
- * 中立軸角度を求めるソルバー関数で使用する
- */
-function computeConcreteCompressionCoefficient(input: {
-  angleRad: number;
-  innerAngleRad: number;
-  gamma: number;
-  alpha: number;
-  rebarRatio: number;
-  youngRatio: number;
-}): number {
-  const { angleRad, innerAngleRad, gamma, alpha, rebarRatio, youngRatio } = input;
-  const numerator = 1 - Math.cos(angleRad);
-  const denominator =
-    (2 / 3) * Math.pow(Math.sin(angleRad), 3) -
-    angleRad * Math.cos(angleRad) +
-    Math.sin(angleRad) * Math.pow(Math.cos(angleRad), 2) +
-    angleRad / 4 -
-    (1 / 4) * Math.sin(angleRad) * Math.cos(angleRad) -
-    (1 / 6) * Math.pow(Math.sin(angleRad), 3) * Math.cos(angleRad) -
-    Math.pow(gamma, 3) *
-      ((2 / 3) * Math.pow(Math.sin(innerAngleRad), 3) -
-        innerAngleRad * Math.cos(innerAngleRad) +
-        Math.sin(innerAngleRad) * Math.pow(Math.cos(innerAngleRad), 2) +
-        gamma *
-          (innerAngleRad / 4 -
-            (1 / 4) * Math.sin(innerAngleRad) * Math.cos(innerAngleRad) -
-            (1 / 6) * Math.pow(Math.sin(innerAngleRad), 3) * Math.cos(innerAngleRad))) +
-    Math.PI * youngRatio * rebarRatio * ((1 / 2) * Math.pow(alpha, 2) - Math.cos(angleRad));
-
-  return numerator / denominator;
-}
-
-/**
- * 鋼材応力度係数の計算関数
- *
- * 中立軸角度を求めるソルバー関数で使用する
- */
-function computeSteelStressCoefficient(input: {
-  angleRad: number;
-  innerAngleRad: number;
-  alpha: number;
-  concreteCompressionCoefficient: number;
-}): number {
-  const { angleRad, alpha, concreteCompressionCoefficient } = input;
-  const numerator = alpha + Math.cos(angleRad);
-  const denominator = 1 - Math.cos(angleRad);
-  return concreteCompressionCoefficient * (numerator / denominator);
-}
-
-/**
- * せん断係数の計算関数
- *
- * 中立軸角度を求めるソルバー関数で使用する
- */
-function computeShearCoefficient(input: {
-  angleRad: number;
-  innerAngleRad: number;
-  gamma: number;
-  alpha: number;
-  rebarRatio: number;
-  youngRatio: number;
-  concreteCompressionCoefficient: number;
-}): number {
-  const { angleRad, innerAngleRad, gamma, alpha, rebarRatio, youngRatio } = input;
-  const xs = Math.acos((1 / alpha) * Math.cos(angleRad));
-  const z3Numerator =
-    angleRad -
-    Math.sin(angleRad) * Math.cos(angleRad) -
-    (2 / 3) * Math.pow(Math.sin(angleRad), 3) +
-    -Math.pow(gamma, 2) *
-      (innerAngleRad -
-        Math.sin(innerAngleRad) * Math.cos(innerAngleRad) -
-        (2 / 3) * gamma * Math.pow(Math.sin(innerAngleRad), 3)) +
-    Math.PI * youngRatio * rebarRatio;
-  const z3Denominator =
-    angleRad -
-    Math.sin(angleRad) * Math.cos(angleRad) -
-    Math.pow(gamma, 2) * (innerAngleRad - Math.sin(innerAngleRad) * Math.cos(innerAngleRad)) +
-    Math.PI * youngRatio * rebarRatio;
-  const z3 = z3Numerator / z3Denominator;
-
-  let z2 = 0;
-  z2 += Math.pow(z3, 2) * (angleRad - Math.sin(angleRad) * Math.cos(angleRad));
-  z2 +=
-    2 *
-    z3 *
-    (-angleRad + Math.sin(angleRad) * Math.cos(angleRad) + (2 / 3) * Math.pow(Math.sin(angleRad), 3));
-  z2 += (5 / 4) * (angleRad - Math.sin(angleRad) * Math.cos(angleRad));
-  z2 += Math.pow(Math.sin(angleRad), 3) * (Math.cos(angleRad) / 2 - 4 / 3);
-  z2 +=
-    -Math.pow(gamma, 2) *
-    Math.pow(z3, 2) *
-    (innerAngleRad - Math.sin(innerAngleRad) * Math.cos(innerAngleRad));
-  z2 +=
-    -Math.pow(gamma, 2) *
-    2 *
-    z3 *
-    (-innerAngleRad +
-      Math.sin(innerAngleRad) * Math.cos(innerAngleRad) +
-      (2 / 3) * gamma * Math.pow(Math.sin(innerAngleRad), 3));
-  z2 +=
-    -Math.pow(gamma, 2) *
-    (1 + Math.pow(gamma, 2) / 4) *
-    (innerAngleRad - Math.sin(innerAngleRad) * Math.cos(innerAngleRad));
-  z2 +=
-    -Math.pow(gamma, 2) *
-    gamma *
-    Math.pow(Math.sin(innerAngleRad), 3) *
-    ((gamma * Math.cos(innerAngleRad)) / 2 - 4 / 3);
-  z2 += Math.PI * youngRatio * rebarRatio * (Math.pow(alpha, 2) / 2 + Math.pow(1 - z3, 2));
-
-  const numerator = youngRatio * rebarRatio * (alpha * Math.sin(xs) - (Math.PI - xs) * (z3 - 1));
-  const denominator = 2 * (Math.sin(angleRad) - gamma * Math.sin(innerAngleRad)) * z2;
-  return numerator / denominator;
-}
-
-/**
- * 鉄筋降伏曲げモーメントを計算する関数
- *
- * 反復計算により、鉄筋降伏強度 == 鉄筋応力度となる曲げモーメントを求める
- */
-function calculateRebarYieldMomentKNm(input: StrengthMomentSolverInput): number {
-  // 降伏強度 [N/mm2]
-  const sigmaSyNPerMm2 = input.rebarYieldStrengthNPerMm2;
-
-  return solveMomentForTargetStressKNm(
-    input,
-    sigmaSyNPerMm2,
-    (state) => state.rebarStressNPerMm2,
-    "鉄筋降伏曲げモーメント",
-  );
-}
-
-/**
- * コンクリート終局曲げモーメントを計算する関数
- *
- * 反復計算により、コンクリート設計基準強度 == コンクリート圧縮応力度となる曲げモーメントを求める
- */
-function calculateConcreteUltimateMomentKNm(input: StrengthMomentSolverInput): number {
-  // 終局応力度 [N/mm2]
-  // 【道示Ⅲ 図-5.5.1】より
-  const sigmaCNPerMm2 = 0.85 * input.concreteDesignStrengthNPerMm2;
-
-  return solveMomentForTargetStressKNm(
-    input,
-    sigmaCNPerMm2,
-    (state) => state.concreteCompressionStressNPerMm2,
-    "コンクリート終局曲げモーメント",
-  );
-}
-
-/**
- * 目標応力度に到達する曲げモーメントを求める関数
- */
-function solveMomentForTargetStressKNm(
-  input: StrengthMomentSolverInput,
-  targetStressNPerMm2: number,
-  stressSelector: (state: MomentStressState) => number,
-  solverName: string,
-): number {
-  // 曲げモーメントに対して、コンクリート圧縮応力度と鉄筋応力度を計算
-  const evaluate = (momentKNm: number): MomentStressEvaluation => {
-    const solver = solveNeutralAxisAngleDeg({
-      alpha: input.rebarRadiusMm / input.outerRadiusMm,
-      gamma: input.innerRadiusMm / input.outerRadiusMm,
-      rebarRatioPercent:
-        ((REBAR_AREAS_MM2[input.rebarDiameterMm] * input.barCount) /
-          (Math.PI * Math.pow(input.outerRadiusMm, 2))) *
-        100,
-      axialKN: input.axialKN,
-      momentKNm,
-      outerRadiusMm: input.outerRadiusMm,
-      rebarRadiusMm: input.rebarRadiusMm,
-      youngRatio: input.youngRatio,
-    });
-
-    // 換算曲げモーメントを計算
-    const combinedMomentKNmm = momentKNm * 1000 + input.axialKN * input.outerRadiusMm;
-    const combinedMomentNmm = combinedMomentKNmm * 1000;
-    const state: MomentStressState = {
-      concreteCompressionStressNPerMm2:
-        (combinedMomentNmm / Math.pow(input.outerRadiusMm, 3)) * solver.concreteCompressionCoefficient,
-      rebarStressNPerMm2:
-        (combinedMomentNmm / Math.pow(input.outerRadiusMm, 3)) *
-        solver.steelStressCoefficient *
-        input.youngRatio,
-    };
-
-    return {
-      momentKNm,
-      concreteCompressionStressNPerMm2: state.concreteCompressionStressNPerMm2,
-      rebarStressNPerMm2: state.rebarStressNPerMm2,
-    };
-  };
-
-  // 初期の下限と上限を設定して、二分探索で目標応力度に到達する曲げモーメントを求める
-  const lowerMomentKNm = 0;
-  const lowerEvaluation = evaluate(lowerMomentKNm);
-  const lowerStress = stressSelector({
-    concreteCompressionStressNPerMm2: lowerEvaluation.concreteCompressionStressNPerMm2,
-    rebarStressNPerMm2: lowerEvaluation.rebarStressNPerMm2,
-  });
-
-  // 下限の曲げモーメントで既に目標応力度を超えている場合は、その値を返す
-  if (lowerStress >= targetStressNPerMm2) {
-    return lowerMomentKNm;
-  }
-
-  // 上限の曲げモーメントを設定して評価する
-  // 目標応力度に到達するまで、上限を倍増させて探索する
-  let upperMomentKNm = Math.max(1, (targetStressNPerMm2 * Math.pow(input.outerRadiusMm, 3)) / 1000);
-  let upperEvaluation = evaluate(upperMomentKNm);
-  let upperStress = stressSelector({
-    concreteCompressionStressNPerMm2: upperEvaluation.concreteCompressionStressNPerMm2,
-    rebarStressNPerMm2: upperEvaluation.rebarStressNPerMm2,
-  });
-
-  // 安全策として、上限を倍増させる回数に制限を設ける（無限ループ防止）
-  let guard = 0;
-  while (upperStress < targetStressNPerMm2 && guard < 40) {
-    upperMomentKNm *= 2;
-    upperEvaluation = evaluate(upperMomentKNm);
-    upperStress = stressSelector({
-      concreteCompressionStressNPerMm2: upperEvaluation.concreteCompressionStressNPerMm2,
-      rebarStressNPerMm2: upperEvaluation.rebarStressNPerMm2,
-    });
-    guard++;
-  }
-
-  // 上限を十分に大きくしても目標応力度に到達しない場合は、エラーを投げる
-  if (upperStress < targetStressNPerMm2) {
-    throw new Error(
-      `${solverName}を求められませんでした。目標応力度に到達する曲げモーメントが見つかりません。`,
-    );
-  }
-
-  // 二分探索で目標応力度に到達する曲げモーメントを求める
-  let bestMomentKNm = upperEvaluation.momentKNm;
-  let bestError = Math.abs(upperStress - targetStressNPerMm2);
-  let low = lowerMomentKNm;
-  let high = upperMomentKNm;
-
-  // 反復計算の回数に制限を設ける（無限ループ防止）
-  for (let iteration = 0; iteration < 60; iteration++) {
-    const mid = (low + high) / 2;
-    const midEvaluation = evaluate(mid);
-    const midStress = stressSelector({
-      concreteCompressionStressNPerMm2: midEvaluation.concreteCompressionStressNPerMm2,
-      rebarStressNPerMm2: midEvaluation.rebarStressNPerMm2,
-    });
-    const error = midStress - targetStressNPerMm2;
-
-    if (Math.abs(error) < bestError) {
-      bestError = Math.abs(error);
-      bestMomentKNm = midEvaluation.momentKNm;
-    }
-
-    if (Math.abs(error) <= 1e-6) {
-      break;
-    }
-
-    if (error < 0) {
-      low = mid;
-    } else {
-      high = mid;
-    }
-  }
-
-  return bestMomentKNm;
 }
