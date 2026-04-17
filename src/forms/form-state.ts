@@ -1,29 +1,29 @@
 /** 断面力のフォーム状態の型定義 */
 export type SectionForceFormState = {
   /** 軸力 [kN] */
-  fxKN: string;
+  fx_KN: string;
   /** せん断力（面外） [kN] */
-  fyKN: string;
+  fy_KN: string;
   /** せん断力（面内） [kN] */
-  fzKN: string;
+  fz_KN: string;
   /** ねじりモーメント [kN.m] */
-  mxKNm: string;
+  mx_KNm: string;
   /** 曲げモーメント（面内） [kN.m] */
-  myKNm: string;
+  my_KNm: string;
   /** 曲げモーメント（面外） [kN.m] */
-  mzKNm: string;
+  mz_KNm: string;
 };
 
 /** 断面形状のフォーム状態の型定義 */
 export type GeometryFormState = {
   /** 外径 [mm] */
-  outerRadiusMm: string;
+  outerRadius_Mm: string;
   /** 内径 [mm] */
-  innerRadiusMm: string;
+  innerRadius_Mm: string;
   /** 鉄筋位置 [mm] */
-  rebarRadiusMm: string;
+  rebarRadius_Mm: string;
   /** 鉄筋径 [mm] */
-  rebarDiameterMm: string;
+  rebarDiameter_Mm: string;
   /** 鉄筋本数 [本] */
   barCount: string;
 };
@@ -31,9 +31,9 @@ export type GeometryFormState = {
 /** 諸係数のフォーム状態の型定義 */
 export type MaterialParamsFormState = {
   /** 鉄筋降伏強度 [N/mm2] */
-  rebarYieldStrengthNPerMm2: string;
+  rebarYieldStrength_NPerMm2: string;
   /** コンクリート設計基準強度 [N/mm2] */
-  concreteDesignStrengthNPerMm2: string;
+  concreteDesignStrength_NPerMm2: string;
   /** ヤング係数比 */
   youngRatio: string;
 };
