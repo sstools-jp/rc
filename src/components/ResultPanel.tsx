@@ -18,6 +18,12 @@ export function AnnularSectionResultPanel({
   result,
   onOpenPrintPreview,
 }: AnnularSectionResultPanelProps) {
+  const section = result?.section;
+  const loading = result?.loading;
+  const neutralAxis = result?.neutralAxis;
+  const stress = result?.stress;
+  const strength = result?.strength;
+
   return (
     <section
       aria-live="polite"
@@ -35,11 +41,15 @@ export function AnnularSectionResultPanel({
       </CollapsibleSection>
 
       <CollapsibleSection title="中立軸および換算曲げモーメント" defaultOpen>
-        <ResultCell label="中立軸角度" value={formatNumber(result?.neutralAxisAngleDeg, 4)} unit="deg" />
-        <ResultCell label="中立軸位置" value={formatNumber(result?.neutralAxisPositionMm, 1)} unit="mm" />
+        <ResultCell label="中立軸角度" value={formatNumber(neutralAxis?.neutralAxisAngleDeg, 4)} unit="deg" />
+        <ResultCell
+          label="中立軸位置"
+          value={formatNumber(neutralAxis?.neutralAxisPositionMm, 1)}
+          unit="mm"
+        />
         <ResultCell
           label="換算曲げモーメント"
-          value={formatNumber(result?.combinedMomentKNm, 1)}
+          value={formatNumber(loading?.combinedMomentKNm, 1)}
           unit="kN.m"
         />
       </CollapsibleSection>
@@ -47,13 +57,13 @@ export function AnnularSectionResultPanel({
       <CollapsibleSection title="発生応力度" defaultOpen>
         <ResultCell
           label="コンクリート圧縮応力度"
-          value={formatNumber(result?.concreteCompressionStressNPerMm2, 1)}
+          value={formatNumber(stress?.concreteCompressionStressNPerMm2, 1)}
           unit="N/mm²"
         />
-        <ResultCell label="鉄筋応力度" value={formatNumber(result?.rebarStressNPerMm2, 1)} unit="N/mm²" />
+        <ResultCell label="鉄筋応力度" value={formatNumber(stress?.rebarStressNPerMm2, 1)} unit="N/mm²" />
         <ResultCell
           label="コンクリートせん断応力度"
-          value={formatNumber(result?.concreteShearStressNPerMm2, 1)}
+          value={formatNumber(stress?.concreteShearStressNPerMm2, 1)}
           unit="N/mm²"
         />
       </CollapsibleSection>
@@ -61,31 +71,30 @@ export function AnnularSectionResultPanel({
       <CollapsibleSection title="終局耐力" defaultOpen>
         <ResultCell
           label="コンクリート終局曲げモーメント"
-          value={formatNumber(result?.concreteUltimateMomentKNm, 0)}
+          value={formatNumber(strength?.concreteUltimateMomentKNm, 0)}
           unit="kN.m"
         />
         <ResultCell
           label="鉄筋降伏曲げモーメント"
-          value={formatNumber(result?.rebarYieldMomentKNm, 0)}
+          value={formatNumber(strength?.rebarYieldMomentKNm, 0)}
           unit="kN.m"
         />
       </CollapsibleSection>
 
       <CollapsibleSection title="断面情報" defaultOpen>
-        <ResultCell label="鉄筋総断面積" value={formatNumber(result?.totalRebarAreaMm2, 0)} unit="mm²" />
-        <ResultCell label="鉄筋比" value={formatNumber(result?.rebarRatioPercent, 2)} unit="%" />
+        <ResultCell label="鉄筋総断面積" value={formatNumber(section?.totalRebarAreaMm2, 0)} unit="mm²" />
+        <ResultCell label="鉄筋比" value={formatNumber(section?.rebarRatioPercent, 2)} unit="%" />
       </CollapsibleSection>
 
       <CollapsibleSection title="係数">
-        <ResultCell label="α" value={formatNumber(result?.alpha, 4)} />
-        <ResultCell label="γ" value={formatNumber(result?.gamma, 4)} />
+        <ResultCell label="α" value={formatNumber(section?.alpha, 4)} />
+        <ResultCell label="γ" value={formatNumber(section?.gamma, 4)} />
         <ResultCell
           label="コンクリート圧縮係数"
-          value={formatNumber(result?.concreteCompressionCoefficient, 4)}
+          value={formatNumber(neutralAxis?.concreteCompressionCoefficient, 4)}
         />
-        <ResultCell label="鋼材応力度係数" value={formatNumber(result?.steelStressCoefficient, 4)} />
-        <ResultCell label="せん断係数" value={formatNumber(result?.shearCoefficient, 4)} />
-        <ResultCell label="ヤング係数比" value={formatNumber(result?.youngRatio, 2)} />
+        <ResultCell label="鋼材応力度係数" value={formatNumber(neutralAxis?.steelStressCoefficient, 4)} />
+        <ResultCell label="せん断係数" value={formatNumber(neutralAxis?.shearCoefficient, 4)} />
       </CollapsibleSection>
     </section>
   );

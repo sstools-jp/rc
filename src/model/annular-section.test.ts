@@ -27,17 +27,20 @@ describe("AnnularSectionCalculator", () => {
     });
 
     const result = calculator.calculate(); // 円環断面を計算
+    const section = result.section;
+    const neutralAxis = result.neutralAxis;
+    const stress = result.stress;
 
     // 計算結果を検証
-    expect(result.totalRebarAreaMm2).toBeCloseTo(6194, 0); // 鉄筋断面積 [mm2]
-    expect(result.rebarRatioPercent).toBeCloseTo(0.31, 2); // 鉄筋比 [%]
-    expect(result.neutralAxisPositionMm).toBeCloseTo(420, 0); // 中立軸位置 [mm]
-    expect(result.concreteCompressionCoefficient).toBeCloseTo(2.6455, 4); // コンクリート曲げ圧縮応力度の係数
-    expect(result.steelStressCoefficient).toBeCloseTo(6.7991, 4); // 鉄筋曲げ引張応力度の係数
-    expect(result.shearCoefficient).toBeCloseTo(1.2053, 4); // コンクリートせん断応力度の係数
-    expect(result.concreteCompressionStressNPerMm2).toBeCloseTo(8.53, 2); // コンクリート曲げ圧縮応力度 [N/mm2]
-    expect(result.rebarStressNPerMm2).toBeCloseTo(328.7, 1); // 鉄筋曲げ引張応力度 [N/mm2]
-    expect(result.concreteShearStressNPerMm2).toBeCloseTo(0.377, 3); // コンクリートせん断応力度 [N/mm2]
+    expect(section.totalRebarAreaMm2).toBeCloseTo(6194, 0); // 鉄筋断面積 [mm2]
+    expect(section.rebarRatioPercent).toBeCloseTo(0.31, 2); // 鉄筋比 [%]
+    expect(neutralAxis.neutralAxisPositionMm).toBeCloseTo(420, 0); // 中立軸位置 [mm]
+    expect(neutralAxis.concreteCompressionCoefficient).toBeCloseTo(2.6455, 4); // コンクリート曲げ圧縮応力度の係数
+    expect(neutralAxis.steelStressCoefficient).toBeCloseTo(6.7991, 4); // 鉄筋曲げ引張応力度の係数
+    expect(neutralAxis.shearCoefficient).toBeCloseTo(1.2053, 4); // コンクリートせん断応力度の係数
+    expect(stress.concreteCompressionStressNPerMm2).toBeCloseTo(8.53, 2); // コンクリート曲げ圧縮応力度 [N/mm2]
+    expect(stress.rebarStressNPerMm2).toBeCloseTo(328.7, 1); // 鉄筋曲げ引張応力度 [N/mm2]
+    expect(stress.concreteShearStressNPerMm2).toBeCloseTo(0.377, 3); // コンクリートせん断応力度 [N/mm2]
   });
 
   it("計算結果の照合 (2)", () => {
@@ -65,17 +68,20 @@ describe("AnnularSectionCalculator", () => {
     });
 
     const result = calculator.calculate(); // 円環断面を計算
+    const section = result.section;
+    const neutralAxis = result.neutralAxis;
+    const stress = result.stress;
 
     // 計算結果を検証
-    expect(result.totalRebarAreaMm2).toBeCloseTo(9290, 0); // 鉄筋断面積 [mm2]
-    expect(result.rebarRatioPercent).toBeCloseTo(0.21, 2); // 鉄筋比 [%]
-    expect(result.neutralAxisPositionMm).toBeCloseTo(2224, 0); // 中立軸位置 [mm]
-    expect(result.concreteCompressionCoefficient).toBeCloseTo(0.9211, 4); // コンクリート曲げ圧縮応力度の係数
-    expect(result.steelStressCoefficient).toBeCloseTo(0.0108, 4); // 鉄筋曲げ引張応力度の係数
-    expect(result.shearCoefficient).toBeCloseTo(0.0129, 4); // コンクリートせん断応力度の係数
-    expect(result.concreteCompressionStressNPerMm2).toBeCloseTo(1.6, 1); // コンクリート曲げ圧縮応力度 [N/mm2]
-    expect(result.rebarStressNPerMm2).toBeCloseTo(0.3, 1); // 鉄筋曲げ引張応力度 [N/mm2]
-    expect(result.concreteShearStressNPerMm2).toBeCloseTo(0.011, 3); // コンクリートせん断応力度 [N/mm2]
+    expect(section.totalRebarAreaMm2).toBeCloseTo(9290, 0); // 鉄筋断面積 [mm2]
+    expect(section.rebarRatioPercent).toBeCloseTo(0.21, 2); // 鉄筋比 [%]
+    expect(neutralAxis.neutralAxisPositionMm).toBeCloseTo(2224, 0); // 中立軸位置 [mm]
+    expect(neutralAxis.concreteCompressionCoefficient).toBeCloseTo(0.9211, 4); // コンクリート曲げ圧縮応力度の係数
+    expect(neutralAxis.steelStressCoefficient).toBeCloseTo(0.0108, 4); // 鉄筋曲げ引張応力度の係数
+    expect(neutralAxis.shearCoefficient).toBeCloseTo(0.0129, 4); // コンクリートせん断応力度の係数
+    expect(stress.concreteCompressionStressNPerMm2).toBeCloseTo(1.6, 1); // コンクリート曲げ圧縮応力度 [N/mm2]
+    expect(stress.rebarStressNPerMm2).toBeCloseTo(0.3, 1); // 鉄筋曲げ引張応力度 [N/mm2]
+    expect(stress.concreteShearStressNPerMm2).toBeCloseTo(0.011, 3); // コンクリートせん断応力度 [N/mm2]
   });
 
   it("計算結果の照合 (曲げモーメントのみ)", () => {
@@ -103,17 +109,20 @@ describe("AnnularSectionCalculator", () => {
     });
 
     const result = calculator.calculate(); // 円環断面を計算
+    const section = result.section;
+    const neutralAxis = result.neutralAxis;
+    const stress = result.stress;
 
     // 計算結果を検証
-    expect(result.totalRebarAreaMm2).toBeCloseTo(32432, 0); // 鉄筋断面積 [mm2]
-    expect(result.rebarRatioPercent).toBeCloseTo(0.72, 2); // 鉄筋比 [%]
-    expect(result.neutralAxisPositionMm).toBeCloseTo(668, 0); // 中立軸位置 [mm]
-    expect(result.concreteCompressionCoefficient).toBeCloseTo(2.3142, 4); // コンクリート曲げ圧縮応力度の係数
-    expect(result.steelStressCoefficient).toBeCloseTo(5.3907, 4); // 鉄筋曲げ引張応力度の係数
-    expect(result.shearCoefficient).toBeCloseTo(0.9355, 4); // コンクリートせん断応力度の係数
-    expect(result.concreteCompressionStressNPerMm2).toBeCloseTo(0, 1); // コンクリート曲げ圧縮応力度 [N/mm2]
-    expect(result.rebarStressNPerMm2).toBeCloseTo(0.1, 1); // 鉄筋曲げ引張応力度 [N/mm2]
-    expect(result.concreteShearStressNPerMm2).toBeCloseTo(0, 3); // コンクリートせん断応力度 [N/mm2]
+    expect(section.totalRebarAreaMm2).toBeCloseTo(32432, 0); // 鉄筋断面積 [mm2]
+    expect(section.rebarRatioPercent).toBeCloseTo(0.72, 2); // 鉄筋比 [%]
+    expect(neutralAxis.neutralAxisPositionMm).toBeCloseTo(668, 0); // 中立軸位置 [mm]
+    expect(neutralAxis.concreteCompressionCoefficient).toBeCloseTo(2.3142, 4); // コンクリート曲げ圧縮応力度の係数
+    expect(neutralAxis.steelStressCoefficient).toBeCloseTo(5.3907, 4); // 鉄筋曲げ引張応力度の係数
+    expect(neutralAxis.shearCoefficient).toBeCloseTo(0.9355, 4); // コンクリートせん断応力度の係数
+    expect(stress.concreteCompressionStressNPerMm2).toBeCloseTo(0, 1); // コンクリート曲げ圧縮応力度 [N/mm2]
+    expect(stress.rebarStressNPerMm2).toBeCloseTo(0.1, 1); // 鉄筋曲げ引張応力度 [N/mm2]
+    expect(stress.concreteShearStressNPerMm2).toBeCloseTo(0, 3); // コンクリートせん断応力度 [N/mm2]
   });
 
   it("不正な入力の場合はエラー", () => {
@@ -169,7 +178,7 @@ describe("AnnularSectionCalculator", () => {
 
     const result = calculator.calculate();
 
-    expect(result.totalRebarAreaMm2).toBeCloseTo(606.3, 1);
-    expect(result.rebarRatioPercent).toBeGreaterThan(0);
+    expect(result.section.totalRebarAreaMm2).toBeCloseTo(606.3, 1);
+    expect(result.section.rebarRatioPercent).toBeGreaterThan(0);
   });
 });

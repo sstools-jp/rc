@@ -176,6 +176,12 @@ function buildInputPreviewSections(form: FormState): PrintPreviewSection[] {
  * 結果が `null` の場合は空の値を表示する
  */
 function buildResultPreviewSections(result: AnnularSectionResult | null): PrintPreviewSection[] {
+  const section = result?.section;
+  const loading = result?.loading;
+  const neutralAxis = result?.neutralAxis;
+  const stress = result?.stress;
+  const strength = result?.strength;
+
   return [
     {
       title: "応力度",
@@ -184,19 +190,19 @@ function buildResultPreviewSections(result: AnnularSectionResult | null): PrintP
           label: "コンクリート圧縮応力度",
           symbol: "σc",
           unit: "N/mm²",
-          value: formatNumber(result?.concreteCompressionStressNPerMm2, 2),
+          value: formatNumber(stress?.concreteCompressionStressNPerMm2, 2),
         },
         {
           label: "鉄筋引張応力度",
           symbol: "σs",
           unit: "N/mm²",
-          value: formatNumber(result?.rebarStressNPerMm2, 2),
+          value: formatNumber(stress?.rebarStressNPerMm2, 2),
         },
         {
           label: "コンクリート最大せん断応力度",
           symbol: "τc",
           unit: "N/mm²",
-          value: formatNumber(result?.concreteShearStressNPerMm2, 2),
+          value: formatNumber(stress?.concreteShearStressNPerMm2, 2),
         },
       ],
     },
@@ -207,13 +213,13 @@ function buildResultPreviewSections(result: AnnularSectionResult | null): PrintP
           label: "コンクリート終局曲げモーメント",
           symbol: "Mc",
           unit: "kN.m",
-          value: formatNumber(result?.concreteUltimateMomentKNm, 1),
+          value: formatNumber(strength?.concreteUltimateMomentKNm, 1),
         },
         {
           label: "鉄筋降伏曲げモーメント",
           symbol: "Mb",
           unit: "kN.m",
-          value: formatNumber(result?.rebarYieldMomentKNm, 1),
+          value: formatNumber(strength?.rebarYieldMomentKNm, 1),
         },
       ],
     },
@@ -224,25 +230,25 @@ function buildResultPreviewSections(result: AnnularSectionResult | null): PrintP
           label: "中立軸の位置(圧縮端からの距離)",
           symbol: "x",
           unit: "mm",
-          value: formatNumber(result?.neutralAxisPositionMm, 0),
+          value: formatNumber(neutralAxis?.neutralAxisPositionMm, 0),
         },
         {
           label: "換算曲げモーメント",
           symbol: "Me",
           unit: "kN.m",
-          value: formatNumber(result?.combinedMomentKNm, 1),
+          value: formatNumber(loading?.combinedMomentKNm, 1),
         },
         {
           label: "鉄筋断面積",
           symbol: "As",
           unit: "mm²",
-          value: formatNumber(result?.totalRebarAreaMm2, 0),
+          value: formatNumber(section?.totalRebarAreaMm2, 0),
         },
         {
           label: "鉄筋比 [=As/(π*r*r)]",
           symbol: "P",
           unit: "%",
-          value: formatNumber(result?.rebarRatioPercent, 2),
+          value: formatNumber(section?.rebarRatioPercent, 2),
         },
       ],
     },

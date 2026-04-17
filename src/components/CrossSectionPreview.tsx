@@ -63,8 +63,8 @@ export function CrossSectionPreview({ form, result }: CrossSectionPreviewProps) 
   const margin = Math.max(displayOuterRadius * 0.18, 14);
   const viewBoxRadius = displayOuterRadius + margin;
   const neutralAxisLine =
-    result && Number.isFinite(result.neutralAxisPositionMm)
-      ? -result.neutralAxisPositionMm * displayScale
+    result && Number.isFinite(result.neutralAxis.neutralAxisPositionMm)
+      ? -result.neutralAxis.neutralAxisPositionMm * displayScale
       : null;
 
   // 描画用パラメータ

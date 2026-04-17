@@ -17,7 +17,7 @@ export interface SectionForce {
   mzKNm: number;
 }
 
-/** 断面力の要約値 */
+/** 断面力の換算値 */
 export interface SectionForceComponents {
   /** 曲げモーメント [kN.m] */
   momentKNm: number;
@@ -27,7 +27,7 @@ export interface SectionForceComponents {
   axialKN: number;
 }
 
-/** 断面力を 3 成分に要約する */
+/** 断面力を 3 成分に換算する */
 export function resolveSectionForceComponents(
   force: SectionForce,
   rebarRadiusMm: number,

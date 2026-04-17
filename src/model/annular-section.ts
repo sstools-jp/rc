@@ -94,7 +94,7 @@ export interface AnnularSectionValidationIssue {
 }
 
 /** 計算結果の型定義 */
-export interface AnnularSectionResult {
+export interface AnnularSectionSectionResult {
   /** 断面積 [mm2] */
   sectionAreaMm2: number;
   /** 全断面積 [mm2] */
@@ -111,12 +111,18 @@ export interface AnnularSectionResult {
   alpha: number;
   /** 軸力係数 */
   gamma: number;
+}
+
+/** 荷重状態の結果定義 */
+export interface AnnularSectionLoadingResult {
   /** 換算曲げモーメント [kN.m] */
   combinedMomentKNm: number;
   /** 軸力の符号 */
   axialForceSign: AxialForceSign;
-  /** ヤング係数比 */
-  youngRatio: number;
+}
+
+/** 中立軸の結果定義 */
+export interface AnnularSectionNeutralAxisResult {
   /** 中立軸角度 [deg] */
   neutralAxisAngleDeg: number;
   /** 中立軸位置 [mm] */
@@ -127,16 +133,19 @@ export interface AnnularSectionResult {
   steelStressCoefficient: number;
   /** せん断応力度係数 */
   shearCoefficient: number;
-  /** コンクリート圧縮応力度 [N/mm2] */
-  concreteCompressionStressNPerMm2: number;
-  /** 鉄筋応力度 [N/mm2] */
-  rebarStressNPerMm2: number;
-  /** コンクリートせん断応力度 [N/mm2] */
-  concreteShearStressNPerMm2: number;
-  /** コンクリート終局曲げモーメント [kN.m] */
-  concreteUltimateMomentKNm: number;
-  /** 鉄筋降伏曲げモーメント [kN.m] */
-  rebarYieldMomentKNm: number;
+}
+
+export interface AnnularSectionResult {
+  /** 断面形状の結果 */
+  section: AnnularSectionSectionResult;
+  /** 荷重状態の結果 */
+  loading: AnnularSectionLoadingResult;
+  /** 中立軸の結果 */
+  neutralAxis: AnnularSectionNeutralAxisResult;
+  /** 応力度の結果 */
+  stress: SectionStressState;
+  /** 耐力の結果 */
+  strength: SectionStrengthState;
 }
 
 /** 断面力の入力値を検査する */
@@ -276,40 +285,36 @@ export class AnnularSectionCalculator {
     /** 中立軸位置 [mm] */
     const neutralAxisPositionMm = calculateNeutralAxisPositionMm(context.geometry, solver);
 
-    // 応力度の状態を算出
-    const stressState = calculateStressState(context, solver);
+    // 応力度を算出
+    const stress = calculateStressState(context, solver);
 
-    // 耐力の状態を算出
-    const strengthState = calculateStrengthState(context);
+    // 耐力を算出
+    const strength = calculateStrengthState(context);
 
     return {
-      // 断面形状
-      sectionAreaMm2: context.geometry.sectionAreaMm2,
-      fullSectionAreaMm2: context.geometry.fullSectionAreaMm2,
-      innerSectionAreaMm2: context.geometry.innerSectionAreaMm2,
-      rebarAreaPerBarMm2: context.geometry.rebarAreaPerBarMm2,
-      totalRebarAreaMm2: context.geometry.totalRebarAreaMm2,
-      rebarRatioPercent: context.geometry.rebarRatioPercent,
-      // 係数
-      alpha: context.geometry.alpha,
-      gamma: context.geometry.gamma,
-      combinedMomentKNm: context.combinedMomentKNm,
-      axialForceSign: classifyAxialForce(context.force.fxKN),
-      youngRatio: context.materialParams.youngRatio,
-      // 中立軸
-      neutralAxisAngleDeg: solver.neutralAxisAngleDeg,
-      neutralAxisPositionMm,
-      // 応力度係数
-      concreteCompressionCoefficient: solver.concreteCompressionCoefficient,
-      steelStressCoefficient: solver.steelStressCoefficient,
-      shearCoefficient: solver.shearCoefficient,
-      // 発生応力度
-      concreteCompressionStressNPerMm2: stressState.concreteCompressionStressNPerMm2,
-      rebarStressNPerMm2: stressState.rebarStressNPerMm2,
-      concreteShearStressNPerMm2: stressState.concreteShearStressNPerMm2,
-      // 終局耐力
-      concreteUltimateMomentKNm: strengthState.concreteUltimateMomentKNm,
-      rebarYieldMomentKNm: strengthState.rebarYieldMomentKNm,
+      section: {
+        sectionAreaMm2: context.geometry.sectionAreaMm2,
+        fullSectionAreaMm2: context.geometry.fullSectionAreaMm2,
+        innerSectionAreaMm2: context.geometry.innerSectionAreaMm2,
+        rebarAreaPerBarMm2: context.geometry.rebarAreaPerBarMm2,
+        totalRebarAreaMm2: context.geometry.totalRebarAreaMm2,
+        rebarRatioPercent: context.geometry.rebarRatioPercent,
+        alpha: context.geometry.alpha,
+        gamma: context.geometry.gamma,
+      },
+      loading: {
+        combinedMomentKNm: context.combinedMomentKNm,
+        axialForceSign: classifyAxialForce(context.force.fxKN),
+      },
+      neutralAxis: {
+        neutralAxisAngleDeg: solver.neutralAxisAngleDeg,
+        neutralAxisPositionMm,
+        concreteCompressionCoefficient: solver.concreteCompressionCoefficient,
+        steelStressCoefficient: solver.steelStressCoefficient,
+        shearCoefficient: solver.shearCoefficient,
+      },
+      stress,
+      strength,
     };
   }
 }
@@ -322,7 +327,7 @@ interface SectionCalculationContext {
   materialParams: MaterialParams;
   /** 断面力 */
   force: SectionForce;
-  /** 3成分へ要約した断面力 */
+  /** 3成分に換算した断面力 */
   forceComponents: SectionForceComponents;
   /** モーメント [kN.m] */
   momentKNm: number;
