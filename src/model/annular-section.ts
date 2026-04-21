@@ -61,6 +61,12 @@ export class AnnularSectionGeometry {
     return this.rebarAreaPerBar_Mm2 * this.barCount;
   }
 
+  /** 極断面係数 [mm3] */
+  get polarSectionModulus_Mm3(): number {
+    // Zp = π / (16 * D) * (D^4 - d^4)
+    return (Math.PI / (16 * this.outerRadius_Mm)) * (this.outerRadius_Mm ** 4 - this.innerRadius_Mm ** 4);
+  }
+
   /** 鉄筋比 [%] */
   get rebarRatioPercent(): number {
     return (this.totalRebarArea_Mm2 / this.fullSectionArea_Mm2) * 100;
@@ -389,7 +395,7 @@ function calculateStressState(
 ): SectionStressState {
   const combinedMomentNmm = context.combinedMoment_KNmm * 1000;
   const outerRadius_Mm = context.geometry.outerRadius_Mm;
-  const scale = combinedMomentNmm / Math.pow(outerRadius_Mm, 3);
+  const scale = combinedMomentNmm / outerRadius_Mm ** 3;
 
   /** コンクリート圧縮応力度 [N/mm2] */
   const concreteCompressionStress_NPerMm2 = scale * solver.concreteCompressionCoefficient;
@@ -399,9 +405,10 @@ function calculateStressState(
 
   /** せん断応力度 [N/mm2]  */
   const shearStress_NPerMm2 =
-    ((context.shear_KN * 1000) / Math.pow(outerRadius_Mm, 2)) * solver.shearCoefficient +
-    // ねじりモーメントによるせん断応力度を加味する
-    (context.force.mx_KNm * 1000) / outerRadius_Mm;
+    // せん断力によるせん断応力度 (S / A)
+    ((context.shear_KN * 1000) / outerRadius_Mm ** 2) * solver.shearCoefficient +
+    // ねじりモーメントによるせん断応力度 (Mx / Zp)
+    (Math.abs(context.force.mx_KNm) * 1000 ** 2) / context.geometry.polarSectionModulus_Mm3;
 
   // コンクリートが負担できる平均せん断応力度の基本値 τc の超過分を鉄筋が負担する
   const tauC_NPerMm2 = getTauC_NPerMm2(context.materialParams.concreteDesignStrength_NPerMm2);
