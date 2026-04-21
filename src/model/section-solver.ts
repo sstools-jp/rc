@@ -137,7 +137,7 @@ export function calculateConcreteUltimateMoment_KNm(input: StrengthMomentSolverI
 /** 曲げモーメントに対する応力度を算出する */
 function evaluateMomentStress(input: StrengthMomentSolverInput, moment_KNm: number): MomentStressEvaluation {
   const { force, geometry, materialParams } = input;
-  const resolvedForce = resolveSectionForceComponents(force, geometry.rebarRadius_Mm);
+  const resolvedForce = resolveSectionForceComponents(force);
   const solver = solveNeutralAxisAngleDeg({
     geometry,
     materialParams,

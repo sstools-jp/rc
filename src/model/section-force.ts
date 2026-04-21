@@ -28,13 +28,10 @@ export interface SectionForceComponents {
 }
 
 /** 断面力を 3 成分に換算する */
-export function resolveSectionForceComponents(
-  force: SectionForce,
-  rebarRadius_Mm: number,
-): SectionForceComponents {
+export function resolveSectionForceComponents(force: SectionForce): SectionForceComponents {
   return {
     moment_KNm: Math.sqrt(force.my_KNm ** 2 + force.mz_KNm ** 2),
-    shear_KN: Math.sqrt(force.fy_KN ** 2 + force.fz_KN ** 2) + (force.mx_KNm * 1000) / rebarRadius_Mm,
+    shear_KN: Math.sqrt(force.fy_KN ** 2 + force.fz_KN ** 2),
     axial_KN: -force.fx_KN,
   };
 }

@@ -228,21 +228,6 @@ function validateMaterialParams(
   }
 }
 
-/** 入力から計算用の3成分へ要約する */
-function resolveSectionForceSummary(input: AnnularSectionInput): SectionForceComponents {
-  if (!input.force) {
-    throw new Error("断面力が指定されていません。");
-  }
-
-  const components = resolveSectionForceComponents(input.force, input.geometry.rebarRadius_Mm);
-
-  return {
-    moment_KNm: components.moment_KNm,
-    shear_KN: components.shear_KN,
-    axial_KN: components.axial_KN,
-  };
-}
-
 /** 数値計算用の極小値（ゼロ判定用） */
 const EPSILON = 1e-9;
 
@@ -366,7 +351,7 @@ function createCalculationContext(input: AnnularSectionInput): SectionCalculatio
   }
 
   const force = input.force;
-  const forceComponents = resolveSectionForceSummary(input);
+  const forceComponents = resolveSectionForceComponents(force);
   const moment_KNm = forceComponents.moment_KNm;
   const shear_KN = forceComponents.shear_KN;
   const axial_KN = forceComponents.axial_KN;
