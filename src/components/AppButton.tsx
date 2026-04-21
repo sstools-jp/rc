@@ -26,8 +26,8 @@ const variantClassNames: Record<AppButtonVariant, string> = {
 
 /** サイズ毎のスタイルを定義 */
 const sizeClassNames: Record<AppButtonSize, string> = {
-  md: "min-h-8 px-5 text-sm",
-  sm: "min-h-9 px-4 text-sm",
+  md: "min-h-9 px-5 text-sm",
+  sm: "min-h-8 px-4 text-sm",
 };
 
 /**
@@ -50,10 +50,11 @@ export function AppButton({
         "group inline-flex items-center justify-center gap-1.5 rounded-xs transition-colors",
         sizeClassNames[size],
         variantClassNames[variant],
+        Icon ? "px-2" : "",
         className,
       )}
     >
-      {Icon ? <Icon className="h-6 w-6 shrink-0" aria-hidden={true} /> : null}
+      {Icon ? <Icon className="h-5 w-5 shrink-0" aria-hidden={true} /> : null}
       <span className="transition-transform duration-75 group-active:translate-y-px">{children}</span>
     </Button>
   );

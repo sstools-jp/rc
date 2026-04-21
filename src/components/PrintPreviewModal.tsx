@@ -10,9 +10,10 @@ import {
   buildResultPreviewSections,
   type PrintPreviewSection,
 } from "@/utils/print-preview-data";
-import { FiClipboard, FiPrinter, FiX } from "react-icons/fi";
+import { FiPrinter, FiX } from "react-icons/fi";
 import { cn } from "@/utils/cn";
 import { useAnnularSectionPreviewClipboard } from "@/hooks/useAnnularSectionPreviewClipboard";
+import { LuClipboardCopy } from "react-icons/lu";
 
 type PrintPreviewModalProps = {
   /** モーダルの開閉状態 */
@@ -227,10 +228,10 @@ export function PrintPreviewModal({ open, form, sectionForceMode, result, onClos
           <div className="flex flex-col gap-3 p-4 print:hidden">
             <div className="flex flex-row items-center gap-2">
               <div className="flex flex-row gap-2">
-                <AppButton icon={FiPrinter} onClick={handlePrint}>
+                <AppButton icon={FiPrinter} onClick={handlePrint} className="font-semibold text-blue-700">
                   印刷
                 </AppButton>
-                <AppButton icon={FiClipboard} onClick={handleCopy} disabled={!canCopy}>
+                <AppButton icon={LuClipboardCopy} onClick={handleCopy} disabled={!canCopy}>
                   <span className="sm:hidden">コピー</span>
                   <span className="hidden sm:inline">クリップボードにコピー</span>
                 </AppButton>

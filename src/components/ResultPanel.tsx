@@ -6,9 +6,8 @@ import { formatNumber } from "@/utils/number-format";
 import { CrossSectionPreview } from "@/components/CrossSectionPreview";
 import type { SectionForceMode } from "@/components/SectionForceModeSelector";
 import { useAnnularSectionPreviewClipboard } from "@/hooks/useAnnularSectionPreviewClipboard";
-import { FiClipboard } from "react-icons/fi";
-import { FcFinePrint } from "react-icons/fc";
 import { cn } from "@/utils/cn";
+import { LuClipboardCopy, LuPrinter } from "react-icons/lu";
 
 type AnnularSectionResultPanelProps = {
   form: FormState;
@@ -44,11 +43,16 @@ export function AnnularSectionResultPanel({
         <h2>計算結果</h2>
         <div className="flex flex-col items-end gap-2">
           <div className="flex flex-wrap justify-end gap-2">
-            <AppButton onClick={onOpenPrintPreview} disabled={result === null}>
-              印刷用テーブル
+            <AppButton
+              icon={LuPrinter}
+              onClick={onOpenPrintPreview}
+              disabled={result === null}
+              className="font-semibold text-blue-700"
+            >
+              印刷プレビュー
             </AppButton>
-            <AppButton onClick={handleCopy} disabled={!canCopy}>
-              クリップボードにコピー
+            <AppButton icon={LuClipboardCopy} onClick={handleCopy} disabled={!canCopy}>
+              コピー
             </AppButton>
           </div>
           {copyError ? <p className="text-sm text-rose-600">{copyError}</p> : null}
@@ -56,7 +60,7 @@ export function AnnularSectionResultPanel({
       </div>
 
       <div className="flex flex-col gap-2">
-        <CollapsibleSection title="断面プレビュー">
+        <CollapsibleSection title="断面図">
           <CrossSectionPreview form={form} result={result} />
         </CollapsibleSection>
 
@@ -166,7 +170,7 @@ function CollapsibleSection({ title, defaultOpen = false, children }: Collapsibl
           type="button"
           onClick={() => setIsOpen((current) => !current)}
           aria-expanded={isOpen}
-          className="flex w-full items-center gap-2 rounded-sm text-left font-semibold text-blue-800 outline-none"
+          className="flex w-full items-center gap-2 rounded-sm text-left font-semibold text-slate-600 outline-none"
         >
           <span
             aria-hidden="true"
