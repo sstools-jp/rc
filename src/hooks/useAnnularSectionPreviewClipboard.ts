@@ -13,13 +13,15 @@ type UseAnnularSectionPreviewClipboardParams = {
   form: FormState;
   sectionForceMode: SectionForceMode;
   result: AnnularSectionResult | null;
+  onCopySuccess?: () => void;
 };
 
-/** 断面プレビューのクリップボードコピー機能を提供するカスタムフック */
+/** 断面プレビューのクリップボードコピー機能を提供するフック */
 export function useAnnularSectionPreviewClipboard({
   form,
   sectionForceMode,
   result,
+  onCopySuccess,
 }: UseAnnularSectionPreviewClipboardParams) {
   const [copyError, setCopyError] = useState<string | null>(null);
   const canCopy = result !== null;
@@ -45,6 +47,7 @@ export function useAnnularSectionPreviewClipboard({
       ]);
 
       await copyTextToClipboard(text);
+      onCopySuccess?.();
     } catch {
       setCopyError("クリップボードへのコピーに失敗しました。");
     }

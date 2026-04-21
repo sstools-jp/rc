@@ -4,8 +4,10 @@ import type { FormState } from "@/forms/form-state";
 import type { AnnularSectionResult } from "@/model/annular-section";
 import { formatNumber } from "@/utils/number-format";
 import { CrossSectionPreview } from "@/components/CrossSectionPreview";
+import { Toast } from "@/components/Toast";
 import type { SectionForceMode } from "@/components/SectionForceModeSelector";
 import { useAnnularSectionPreviewClipboard } from "@/hooks/useAnnularSectionPreviewClipboard";
+import { useTransientToast } from "@/hooks/useTransientToast";
 import { cn } from "@/utils/cn";
 import { LuClipboardCopy, LuPrinter } from "react-icons/lu";
 
@@ -23,10 +25,12 @@ export function AnnularSectionResultPanel({
   result,
   onOpenPrintPreview,
 }: AnnularSectionResultPanelProps) {
+  const { message: toastMessage, isVisible: toastIsVisible, showToast } = useTransientToast();
   const { canCopy, copyError, handleCopy } = useAnnularSectionPreviewClipboard({
     form,
     sectionForceMode,
     result,
+    onCopySuccess: () => showToast("クリップボードにコピーしました。"),
   });
   const section = result?.section;
   const loading = result?.loading;
@@ -58,6 +62,7 @@ export function AnnularSectionResultPanel({
           {copyError ? <p className="text-sm text-rose-600">{copyError}</p> : null}
         </div>
       </div>
+      {toastMessage ? <Toast message={toastMessage} isVisible={toastIsVisible} /> : null}
 
       <div className="flex flex-col gap-2">
         <CollapsibleSection title="断面図">

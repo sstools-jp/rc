@@ -4,6 +4,7 @@ import type { AnnularSectionResult } from "@/model/annular-section";
 import type { FormState } from "@/forms/form-state";
 import { AppButton } from "@/components/AppButton";
 import { SymbolText } from "@/components/SymbolText";
+import { Toast } from "@/components/Toast";
 import { type SectionForceMode } from "@/components/SectionForceModeSelector";
 import {
   buildInputPreviewSections,
@@ -13,6 +14,7 @@ import {
 import { FiPrinter, FiX } from "react-icons/fi";
 import { cn } from "@/utils/cn";
 import { useAnnularSectionPreviewClipboard } from "@/hooks/useAnnularSectionPreviewClipboard";
+import { useTransientToast } from "@/hooks/useTransientToast";
 import { LuClipboardCopy } from "react-icons/lu";
 
 type PrintPreviewModalProps = {
@@ -189,10 +191,12 @@ async function printElementContent(sourceElement: HTMLElement): Promise<void> {
 
 /** 印刷プレビュー用モーダルを表示するコンポーネント */
 export function PrintPreviewModal({ open, form, sectionForceMode, result, onClose }: PrintPreviewModalProps) {
+  const { message: toastMessage, isVisible: toastIsVisible, showToast } = useTransientToast();
   const { canCopy, copyError, handleCopy } = useAnnularSectionPreviewClipboard({
     form,
     sectionForceMode,
     result,
+    onCopySuccess: () => showToast("クリップボードにコピーしました。"),
   });
   const printContentRef = useRef<HTMLDivElement | null>(null);
   const inputSections = buildInputPreviewSections(form, sectionForceMode);
@@ -245,6 +249,8 @@ export function PrintPreviewModal({ open, form, sectionForceMode, result, onClos
             </div>
             {copyError ? <p className="text-sm text-rose-600">{copyError}</p> : null}
           </div>
+
+          {toastMessage ? <Toast message={toastMessage} isVisible={toastIsVisible} /> : null}
 
           <div className="overflow-auto p-4 pt-0 print:overflow-visible print:p-0">
             <div
