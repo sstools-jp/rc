@@ -1,6 +1,6 @@
 import { Button } from "@headlessui/react";
 import clsx from "clsx";
-import type { ComponentPropsWithoutRef, ReactNode } from "react";
+import type { ComponentPropsWithoutRef, ComponentType, ReactNode } from "react";
 
 type AppButtonVariant = "primary" | "secondary";
 type AppButtonSize = "md" | "sm";
@@ -10,6 +10,8 @@ type AppButtonProps = Omit<ComponentPropsWithoutRef<typeof Button>, "className" 
   variant?: AppButtonVariant;
   /** ボタンのサイズ */
   size?: AppButtonSize;
+  /** ボタン左側に表示するアイコン */
+  icon?: ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
   className?: string;
   children: ReactNode;
 };
@@ -35,6 +37,7 @@ export function AppButton({
   type = "button",
   variant = "secondary",
   size = "sm",
+  icon: Icon,
   className,
   children,
   ...props
@@ -44,12 +47,13 @@ export function AppButton({
       type={type}
       {...props}
       className={clsx(
-        "group inline-flex items-center justify-center rounded-xs transition-colors",
+        "group inline-flex items-center justify-center gap-1.5 rounded-xs transition-colors",
         sizeClassNames[size],
         variantClassNames[variant],
         className,
       )}
     >
+      {Icon ? <Icon className="h-6 w-6 shrink-0" aria-hidden={true} /> : null}
       <span className="transition-transform duration-75 group-active:translate-y-px">{children}</span>
     </Button>
   );

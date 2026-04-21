@@ -1,4 +1,4 @@
-import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
+import { Dialog, DialogPanel } from "@headlessui/react";
 import { useRef, useState } from "react";
 import type { AnnularSectionResult } from "@/model/annular-section";
 import type { FormState } from "@/forms/form-state";
@@ -6,6 +6,8 @@ import { AppButton } from "@/components/AppButton";
 import { SymbolText } from "@/components/SymbolText";
 import { type SectionForceMode } from "@/components/SectionForceModeSelector";
 import { formatNumber, parseNumber } from "@/utils/number-format";
+import { FiClipboard, FiPrinter, FiX } from "react-icons/fi";
+import clsx from "clsx";
 
 type PrintPreviewModalProps = {
   /** モーダルの開閉状態 */
@@ -49,53 +51,55 @@ type PreviewTableProps = {
 function PreviewTable({ title, sections, valueHeader, includeSectionLabel }: PreviewTableProps) {
   return (
     <section>
-      <h5 className="mb-2 text-center text-lg font-semibold">{title}</h5>
+      <h5 className="mb-2 text-lg font-semibold">{title}</h5>
 
-      <table className="w-lg border-collapse border-2 border-slate-600">
-        <thead>
-          <tr className="bg-slate-200">
-            <th
-              colSpan={includeSectionLabel ? 2 : 1}
-              className="border border-slate-600 px-1 py-1 text-center font-semibold"
-              scope="col"
-            >
-              項目
-            </th>
-            <th className="w-12 border border-slate-600 px-1 py-1 text-center font-semibold" scope="col">
-              記号
-            </th>
-            <th className="w-18 border border-slate-600 px-1 py-1 text-center font-semibold" scope="col">
-              単位
-            </th>
-            <th className="w-24 border border-slate-600 px-1 py-1 text-center font-semibold" scope="col">
-              {valueHeader}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {sections.map((section) =>
-            section.rows.map((row, rowIndex) => (
-              <tr key={`${section.title}-${row.symbol}`} className="border border-slate-600">
-                {includeSectionLabel && rowIndex === 0 ? (
-                  <td
-                    rowSpan={section.rows.length}
-                    className="border border-slate-600 bg-slate-50 text-center align-middle"
-                    style={{ writingMode: "vertical-rl", textOrientation: "upright" }}
-                  >
-                    {section.title}
+      <div className="max-w-full overflow-x-auto">
+        <table className="w-lg border-collapse border-2 border-slate-600">
+          <thead>
+            <tr className="bg-slate-200">
+              <th
+                colSpan={includeSectionLabel ? 2 : 1}
+                className="border border-slate-600 px-1 py-1 text-center font-semibold"
+                scope="col"
+              >
+                項目
+              </th>
+              <th className="w-12 border border-slate-600 px-1 py-1 text-center font-semibold" scope="col">
+                記号
+              </th>
+              <th className="w-18 border border-slate-600 px-1 py-1 text-center font-semibold" scope="col">
+                単位
+              </th>
+              <th className="w-24 border border-slate-600 px-1 py-1 text-center font-semibold" scope="col">
+                {valueHeader}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {sections.map((section) =>
+              section.rows.map((row, rowIndex) => (
+                <tr key={`${section.title}-${row.symbol}`} className="border border-slate-600">
+                  {includeSectionLabel && rowIndex === 0 ? (
+                    <td
+                      rowSpan={section.rows.length}
+                      className="border border-slate-600 bg-slate-50 text-center align-middle"
+                      style={{ writingMode: "vertical-rl", textOrientation: "upright" }}
+                    >
+                      {section.title}
+                    </td>
+                  ) : null}
+                  <td className="border border-slate-600 px-1 py-1 font-mono">{row.label}</td>
+                  <td className="border border-slate-600 px-1 py-1 text-center font-mono">
+                    <SymbolText value={row.symbol} />
                   </td>
-                ) : null}
-                <td className="border border-slate-600 px-1 py-1 font-mono">{row.label}</td>
-                <td className="border border-slate-600 px-1 py-1 text-center font-mono">
-                  <SymbolText value={row.symbol} />
-                </td>
-                <td className="border border-slate-600 px-1 py-1 text-center font-mono">{row.unit}</td>
-                <td className="border border-slate-600 px-1 py-1 text-right font-mono">{row.value}</td>
-              </tr>
-            )),
-          )}
-        </tbody>
-      </table>
+                  <td className="border border-slate-600 px-1 py-1 text-center font-mono">{row.unit}</td>
+                  <td className="border border-slate-600 px-1 py-1 text-right font-mono">{row.value}</td>
+                </tr>
+              )),
+            )}
+          </tbody>
+        </table>
+      </div>
     </section>
   );
 }
@@ -512,28 +516,41 @@ export function PrintPreviewModal({ open, form, sectionForceMode, result, onClos
     <Dialog open={open} onClose={onClose} className="relative z-50 print:static print:z-auto">
       <div className="fixed inset-0 bg-slate-950/60 print:hidden" aria-hidden="true" />
 
-      <div className="fixed inset-0 flex items-center justify-center p-4 print:static print:block print:p-0">
-        <DialogPanel className="flex max-h-[calc(100vh-2rem)] max-w-5xl flex-col overflow-hidden rounded-sm bg-slate-100 shadow-2xl print:max-h-none print:max-w-none print:overflow-visible print:rounded-none print:bg-white print:shadow-none">
-          <div className="flex items-center justify-between gap-4 border-b border-slate-200 bg-white px-5 py-4 print:hidden">
-            <DialogTitle as="h3" className="text-lg">
-              印刷用テーブル
-            </DialogTitle>
-            <div className="flex flex-col items-end gap-2">
-              <div className="flex gap-2">
-                <AppButton onClick={handlePrint}>印刷</AppButton>
-                <AppButton onClick={handleCopy} disabled={!canCopy}>
-                  クリップボードにコピー
+      <div className="fixed inset-0 flex items-center justify-center sm:p-4 print:static print:block print:p-0">
+        <DialogPanel
+          className={clsx(
+            "flex max-h-svh flex-col overflow-hidden bg-slate-100 shadow-2xl sm:max-h-[calc(100vh-2rem)] sm:max-w-5xl sm:rounded-sm",
+            "print:max-h-none print:max-w-none print:overflow-visible print:rounded-none print:bg-white print:shadow-none",
+          )}
+        >
+          <div className="flex flex-col gap-3 p-4 print:hidden">
+            <div className="flex flex-row items-center gap-2">
+              <div className="flex flex-row gap-2">
+                <AppButton icon={FiPrinter} onClick={handlePrint}>
+                  印刷
                 </AppButton>
-                <AppButton onClick={onClose}>閉じる</AppButton>
+                <AppButton icon={FiClipboard} onClick={handleCopy} disabled={!canCopy}>
+                  <span className="sm:hidden">コピー</span>
+                  <span className="hidden sm:inline">クリップボードにコピー</span>
+                </AppButton>
               </div>
-              {copyError ? <p className="text-sm text-rose-600">{copyError}</p> : null}
+
+              <div className="ml-auto flex flex-row items-center">
+                <AppButton aria-label="閉じる" onClick={onClose} className="w-9 px-0">
+                  <FiX className="h-6 w-6" aria-hidden="true" />
+                </AppButton>
+              </div>
             </div>
+            {copyError ? <p className="text-sm text-rose-600">{copyError}</p> : null}
           </div>
 
-          <div className="overflow-auto p-4 print:overflow-visible print:p-0">
+          <div className="overflow-auto p-4 pt-0 print:overflow-visible print:p-0">
             <div
               ref={printContentRef}
-              className="rounded-sm bg-white p-8 shadow-sm print:rounded-none print:p-0 print:shadow-none"
+              className={clsx(
+                "rounded-sm bg-white p-8 shadow-sm",
+                "print:rounded-none print:p-0 print:shadow-none",
+              )}
             >
               <h4 className="mb-4 text-center text-xl font-semibold">RC断面計算【円環断面】</h4>
               <PreviewTable
@@ -543,7 +560,7 @@ export function PrintPreviewModal({ open, form, sectionForceMode, result, onClos
                 includeSectionLabel
               />
 
-              <div className="h-6" />
+              <div className="h-8" />
 
               <PreviewTable
                 title="計算結果"
