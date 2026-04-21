@@ -1,13 +1,18 @@
 import { Dialog, DialogPanel } from "@headlessui/react";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import type { AnnularSectionResult } from "@/model/annular-section";
 import type { FormState } from "@/forms/form-state";
 import { AppButton } from "@/components/AppButton";
 import { SymbolText } from "@/components/SymbolText";
 import { type SectionForceMode } from "@/components/SectionForceModeSelector";
-import { formatNumber, parseNumber } from "@/utils/number-format";
+import {
+  buildInputPreviewSections,
+  buildResultPreviewSections,
+  type PrintPreviewSection,
+} from "@/utils/print-preview-data";
 import { FiClipboard, FiPrinter, FiX } from "react-icons/fi";
 import clsx from "clsx";
+import { useAnnularSectionPreviewClipboard } from "@/hooks/useAnnularSectionPreviewClipboard";
 
 type PrintPreviewModalProps = {
   /** モーダルの開閉状態 */
@@ -20,24 +25,6 @@ type PrintPreviewModalProps = {
   result: AnnularSectionResult | null;
   /** モーダルを閉じるためのハンドラ */
   onClose: () => void;
-};
-
-type PrintPreviewRow = {
-  label: string;
-  symbol: string;
-  unit: string;
-  value: string;
-};
-
-type PrintPreviewSection = {
-  title: string;
-  rows: PrintPreviewRow[];
-};
-
-type CopyBlock = {
-  title: string;
-  header: string;
-  sections: PrintPreviewSection[];
 };
 
 type PreviewTableProps = {
@@ -102,268 +89,6 @@ function PreviewTable({ title, sections, valueHeader, includeSectionLabel }: Pre
       </div>
     </section>
   );
-}
-
-/** フォームの入力値から印刷用のセクションデータを構築する関数 */
-function buildInputPreviewSections(
-  form: FormState,
-  sectionForceMode: SectionForceMode,
-): PrintPreviewSection[] {
-  const forceRows =
-    sectionForceMode === "3"
-      ? [
-          {
-            label: "曲げモーメント",
-            symbol: "M",
-            unit: "kN.m",
-            value: formatNumber(parseNumber(form.my_KNm), 2),
-          },
-          {
-            label: "せん断力",
-            symbol: "S",
-            unit: "kN",
-            value: formatNumber(parseNumber(form.fz_KN), 2),
-          },
-          {
-            label: "軸力（引張を正）",
-            symbol: "N",
-            unit: "kN",
-            value: formatNumber(parseNumber(form.fx_KN), 2),
-          },
-        ]
-      : [
-          {
-            label: "軸力",
-            symbol: "Fx",
-            unit: "kN",
-            value: formatNumber(parseNumber(form.fx_KN), 2),
-          },
-          {
-            label: "せん断力（面外）",
-            symbol: "Fy",
-            unit: "kN",
-            value: formatNumber(parseNumber(form.fy_KN), 2),
-          },
-          {
-            label: "せん断力（面内）",
-            symbol: "Fz",
-            unit: "kN",
-            value: formatNumber(parseNumber(form.fz_KN), 2),
-          },
-          {
-            label: "ねじりモーメント",
-            symbol: "Mx",
-            unit: "kN.m",
-            value: formatNumber(parseNumber(form.mx_KNm), 2),
-          },
-          {
-            label: "曲げモーメント（面内）",
-            symbol: "My",
-            unit: "kN.m",
-            value: formatNumber(parseNumber(form.my_KNm), 2),
-          },
-          {
-            label: "曲げモーメント（面外）",
-            symbol: "Mz",
-            unit: "kN.m",
-            value: formatNumber(parseNumber(form.mz_KNm), 2),
-          },
-        ];
-
-  return [
-    {
-      title: "断面力",
-      rows: forceRows,
-    },
-    {
-      title: "寸法",
-      rows: [
-        {
-          label: "半径（外径）",
-          symbol: "r",
-          unit: "mm",
-          value: formatNumber(parseNumber(form.outerRadius_Mm), 0),
-        },
-        {
-          label: "半径（内径）",
-          symbol: "r0",
-          unit: "mm",
-          value: formatNumber(parseNumber(form.innerRadius_Mm), 0),
-        },
-        {
-          label: "鉄筋位置（有効半径）",
-          symbol: "rs",
-          unit: "mm",
-          value: formatNumber(parseNumber(form.rebarRadius_Mm), 0),
-        },
-      ],
-    },
-    {
-      title: "鉄筋",
-      rows: [
-        {
-          label: "鉄筋径",
-          symbol: "D",
-          unit: "-",
-          value: `D${form.rebarDiameter_Mm}`,
-        },
-        {
-          label: "本数",
-          symbol: "H",
-          unit: "本",
-          value: formatNumber(parseNumber(form.barCount), 3),
-        },
-      ],
-    },
-  ];
-}
-
-/**
- * 計算結果から印刷用のセクションデータを構築する関数
- *
- * 結果が `null` の場合は空の値を表示する
- */
-function buildResultPreviewSections(result: AnnularSectionResult | null): PrintPreviewSection[] {
-  const section = result?.section;
-  const loading = result?.loading;
-  const neutralAxis = result?.neutralAxis;
-  const stress = result?.stress;
-  const strength = result?.strength;
-
-  return [
-    {
-      title: "応力度",
-      rows: [
-        {
-          label: "コンクリート圧縮応力度",
-          symbol: "σc",
-          unit: "N/mm²",
-          value: formatNumber(stress?.concreteCompressionStress_NPerMm2, 2),
-        },
-        {
-          label: "鉄筋引張応力度",
-          symbol: "σs",
-          unit: "N/mm²",
-          value: formatNumber(stress?.rebarStress_NPerMm2, 2),
-        },
-        {
-          label: "コンクリートせん断応力度",
-          symbol: "τc",
-          unit: "N/mm²",
-          value: formatNumber(stress?.concreteShearStress_NPerMm2, 2),
-        },
-        {
-          label: "鉄筋せん断応力度",
-          symbol: "τs",
-          unit: "N/mm²",
-          value: formatNumber(stress?.rebarShearStress_NPerMm2, 2),
-        },
-      ],
-    },
-    {
-      title: "終局耐力",
-      rows: [
-        {
-          label: "コンクリート終局曲げモーメント",
-          symbol: "Mc",
-          unit: "kN.m",
-          value: formatNumber(strength?.concreteUltimateMoment_KNm, 1),
-        },
-        {
-          label: "鉄筋降伏曲げモーメント",
-          symbol: "Mb",
-          unit: "kN.m",
-          value: formatNumber(strength?.rebarYieldMoment_KNm, 1),
-        },
-      ],
-    },
-    {
-      title: "計算結果",
-      rows: [
-        {
-          label: "中立軸の位置(圧縮端からの距離)",
-          symbol: "x",
-          unit: "mm",
-          value: formatNumber(neutralAxis?.neutralAxisPosition_Mm, 0),
-        },
-        {
-          label: "換算曲げモーメント",
-          symbol: "Me",
-          unit: "kN.m",
-          value: formatNumber(loading?.combinedMoment_KNm, 1),
-        },
-        {
-          label: "鉄筋断面積",
-          symbol: "As",
-          unit: "mm²",
-          value: formatNumber(section?.totalRebarArea_Mm2, 0),
-        },
-        {
-          label: "鉄筋比 [=As/(π*r*r)]",
-          symbol: "P",
-          unit: "%",
-          value: formatNumber(section?.rebarRatioPercent, 2),
-        },
-      ],
-    },
-  ];
-}
-
-/**
- * クリップボードにコピーするテキストを構築する関数
- *
- * Excel貼り付け時に表として認識されるようにTSV形式で出力する
- */
-function buildClipboardText(blocks: CopyBlock[]): string {
-  const lines: string[] = [];
-
-  for (const block of blocks) {
-    lines.push(block.title);
-    lines.push(block.header);
-
-    for (const section of block.sections) {
-      for (const row of section.rows) {
-        lines.push([section.title, row.label, row.symbol, row.unit, row.value].join("\t"));
-      }
-    }
-
-    lines.push("");
-  }
-
-  return lines.join("\n").trimEnd();
-}
-
-/**
- * テキストをクリップボードにコピーする関数
- *
- * `navigator.clipboard` APIが利用できない環境では、フォールバックとして一時的なテキストエリアを使用してコピーを試みる
- */
-async function copyTextToClipboard(text: string): Promise<void> {
-  if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
-    await navigator.clipboard.writeText(text);
-    return;
-  }
-
-  if (typeof document === "undefined") {
-    throw new Error("クリップボードにアクセスできません。");
-  }
-
-  const textarea = document.createElement("textarea");
-  textarea.value = text;
-  textarea.setAttribute("readonly", "true");
-  textarea.style.position = "fixed";
-  textarea.style.top = "0";
-  textarea.style.left = "0";
-  textarea.style.opacity = "0";
-  document.body.appendChild(textarea);
-  textarea.select();
-
-  const copied = document.execCommand("copy");
-  document.body.removeChild(textarea);
-
-  if (!copied) {
-    throw new Error("クリップボードへのコピーに失敗しました。");
-  }
 }
 
 /**
@@ -463,11 +188,14 @@ async function printElementContent(sourceElement: HTMLElement): Promise<void> {
 
 /** 印刷プレビュー用モーダルを表示するコンポーネント */
 export function PrintPreviewModal({ open, form, sectionForceMode, result, onClose }: PrintPreviewModalProps) {
-  const [copyError, setCopyError] = useState<string | null>(null);
+  const { canCopy, copyError, handleCopy } = useAnnularSectionPreviewClipboard({
+    form,
+    sectionForceMode,
+    result,
+  });
   const printContentRef = useRef<HTMLDivElement | null>(null);
   const inputSections = buildInputPreviewSections(form, sectionForceMode);
   const resultSections = buildResultPreviewSections(result);
-  const canCopy = result !== null;
 
   // 印刷ボタンのクリックハンドラー
   const handlePrint = async () => {
@@ -482,33 +210,6 @@ export function PrintPreviewModal({ open, form, sectionForceMode, result, onClos
       await printElementContent(printRoot);
     } catch {
       window.print();
-    }
-  };
-
-  // クリップボードコピーのクリックハンドラー
-  const handleCopy = async () => {
-    if (!canCopy) {
-      return;
-    }
-
-    try {
-      setCopyError(null);
-      const text = buildClipboardText([
-        {
-          title: "入力値",
-          header: "区分\t項目\t記号\t単位\t入力値",
-          sections: inputSections,
-        },
-        {
-          title: "計算結果",
-          header: "区分\t項目\t記号\t単位\t計算値",
-          sections: resultSections,
-        },
-      ]);
-
-      await copyTextToClipboard(text);
-    } catch {
-      setCopyError("クリップボードへのコピーに失敗しました。");
     }
   };
 

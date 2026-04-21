@@ -61,6 +61,7 @@ function App() {
         {/* 結果表示パネル */}
         <AnnularSectionResultPanel
           form={committedForm}
+          sectionForceMode={sectionForceMode}
           result={result}
           onOpenPrintPreview={openPrintPreview}
         />

@@ -5,9 +5,12 @@ import type { FormState } from "@/forms/form-state";
 import type { AnnularSectionResult } from "@/model/annular-section";
 import { formatNumber } from "@/utils/number-format";
 import { CrossSectionPreview } from "@/components/CrossSectionPreview";
+import type { SectionForceMode } from "@/components/SectionForceModeSelector";
+import { useAnnularSectionPreviewClipboard } from "@/hooks/useAnnularSectionPreviewClipboard";
 
 type AnnularSectionResultPanelProps = {
   form: FormState;
+  sectionForceMode: SectionForceMode;
   result: AnnularSectionResult | null;
   onOpenPrintPreview: () => void;
 };
@@ -15,9 +18,15 @@ type AnnularSectionResultPanelProps = {
 /** 計算結果表示パネル */
 export function AnnularSectionResultPanel({
   form,
+  sectionForceMode,
   result,
   onOpenPrintPreview,
 }: AnnularSectionResultPanelProps) {
+  const { canCopy, copyError, handleCopy } = useAnnularSectionPreviewClipboard({
+    form,
+    sectionForceMode,
+    result,
+  });
   const section = result?.section;
   const loading = result?.loading;
   const neutralAxis = result?.neutralAxis;
@@ -31,10 +40,16 @@ export function AnnularSectionResultPanel({
     >
       <div className="flex items-start justify-between gap-3">
         <h2>計算結果</h2>
-        <div>
-          <AppButton onClick={onOpenPrintPreview} disabled={result === null}>
-            印刷用テーブル
-          </AppButton>
+        <div className="flex flex-col items-end gap-2">
+          <div className="flex flex-wrap justify-end gap-2">
+            <AppButton onClick={onOpenPrintPreview} disabled={result === null}>
+              印刷用テーブル
+            </AppButton>
+            <AppButton onClick={handleCopy} disabled={!canCopy}>
+              クリップボードにコピー
+            </AppButton>
+          </div>
+          {copyError ? <p className="text-sm text-rose-600">{copyError}</p> : null}
         </div>
       </div>
 
