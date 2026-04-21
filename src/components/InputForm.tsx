@@ -39,16 +39,16 @@ export function AnnularSectionInputFormPanel({
   onChangeSectionForceMode,
 }: AnnularSectionInputFormProps) {
   return (
-    <section className="flex w-120 flex-col gap-4 rounded-sm border border-slate-300 bg-white p-5">
+    <section className="flex w-md flex-col gap-4 rounded-sm border border-slate-300 bg-white p-5">
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <section className="flex flex-col gap-1">
           <div className="flex items-center justify-between gap-4">
-            <h2 className="text-xl">断面力</h2>
+            <h2>断面力</h2>
             <SectionForceModeSelector value={sectionForceMode} onChange={onChangeSectionForceMode} />
           </div>
-          <table className="border-collapse overflow-hidden border border-slate-400 bg-slate-50/80">
+          <table className="border-collapse overflow-hidden border border-slate-400 bg-slate-50/80 text-sm">
             <thead className="bg-slate-200/50 text-sm">
-              <tr className="border-b border-slate-400 text-slate-500">
+              <tr className="border-b border-slate-400 text-xs text-slate-600">
                 <th scope="col" className="border-x border-slate-400 py-1">
                   項目名
                 </th>
@@ -140,10 +140,10 @@ export function AnnularSectionInputFormPanel({
         </section>
 
         <section className="flex flex-col gap-1">
-          <h2 className="text-xl">寸法・鉄筋</h2>
-          <table className="border-collapse overflow-hidden border border-slate-400 bg-slate-50/80">
+          <h2>寸法・鉄筋</h2>
+          <table className="border-collapse overflow-hidden border border-slate-400 bg-slate-50/80 text-sm">
             <thead className="bg-slate-200/50 text-sm">
-              <tr className="border-b border-slate-400 text-slate-500">
+              <tr className="border-b border-slate-400 text-xs text-slate-600">
                 <th scope="col" className="border-x border-slate-400 py-1">
                   項目名
                 </th>

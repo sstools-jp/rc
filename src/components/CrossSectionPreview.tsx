@@ -80,7 +80,7 @@ export function CrossSectionPreview({ form, result }: CrossSectionPreviewProps) 
       <div className="flex justify-center rounded-xs border border-slate-200 bg-white p-2">
         <svg
           viewBox={`${-viewBoxRadius} ${-viewBoxRadius} ${viewBoxRadius * 2} ${viewBoxRadius * 2}`}
-          className="h-72 w-full"
+          className="h-64 w-full"
           role="img"
           aria-label="円環断面のプレビュー"
         >
