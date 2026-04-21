@@ -1,5 +1,4 @@
 import { useState, type ReactNode } from "react";
-import clsx from "clsx";
 import { AppButton } from "@/components/AppButton";
 import type { FormState } from "@/forms/form-state";
 import type { AnnularSectionResult } from "@/model/annular-section";
@@ -7,6 +6,9 @@ import { formatNumber } from "@/utils/number-format";
 import { CrossSectionPreview } from "@/components/CrossSectionPreview";
 import type { SectionForceMode } from "@/components/SectionForceModeSelector";
 import { useAnnularSectionPreviewClipboard } from "@/hooks/useAnnularSectionPreviewClipboard";
+import { FiClipboard } from "react-icons/fi";
+import { FcFinePrint } from "react-icons/fc";
+import { cn } from "@/utils/cn";
 
 type AnnularSectionResultPanelProps = {
   form: FormState;
@@ -168,7 +170,7 @@ function CollapsibleSection({ title, defaultOpen = false, children }: Collapsibl
         >
           <span
             aria-hidden="true"
-            className={clsx(
+            className={cn(
               "inline-block h-0 w-0 shrink-0 border-y-[5px] border-l-[7px] border-y-transparent border-l-slate-600",
               isOpen ? "rotate-90" : "rotate-0",
             )}

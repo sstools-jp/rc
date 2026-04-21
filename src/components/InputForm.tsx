@@ -1,4 +1,3 @@
-import clsx from "clsx";
 import type { ReactNode, SubmitEventHandler } from "react";
 import { AppButton } from "@/components/AppButton";
 import { SymbolText } from "@/components/SymbolText";
@@ -7,6 +6,7 @@ import { type AnnularSectionValidationIssue } from "@/model/annular-section";
 import { CONCRETE_DESIGN_STRENGTHS_N_PER_MM2 } from "@/model/concrete";
 import { REBAR_DIAMETERS_MM } from "@/model/rebar";
 import type { FormState } from "@/forms/form-state";
+import { cn } from "@/utils/cn";
 
 type AnnularSectionInputFormProps = {
   /** フォームの状態 */
@@ -295,8 +295,10 @@ type FieldInputProps = {
 
 /** 数値入力用のコンポーネント */
 function FieldInput({ value, onChange, onBlur, inputMode = "decimal" }: FieldInputProps) {
-  const className = clsx(
-    "w-full [appearance:textfield] px-1 py-0.5 text-right font-mono outline-none placeholder:text-slate-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
+  const className = cn(
+    "w-full [appearance:textfield] px-1 py-0.5 text-right font-mono outline-none placeholder:text-slate-400",
+    "focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15",
+    "[&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
   );
 
   return (
@@ -334,8 +336,9 @@ type FieldSelectProps = {
 
 /** 選択入力用のコンポーネント */
 function FieldSelect({ value, onChange, options }: FieldSelectProps) {
-  const className = clsx(
-    "w-full px-1 py-0.5 text-right font-mono outline-none placeholder:text-slate-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15",
+  const className = cn(
+    "w-full px-1 py-0.5 text-right font-mono outline-none placeholder:text-slate-400",
+    "focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15",
   );
 
   return (

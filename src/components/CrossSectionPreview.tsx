@@ -1,8 +1,7 @@
-import clsx from "clsx";
 import type { FormState } from "@/forms/form-state";
 import type { AnnularSectionResult } from "@/model/annular-section";
 import { parseNumber } from "@/utils/number-format";
-import { twMerge } from "tailwind-merge";
+import { cn } from "@/utils/cn";
 
 /** 座標の型 */
 type Point = {
@@ -207,13 +206,11 @@ type PreviewLegendProps = {
 
 /** プレビューの凡例アイテムコンポーネント */
 function PreviewLegend({ label, className, dashed = false, kind = "fill" }: PreviewLegendProps) {
-  const swatchClassName = twMerge(
-    clsx(
-      "shrink-0",
-      kind === "stroke" ? "h-4 w-0 border-l-2" : "h-3 w-3 rounded-sm",
-      kind === "fill" && "bg-current",
-      kind === "stroke" && "border-t-current",
-    ),
+  const swatchClassName = cn(
+    "shrink-0",
+    kind === "stroke" ? "h-4 w-0 border-l-2" : "h-3 w-3 rounded-sm",
+    kind === "fill" && "bg-current",
+    kind === "stroke" && "border-t-current",
     className,
     kind === "stroke" && dashed && "border-dashed",
     kind === "fill" && dashed && "border border-slate-400 bg-transparent",

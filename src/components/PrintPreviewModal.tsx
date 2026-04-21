@@ -11,7 +11,7 @@ import {
   type PrintPreviewSection,
 } from "@/utils/print-preview-data";
 import { FiClipboard, FiPrinter, FiX } from "react-icons/fi";
-import clsx from "clsx";
+import { cn } from "@/utils/cn";
 import { useAnnularSectionPreviewClipboard } from "@/hooks/useAnnularSectionPreviewClipboard";
 
 type PrintPreviewModalProps = {
@@ -219,7 +219,7 @@ export function PrintPreviewModal({ open, form, sectionForceMode, result, onClos
 
       <div className="fixed inset-0 flex items-center justify-center sm:p-4 print:static print:block print:p-0">
         <DialogPanel
-          className={clsx(
+          className={cn(
             "flex max-h-svh flex-col overflow-hidden bg-slate-100 shadow-2xl sm:max-h-[calc(100vh-2rem)] sm:max-w-5xl sm:rounded-sm",
             "print:max-h-none print:max-w-none print:overflow-visible print:rounded-none print:bg-white print:shadow-none",
           )}
@@ -248,7 +248,7 @@ export function PrintPreviewModal({ open, form, sectionForceMode, result, onClos
           <div className="overflow-auto p-4 pt-0 print:overflow-visible print:p-0">
             <div
               ref={printContentRef}
-              className={clsx(
+              className={cn(
                 "rounded-sm bg-white p-8 shadow-sm",
                 "print:rounded-none print:p-0 print:shadow-none",
               )}

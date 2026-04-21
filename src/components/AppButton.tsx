@@ -1,6 +1,6 @@
 import { Button } from "@headlessui/react";
-import clsx from "clsx";
 import type { ComponentPropsWithoutRef, ComponentType, ReactNode } from "react";
+import { cn } from "@/utils/cn";
 
 type AppButtonVariant = "primary" | "secondary";
 type AppButtonSize = "md" | "sm";
@@ -46,7 +46,7 @@ export function AppButton({
     <Button
       type={type}
       {...props}
-      className={clsx(
+      className={cn(
         "group inline-flex items-center justify-center gap-1.5 rounded-xs transition-colors",
         sizeClassNames[size],
         variantClassNames[variant],
