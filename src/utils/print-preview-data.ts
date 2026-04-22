@@ -105,12 +105,6 @@ export function buildInputPreviewSections(
     {
       title: "鉄筋",
       rows: [
-        {
-          label: "鉄筋種別",
-          symbol: "-",
-          unit: "-",
-          value: form.rebarKind === "round" ? "丸鋼" : "異形棒鋼",
-        },
         form.rebarKind === "round"
           ? {
               label: "丸鋼径",
