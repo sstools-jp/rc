@@ -1,12 +1,21 @@
-import type { ReactNode, SubmitEventHandler } from "react";
+import type { SubmitEventHandler } from "react";
 import { AppButton } from "@/components/AppButton";
-import { SymbolText } from "@/components/SymbolText";
 import { SectionForceModeSelector, type SectionForceMode } from "@/components/SectionForceModeSelector";
 import { type AnnularSectionValidationIssue } from "@/model/annular-section";
 import { CONCRETE_DESIGN_STRENGTHS_N_PER_MM2 } from "@/model/concrete";
-import { REBAR_DIAMETERS_MM } from "@/model/rebar";
 import type { FormState } from "@/forms/form-state";
-import { cn } from "@/utils/cn";
+import {
+  FieldGridHeader,
+  FieldInput,
+  FieldRow,
+  FieldSelect,
+  RebarFieldRow,
+} from "@/components/InputFormFields";
+
+const CONCRETE_DESIGN_STRENGTH_OPTIONS = CONCRETE_DESIGN_STRENGTHS_N_PER_MM2.map((strength) => ({
+  value: String(strength),
+  label: String(strength),
+}));
 
 type AnnularSectionInputFormProps = {
   /** フォームの状態 */
@@ -173,10 +182,7 @@ export function AnnularSectionInputFormPanel({
                     onChangeField("concreteDesignStrength_NPerMm2")(value);
                     onCommitField("concreteDesignStrength_NPerMm2")(value);
                   }}
-                  options={CONCRETE_DESIGN_STRENGTHS_N_PER_MM2.map((strength) => ({
-                    value: String(strength),
-                    label: String(strength),
-                  }))}
+                  options={CONCRETE_DESIGN_STRENGTH_OPTIONS}
                 />
               </FieldRow>
               <FieldRow label="ヤング係数比" symbol="n" unit="-">
@@ -213,188 +219,5 @@ export function AnnularSectionInputFormPanel({
         </p>
       )}
     </section>
-  );
-}
-
-type FieldRowProps = {
-  /** 項目の名称 */
-  label: string;
-  /** 項目の記号 */
-  symbol: string;
-  /** 項目の単位 */
-  unit: string;
-  children: ReactNode;
-};
-
-/** 入力用の行コンポーネント */
-function FieldRow({ label, symbol, unit, children }: FieldRowProps) {
-  return (
-    <div className="grid grid-cols-[minmax(0,1fr)_3rem_4rem_6rem] divide-x divide-slate-400 border-b border-slate-400 last:border-b-0">
-      <div className="px-2 py-1">{label}</div>
-      <div className="px-1 py-1 text-center font-mono">
-        <SymbolText value={symbol} />
-      </div>
-      <div className="px-1 py-1 text-center font-mono">{unit}</div>
-      <div className="bg-white">{children}</div>
-    </div>
-  );
-}
-
-function FieldGridHeader() {
-  return (
-    <div className="grid grid-cols-[minmax(0,1fr)_3rem_4rem_6rem] divide-x divide-slate-400 border-b border-slate-400 bg-slate-200/50 text-xs font-semibold tracking-wider text-slate-600">
-      <div className="px-2 py-1 text-center">項目名</div>
-      <div className="px-1 py-1 text-center">記号</div>
-      <div className="px-1 py-1 text-center">単位</div>
-      <div className="px-1 py-1 text-center">入力値</div>
-    </div>
-  );
-}
-
-type RebarFieldRowProps = {
-  form: FormState;
-  onChangeField: (field: keyof FormState) => (value: string) => void;
-  onCommitField: (field: keyof FormState) => (value: string) => void;
-};
-
-/** 鉄筋径入力用のコンポーネント */
-function RebarFieldRow({ form, onChangeField, onCommitField }: RebarFieldRowProps) {
-  const isRound = form.rebarKind === "round";
-  const symbol = isRound ? "φ" : "D";
-  const unit = isRound ? "mm" : "-";
-
-  return (
-    <div className="grid grid-cols-[minmax(0,1fr)_3rem_4rem_6rem] divide-x divide-slate-400 border-b border-slate-400 last:border-b-0">
-      {/* 項目名 */}
-      <div className="px-2 py-1 align-top">
-        <div className="flex flex-col gap-1">
-          <span>鉄筋径</span>
-          <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
-            <label className="flex items-center gap-1">
-              <input
-                type="radio"
-                name="rebarKind"
-                value="deformed"
-                checked={!isRound}
-                onChange={(event) => {
-                  onChangeField("rebarKind")(event.target.value);
-                  onCommitField("rebarKind")(event.target.value);
-                }}
-              />
-              異形棒鋼(DB)
-            </label>
-            <label className="flex items-center gap-1">
-              <input
-                type="radio"
-                name="rebarKind"
-                value="round"
-                checked={isRound}
-                onChange={(event) => {
-                  onChangeField("rebarKind")(event.target.value);
-                  onCommitField("rebarKind")(event.target.value);
-                }}
-              />
-              丸鋼(RB)
-            </label>
-          </div>
-        </div>
-      </div>
-      {/* 記号 */}
-      <div className="flex items-center justify-center px-1 py-1 text-center font-mono">
-        <SymbolText value={symbol} />
-      </div>
-      {/* 単位 */}
-      <div className="flex items-center justify-center px-1 py-1 text-center font-mono">{unit}</div>
-      {/* 入力値 */}
-      <div className="bg-white">
-        {isRound ? (
-          // 丸鋼の場合は数値入力
-          <FieldInput
-            value={form.roundRebarDiameter_Mm}
-            onChange={onChangeField("roundRebarDiameter_Mm")}
-            onBlur={onCommitField("roundRebarDiameter_Mm")}
-          />
-        ) : (
-          // 異形棒鋼の場合はセレクトボックス
-          <FieldSelect
-            value={form.rebarDiameter_Mm}
-            onChange={(value) => {
-              onChangeField("rebarDiameter_Mm")(value);
-              onCommitField("rebarDiameter_Mm")(value);
-            }}
-            options={REBAR_DIAMETERS_MM.map((diameter) => ({
-              value: String(diameter),
-              label: `D${diameter}`,
-            }))}
-          />
-        )}
-      </div>
-    </div>
-  );
-}
-
-type FieldInputProps = {
-  value: string;
-  onChange: (value: string) => void;
-  onBlur: (value: string) => void;
-  inputMode?: "decimal" | "numeric";
-};
-
-/** 数値入力用のコンポーネント */
-function FieldInput({ value, onChange, onBlur, inputMode = "decimal" }: FieldInputProps) {
-  const className = cn(
-    "block h-full w-full border border-transparent [appearance:textfield] px-1 py-0.5 text-right font-mono outline-none box-border placeholder:text-slate-400",
-    "focus:border-amber-500 focus:ring-2 focus:ring-inset focus:ring-amber-500/15",
-    "[&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
-  );
-
-  return (
-    <input
-      type="number"
-      inputMode={inputMode}
-      step="any"
-      className={className}
-      value={value}
-      onFocus={(event) => {
-        event.currentTarget.select();
-      }}
-      onKeyDown={(event) => {
-        if (event.key === "ArrowUp" || event.key === "ArrowDown") {
-          event.preventDefault();
-        }
-      }}
-      onWheel={(event) => event.currentTarget.blur()}
-      onChange={(event) => onChange(event.target.value)}
-      onBlur={(event) => onBlur(event.currentTarget.value)}
-    />
-  );
-}
-
-type FieldSelectOption = {
-  value: string;
-  label: string;
-};
-
-type FieldSelectProps = {
-  value: string;
-  onChange: (value: string) => void;
-  options: Array<FieldSelectOption>;
-};
-
-/** 選択入力用のコンポーネント */
-function FieldSelect({ value, onChange, options }: FieldSelectProps) {
-  const className = cn(
-    "block h-full w-full border border-transparent px-1 py-0.5 text-right font-mono outline-none box-border placeholder:text-slate-400",
-    "focus:border-amber-500 focus:ring-2 focus:ring-inset focus:ring-amber-500/15",
-  );
-
-  return (
-    <select className={className} value={value} onChange={(event) => onChange(event.target.value)}>
-      {options.map((option) => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-    </select>
   );
 }
