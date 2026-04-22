@@ -14,7 +14,7 @@ import type {
 import type { AnnularSectionInput } from "@/model/section-types";
 import { type SectionForceMode } from "@/components/SectionForceModeSelector";
 import { parseNumber } from "@/utils/number-format";
-import type { RebarDiameter_Mm } from "@/model/rebar";
+import { isRebarKind } from "@/model/rebar";
 import type { ConcreteDesignStrength_NPerMm2 } from "@/model/concrete";
 
 /** 断面力のデフォルト入力値 */
@@ -32,7 +32,9 @@ const DEFAULT_GEOMETRY_FORM_STATE: GeometryFormState = {
   outerRadius_Mm: "",
   innerRadius_Mm: "",
   rebarRadius_Mm: "",
+  rebarKind: "deformed",
   rebarDiameter_Mm: "22",
+  roundRebarDiameter_Mm: "22",
   barCount: "",
 };
 
@@ -84,7 +86,9 @@ function isFormState(value: unknown): value is FormState {
     typeof candidate.outerRadius_Mm === "string" &&
     typeof candidate.innerRadius_Mm === "string" &&
     typeof candidate.rebarRadius_Mm === "string" &&
+    (candidate.rebarKind === undefined || typeof candidate.rebarKind === "string") &&
     typeof candidate.rebarDiameter_Mm === "string" &&
+    (candidate.roundRebarDiameter_Mm === undefined || typeof candidate.roundRebarDiameter_Mm === "string") &&
     typeof candidate.barCount === "string" &&
     typeof candidate.youngRatio === "string" &&
     typeof candidate.rebarYieldStrength_NPerMm2 === "string" &&
@@ -163,6 +167,10 @@ function savePageState(form: FormState, sectionForceMode: SectionForceMode): voi
 
 /** フォームの状態から計算用の入力オブジェクトを構築する */
 function buildInput(form: FormState, sectionForceMode: SectionForceMode): AnnularSectionInput {
+  const rebarKind = isRebarKind(form.rebarKind) ? form.rebarKind : "deformed";
+  const rebarDiameter_Mm =
+    rebarKind === "round" ? parseNumber(form.roundRebarDiameter_Mm) : parseNumber(form.rebarDiameter_Mm);
+
   const force: AnnularSectionInput["force"] =
     sectionForceMode === "3"
       ? {
@@ -188,7 +196,8 @@ function buildInput(form: FormState, sectionForceMode: SectionForceMode): Annula
       outerRadius_Mm: parseNumber(form.outerRadius_Mm),
       innerRadius_Mm: parseNumber(form.innerRadius_Mm),
       rebarRadius_Mm: parseNumber(form.rebarRadius_Mm),
-      rebarDiameter_Mm: parseNumber(form.rebarDiameter_Mm) as RebarDiameter_Mm,
+      rebarKind,
+      rebarDiameter_Mm,
       barCount: parseNumber(form.barCount),
     }),
     materialParams: {

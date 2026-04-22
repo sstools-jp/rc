@@ -105,7 +105,25 @@ export function buildInputPreviewSections(
     {
       title: "鉄筋",
       rows: [
-        { label: "鉄筋径", symbol: "D", unit: "-", value: `D${form.rebarDiameter_Mm}` },
+        {
+          label: "鉄筋種別",
+          symbol: "-",
+          unit: "-",
+          value: form.rebarKind === "round" ? "丸鋼" : "異形棒鋼",
+        },
+        form.rebarKind === "round"
+          ? {
+              label: "丸鋼径",
+              symbol: "φ",
+              unit: "mm",
+              value: formatNumber(parseNumber(form.roundRebarDiameter_Mm), 0),
+            }
+          : {
+              label: "鉄筋径",
+              symbol: "D",
+              unit: "-",
+              value: `D${form.rebarDiameter_Mm}`,
+            },
         { label: "本数", symbol: "H", unit: "本", value: formatNumber(parseNumber(form.barCount), 3) },
       ],
     },

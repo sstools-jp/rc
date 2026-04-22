@@ -1,4 +1,4 @@
-import type { RebarDiameter_Mm } from "@/model/rebar";
+import type { RebarKind } from "@/model/rebar";
 import type { ConcreteDesignStrength_NPerMm2 } from "@/model/concrete";
 import type { SectionForce } from "@/model/section-force";
 
@@ -20,8 +20,10 @@ export interface AnnularSectionGeometryInput {
   innerRadius_Mm: number;
   /** 鉄筋位置 [mm] */
   rebarRadius_Mm: number;
+  /** 鉄筋種別 */
+  rebarKind: RebarKind;
   /** 鉄筋径 [mm] */
-  rebarDiameter_Mm: RebarDiameter_Mm;
+  rebarDiameter_Mm: number;
   /** 鉄筋本数 [本] */
   barCount: number;
 }

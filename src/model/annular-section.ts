@@ -1,5 +1,5 @@
-import { REBAR_DIAMETERS_MM, getRebarAreaMm2 } from "@/model/rebar";
-import type { RebarDiameter_Mm } from "@/model/rebar";
+import { REBAR_DIAMETERS_MM, getRebarAreaMm2ByKind, isRebarKind } from "@/model/rebar";
+import type { RebarKind } from "@/model/rebar";
 import { getTauC_NPerMm2 } from "@/model/concrete";
 import {
   resolveSectionForceComponents,
@@ -20,13 +20,15 @@ export class AnnularSectionGeometry {
   readonly outerRadius_Mm: number;
   readonly innerRadius_Mm: number;
   readonly rebarRadius_Mm: number;
-  readonly rebarDiameter_Mm: RebarDiameter_Mm;
+  readonly rebarKind: RebarKind;
+  readonly rebarDiameter_Mm: number;
   readonly barCount: number;
 
   private constructor(input: AnnularSectionGeometryInput) {
     this.outerRadius_Mm = input.outerRadius_Mm;
     this.innerRadius_Mm = input.innerRadius_Mm;
     this.rebarRadius_Mm = input.rebarRadius_Mm;
+    this.rebarKind = input.rebarKind;
     this.rebarDiameter_Mm = input.rebarDiameter_Mm;
     this.barCount = input.barCount;
   }
@@ -53,7 +55,7 @@ export class AnnularSectionGeometry {
 
   /** 1本あたりの鉄筋断面積 [mm2] */
   get rebarAreaPerBar_Mm2(): number {
-    return getRebarAreaMm2(this.rebarDiameter_Mm);
+    return getRebarAreaMm2ByKind(this.rebarKind, this.rebarDiameter_Mm);
   }
 
   /** 鉄筋総断面積 [mm2] */
@@ -88,6 +90,7 @@ export class AnnularSectionGeometry {
       outerRadius_Mm: this.outerRadius_Mm,
       innerRadius_Mm: this.innerRadius_Mm,
       rebarRadius_Mm: this.rebarRadius_Mm,
+      rebarKind: this.rebarKind,
       rebarDiameter_Mm: this.rebarDiameter_Mm,
       barCount: this.barCount,
     };
@@ -185,7 +188,7 @@ function validateGeometry(
   geometry: AnnularSectionGeometryInput,
   issues: AnnularSectionValidationIssue[],
 ): void {
-  const { outerRadius_Mm, innerRadius_Mm, rebarRadius_Mm, rebarDiameter_Mm, barCount } = geometry;
+  const { outerRadius_Mm, innerRadius_Mm, rebarRadius_Mm, rebarKind, rebarDiameter_Mm, barCount } = geometry;
 
   if (!Number.isFinite(outerRadius_Mm) || outerRadius_Mm <= 0) {
     issues.push({ field: "geometry", message: "半径（外）は正の数で指定してください。" });
@@ -200,9 +203,18 @@ function validateGeometry(
     issues.push({ field: "geometry", message: "本数は正の数で指定してください。" });
   }
 
-  const validDiameters = new Set<number>(REBAR_DIAMETERS_MM);
-  if (!validDiameters.has(rebarDiameter_Mm)) {
-    issues.push({ field: "materialParams", message: "鉄筋径は D6 から D51 の範囲で指定してください。" });
+  if (!isRebarKind(rebarKind)) {
+    issues.push({ field: "geometry", message: "鉄筋種別は異形棒鋼または丸鋼で指定してください。" });
+  } else if (rebarKind === "deformed") {
+    const validDiameters = new Set<number>(REBAR_DIAMETERS_MM);
+    if (!validDiameters.has(rebarDiameter_Mm)) {
+      issues.push({
+        field: "materialParams",
+        message: "異形棒鋼の径は D6 から D51 の範囲で指定してください。",
+      });
+    }
+  } else if (!Number.isFinite(rebarDiameter_Mm) || rebarDiameter_Mm <= 0) {
+    issues.push({ field: "materialParams", message: "丸鋼の直径は正の数で指定してください。" });
   }
 
   if (Number.isFinite(outerRadius_Mm) && Number.isFinite(innerRadius_Mm) && innerRadius_Mm > outerRadius_Mm) {

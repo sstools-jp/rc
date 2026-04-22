@@ -22,8 +22,12 @@ export type GeometryFormState = {
   innerRadius_Mm: string;
   /** 鉄筋位置 [mm] */
   rebarRadius_Mm: string;
+  /** 鉄筋種別 */
+  rebarKind: string;
   /** 鉄筋径 [mm] */
   rebarDiameter_Mm: string;
+  /** 丸鋼径 [mm] */
+  roundRebarDiameter_Mm: string;
   /** 鉄筋本数 [本] */
   barCount: string;
 };

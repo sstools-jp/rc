@@ -28,7 +28,8 @@ export function CrossSectionPreview({ form, result }: CrossSectionPreviewProps) 
   const outerRadius_Mm = parseNumber(form.outerRadius_Mm);
   const innerRadius_Mm = parseNumber(form.innerRadius_Mm);
   const rebarRadius_Mm = parseNumber(form.rebarRadius_Mm);
-  const rebarDiameter_Mm = parseNumber(form.rebarDiameter_Mm);
+  const rebarDiameter_Mm =
+    form.rebarKind === "round" ? parseNumber(form.roundRebarDiameter_Mm) : parseNumber(form.rebarDiameter_Mm);
   const barCount = Math.max(0, Math.round(parseNumber(form.barCount)));
 
   // ジオメトリが有効かどうかを判定

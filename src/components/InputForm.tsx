@@ -180,19 +180,7 @@ export function AnnularSectionInputFormPanel({
                   onBlur={onCommitField("rebarRadius_Mm")}
                 />
               </FieldRow>
-              <FieldRow label="鉄筋径" symbol="D" unit="-">
-                <FieldSelect
-                  value={form.rebarDiameter_Mm}
-                  onChange={(value) => {
-                    onChangeField("rebarDiameter_Mm")(value);
-                    onCommitField("rebarDiameter_Mm")(value);
-                  }}
-                  options={REBAR_DIAMETERS_MM.map((diameter) => ({
-                    value: String(diameter),
-                    label: `D${diameter}`,
-                  }))}
-                />
-              </FieldRow>
+              <RebarFieldRow form={form} onChangeField={onChangeField} onCommitField={onCommitField} />
               <FieldRow label="鉄筋本数" symbol="H" unit="本">
                 <FieldInput
                   value={form.barCount}
@@ -282,6 +270,88 @@ function FieldRow({ label, symbol, unit, children }: FieldRowProps) {
       <td className="w-16 border-x border-slate-400 px-1 py-1 text-center font-mono">{unit}</td>
       {/* 入力値 */}
       <td className="w-24 border-x border-slate-400 bg-white">{children}</td>
+    </tr>
+  );
+}
+
+type RebarFieldRowProps = {
+  form: FormState;
+  onChangeField: (field: keyof FormState) => (value: string) => void;
+  onCommitField: (field: keyof FormState) => (value: string) => void;
+};
+
+/** 鉄筋径入力用のコンポーネント */
+function RebarFieldRow({ form, onChangeField, onCommitField }: RebarFieldRowProps) {
+  const isRound = form.rebarKind === "round";
+  const symbol = isRound ? "φ" : "D";
+  const unit = isRound ? "mm" : "-";
+
+  return (
+    <tr className="border-b border-slate-400 last:border-b-0">
+      {/* 項目名 */}
+      <td className="border-x border-slate-400 px-2 py-1 align-top">
+        <div className="flex flex-col gap-1">
+          <span>鉄筋径</span>
+          <div className="flex flex-wrap gap-x-3 text-xs text-slate-700">
+            <label className="flex items-center gap-1">
+              <input
+                type="radio"
+                name="rebarKind"
+                value="deformed"
+                checked={!isRound}
+                onChange={(event) => {
+                  onChangeField("rebarKind")(event.target.value);
+                  onCommitField("rebarKind")(event.target.value);
+                }}
+              />
+              異形棒鋼
+            </label>
+            <label className="flex items-center gap-1">
+              <input
+                type="radio"
+                name="rebarKind"
+                value="round"
+                checked={isRound}
+                onChange={(event) => {
+                  onChangeField("rebarKind")(event.target.value);
+                  onCommitField("rebarKind")(event.target.value);
+                }}
+              />
+              丸鋼
+            </label>
+          </div>
+        </div>
+      </td>
+      {/* 記号 */}
+      <td className="w-12 border-x border-slate-400 px-1 py-1 text-center font-mono">
+        <SymbolText value={symbol} />
+      </td>
+      {/* 単位 */}
+      <td className="w-16 border-x border-slate-400 px-1 py-1 text-center font-mono">{unit}</td>
+      {/* 入力値 */}
+      <td className="w-24 border-x border-slate-400 bg-white">
+        {isRound ? (
+          // 丸鋼の場合は数値入力
+          <FieldInput
+            value={form.roundRebarDiameter_Mm}
+            onChange={onChangeField("roundRebarDiameter_Mm")}
+            onBlur={onCommitField("roundRebarDiameter_Mm")}
+          />
+        ) : (
+          // 異形棒鋼の場合はセレクトボックス
+          <FieldSelect
+            value={form.rebarDiameter_Mm}
+            onChange={(value) => {
+              onChangeField("rebarDiameter_Mm")(value);
+              onCommitField("rebarDiameter_Mm")(value);
+            }}
+            options={REBAR_DIAMETERS_MM.map((diameter) => ({
+              value: String(diameter),
+              label: `D${diameter}`,
+            }))}
+          />
+        )}
+      </td>
     </tr>
   );
 }
