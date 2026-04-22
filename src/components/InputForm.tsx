@@ -242,7 +242,7 @@ function FieldRow({ label, symbol, unit, children }: FieldRowProps) {
 
 function FieldGridHeader() {
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_3rem_4rem_6rem] divide-x divide-slate-400 border-b border-slate-400 bg-slate-200/50 text-xs font-semibold text-slate-600">
+    <div className="grid grid-cols-[minmax(0,1fr)_3rem_4rem_6rem] divide-x divide-slate-400 border-b border-slate-400 bg-slate-200/50 text-xs font-semibold tracking-wider text-slate-600">
       <div className="px-2 py-1 text-center">項目名</div>
       <div className="px-1 py-1 text-center">記号</div>
       <div className="px-1 py-1 text-center">単位</div>
@@ -269,7 +269,7 @@ function RebarFieldRow({ form, onChangeField, onCommitField }: RebarFieldRowProp
       <div className="px-2 py-1 align-top">
         <div className="flex flex-col gap-1">
           <span>鉄筋径</span>
-          <div className="flex flex-wrap gap-x-3 text-xs text-slate-700">
+          <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
             <label className="flex items-center gap-1">
               <input
                 type="radio"
@@ -281,7 +281,7 @@ function RebarFieldRow({ form, onChangeField, onCommitField }: RebarFieldRowProp
                   onCommitField("rebarKind")(event.target.value);
                 }}
               />
-              異形棒鋼
+              異形棒鋼(DB)
             </label>
             <label className="flex items-center gap-1">
               <input
@@ -294,7 +294,7 @@ function RebarFieldRow({ form, onChangeField, onCommitField }: RebarFieldRowProp
                   onCommitField("rebarKind")(event.target.value);
                 }}
               />
-              丸鋼
+              丸鋼(RB)
             </label>
           </div>
         </div>
