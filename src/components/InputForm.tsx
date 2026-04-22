@@ -201,7 +201,7 @@ export function AnnularSectionInputFormPanel({
       {issues.length > 0 ? (
         <div aria-live="polite" className="border border-rose-200 bg-rose-50 px-3 py-3 text-rose-900">
           <p className="text-sm font-semibold">入力エラー</p>
-          <ul className="mt-2 space-y-1 text-sm">
+          <ul className="mt-2 list-disc space-y-1 ps-5 text-sm">
             {issues.map((issue) => (
               <li key={`${issue.field}-${issue.message}`}>{issue.message}</li>
             ))}
@@ -209,7 +209,7 @@ export function AnnularSectionInputFormPanel({
         </div>
       ) : (
         <p className="rounded-xs border border-sky-200 bg-sky-50 px-3 py-3 text-sm text-sky-900">
-          「計算」を押すと計算結果が表示されます。
+          エラーはありません。
         </p>
       )}
     </section>
