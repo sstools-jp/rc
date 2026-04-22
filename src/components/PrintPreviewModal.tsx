@@ -41,26 +41,26 @@ type PreviewTableProps = {
 function PreviewTable({ title, sections, valueHeader, includeSectionLabel }: PreviewTableProps) {
   return (
     <section>
-      <h5 className="mb-2 text-lg font-semibold">{title}</h5>
+      <h5 className="mb-2">{title}</h5>
 
       <div className="max-w-full overflow-x-auto">
-        <table className="w-lg border-collapse border-2 border-slate-600">
+        <table className="w-lg border-collapse border-2 border-slate-600 text-sm print:text-[12px]">
           <thead>
             <tr className="bg-slate-200">
               <th
                 colSpan={includeSectionLabel ? 2 : 1}
-                className="border border-slate-600 px-1 py-1 text-center font-semibold"
+                className="border border-slate-600 px-1 py-0.5 text-center font-semibold"
                 scope="col"
               >
                 項目
               </th>
-              <th className="w-12 border border-slate-600 px-1 py-1 text-center font-semibold" scope="col">
+              <th className="w-12 border border-slate-600 px-1 py-0.5 text-center font-semibold" scope="col">
                 記号
               </th>
-              <th className="w-18 border border-slate-600 px-1 py-1 text-center font-semibold" scope="col">
+              <th className="w-18 border border-slate-600 px-1 py-0.5 text-center font-semibold" scope="col">
                 単位
               </th>
-              <th className="w-24 border border-slate-600 px-1 py-1 text-center font-semibold" scope="col">
+              <th className="w-24 border border-slate-600 px-1 py-0.5 text-center font-semibold" scope="col">
                 {valueHeader}
               </th>
             </tr>
@@ -78,12 +78,12 @@ function PreviewTable({ title, sections, valueHeader, includeSectionLabel }: Pre
                       {section.title}
                     </td>
                   ) : null}
-                  <td className="border border-slate-600 px-1 py-1 font-mono">{row.label}</td>
-                  <td className="border border-slate-600 px-1 py-1 text-center font-mono">
+                  <td className="border border-slate-600 px-1 py-0.5 font-mono">{row.label}</td>
+                  <td className="border border-slate-600 px-1 py-0.5 text-center font-mono">
                     <SymbolText value={row.symbol} />
                   </td>
-                  <td className="border border-slate-600 px-1 py-1 text-center font-mono">{row.unit}</td>
-                  <td className="border border-slate-600 px-1 py-1 text-right font-mono">{row.value}</td>
+                  <td className="border border-slate-600 px-1 py-0.5 text-center font-mono">{row.unit}</td>
+                  <td className="border border-slate-600 px-1 py-0.5 text-right font-mono">{row.value}</td>
                 </tr>
               )),
             )}
@@ -232,7 +232,7 @@ export function PrintPreviewModal({ open, form, sectionForceMode, result, onClos
           <div className="flex flex-col gap-3 p-4 print:hidden">
             <div className="flex flex-row items-center gap-2">
               <div className="flex flex-row gap-2">
-                <AppButton icon={FiPrinter} onClick={handlePrint} className="font-semibold text-blue-700">
+                <AppButton icon={FiPrinter} onClick={handlePrint} className="text-blue-700">
                   印刷
                 </AppButton>
                 <AppButton icon={LuClipboardCopy} onClick={handleCopy} disabled={!canCopy}>
