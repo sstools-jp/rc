@@ -10,7 +10,6 @@ function App() {
     committedForm,
     result,
     issues,
-    statusMessage,
     isPrintPreviewOpen,
     sectionForceMode,
     handleSubmit,
@@ -45,7 +44,7 @@ function App() {
         </div>
       </header>
 
-      <main className="mx-auto flex w-full flex-wrap items-start justify-center gap-6 px-4 pt-6 pb-16">
+      <main className="mx-auto flex w-full flex-wrap items-start justify-center gap-6 px-4 pt-6 pb-8">
         {/* 入力フォームパネル */}
         <AnnularSectionInputFormPanel
           form={form}
@@ -74,30 +73,6 @@ function App() {
         result={result}
         onClose={closePrintPreview}
       />
-
-      <StatusBar message={statusMessage} />
-    </div>
-  );
-}
-
-type StatusBarProps = {
-  message: string;
-};
-
-/**
- * ステータスバーコンポーネント
- */
-function StatusBar({ message }: StatusBarProps) {
-  return (
-    <div
-      role="status"
-      aria-live="polite"
-      className="fixed inset-x-0 bottom-0 z-20 border-t border-slate-200 bg-white px-4 py-3 shadow-md sm:px-6 lg:px-8"
-    >
-      <div className="mx-auto flex w-full max-w-7xl items-center gap-3">
-        <span aria-hidden="true" className="inline-flex h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500" />
-        <p className="text-sm text-slate-700">{message}</p>
-      </div>
     </div>
   );
 }

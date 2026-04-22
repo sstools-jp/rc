@@ -66,7 +66,6 @@ type StoredPageState = {
 type PageCalculationState = {
   result: AnnularSectionResult | null;
   issues: AnnularSectionValidationIssue[];
-  statusMessage: string;
 };
 
 /** フォーム状態の型ガード */
@@ -235,7 +234,6 @@ function evaluatePageState(form: FormState, sectionForceMode: SectionForceMode):
     return {
       result: null,
       issues: validationIssues,
-      statusMessage: "入力値を確認してください。",
     };
   }
 
@@ -243,7 +241,6 @@ function evaluatePageState(form: FormState, sectionForceMode: SectionForceMode):
     return {
       result: calculator.calculate(),
       issues: [],
-      statusMessage: "計算が完了しました。",
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : "計算に失敗しました。";
@@ -251,7 +248,6 @@ function evaluatePageState(form: FormState, sectionForceMode: SectionForceMode):
     return {
       result: null,
       issues: [{ field: "force", message }],
-      statusMessage: message,
     };
   }
 }
@@ -265,8 +261,6 @@ type UseAnnularSectionPageStateResult = {
   result: AnnularSectionResult | null;
   /** 検証問題リスト */
   issues: AnnularSectionValidationIssue[];
-  /** ステータスメッセージ */
-  statusMessage: string;
   /** 印刷プレビューモーダルの開閉状態 */
   isPrintPreviewOpen: boolean;
   /** 断面力タイプ */
@@ -289,7 +283,6 @@ export function useAnnularSectionPageState(): UseAnnularSectionPageStateResult {
     createResult(initialPageState.form, initialPageState.sectionForceMode),
   );
   const [issues, setIssues] = useState<AnnularSectionValidationIssue[]>([]);
-  const [statusMessage, setStatusMessage] = useState("入力を待機しています。");
   const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
   const [sectionForceMode, setSectionForceMode] = useState<SectionForceMode>(
     initialPageState.sectionForceMode,
@@ -303,7 +296,6 @@ export function useAnnularSectionPageState(): UseAnnularSectionPageStateResult {
     const nextState = evaluatePageState(nextForm, nextSectionForceMode);
     setResult(nextState.result);
     setIssues(nextState.issues);
-    setStatusMessage(nextState.statusMessage);
   };
 
   /** フォームの送信イベントハンドラー */
@@ -336,7 +328,6 @@ export function useAnnularSectionPageState(): UseAnnularSectionPageStateResult {
     committedForm,
     result,
     issues,
-    statusMessage,
     isPrintPreviewOpen,
     sectionForceMode,
     handleSubmit,
