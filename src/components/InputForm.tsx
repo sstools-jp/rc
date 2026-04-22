@@ -46,26 +46,11 @@ export function AnnularSectionInputFormPanel({
             <h2>断面力</h2>
             <SectionForceModeSelector value={sectionForceMode} onChange={onChangeSectionForceMode} />
           </div>
-          <table className="border-collapse overflow-hidden border border-slate-400 bg-slate-50/80 text-sm">
-            <thead className="bg-slate-200/50 text-sm">
-              <tr className="border-b border-slate-400 text-xs text-slate-600">
-                <th scope="col" className="border-x border-slate-400 py-1">
-                  項目名
-                </th>
-                <th scope="col" className="border-x border-slate-400 py-1">
-                  記号
-                </th>
-                <th scope="col" className="border-x border-slate-400 py-1">
-                  単位
-                </th>
-                <th scope="col" className="border-x border-slate-400 py-1">
-                  入力値
-                </th>
-              </tr>
-            </thead>
+          <div className="overflow-hidden border border-slate-400 bg-slate-50/80 text-sm">
+            <FieldGridHeader />
             {/* 3断面力 */}
             {sectionForceMode === "3" && (
-              <tbody className="text-md">
+              <div>
                 <FieldRow label="曲げモーメント" symbol="M" unit="kN.m">
                   <FieldInput
                     value={form.my_KNm}
@@ -87,11 +72,11 @@ export function AnnularSectionInputFormPanel({
                     onBlur={onCommitField("fx_KN")}
                   />
                 </FieldRow>
-              </tbody>
+              </div>
             )}
             {/* 6断面力 */}
             {sectionForceMode === "6" && (
-              <tbody className="text-md">
+              <div>
                 <FieldRow label="軸力" symbol="Fx" unit="kN">
                   <FieldInput
                     value={form.fx_KN}
@@ -134,31 +119,16 @@ export function AnnularSectionInputFormPanel({
                     onBlur={onCommitField("mz_KNm")}
                   />
                 </FieldRow>
-              </tbody>
+              </div>
             )}
-          </table>
+          </div>
         </section>
 
         <section className="flex flex-col gap-1">
           <h2>寸法・鉄筋</h2>
-          <table className="border-collapse overflow-hidden border border-slate-400 bg-slate-50/80 text-sm">
-            <thead className="bg-slate-200/50 text-sm">
-              <tr className="border-b border-slate-400 text-xs text-slate-600">
-                <th scope="col" className="border-x border-slate-400 py-1">
-                  項目名
-                </th>
-                <th scope="col" className="border-x border-slate-400 py-1">
-                  記号
-                </th>
-                <th scope="col" className="border-x border-slate-400 py-1">
-                  単位
-                </th>
-                <th scope="col" className="border-x border-slate-400 py-1">
-                  入力値
-                </th>
-              </tr>
-            </thead>
-            <tbody className="text-md">
+          <div className="overflow-hidden border border-slate-400 bg-slate-50/80 text-sm">
+            <FieldGridHeader />
+            <div>
               <FieldRow label="外径半径" symbol="r" unit="mm">
                 <FieldInput
                   value={form.outerRadius_Mm}
@@ -216,8 +186,8 @@ export function AnnularSectionInputFormPanel({
                   onBlur={onCommitField("youngRatio")}
                 />
               </FieldRow>
-            </tbody>
-          </table>
+            </div>
+          </div>
         </section>
 
         <div className="flex flex-row gap-3">
@@ -259,18 +229,25 @@ type FieldRowProps = {
 /** 入力用の行コンポーネント */
 function FieldRow({ label, symbol, unit, children }: FieldRowProps) {
   return (
-    <tr className="border-b border-slate-400 last:border-b-0">
-      {/* 項目名 */}
-      <td className="border-x border-slate-400 px-2 py-1">{label}</td>
-      {/* 記号 */}
-      <td className="w-12 border-x border-slate-400 px-1 py-1 text-center font-mono">
+    <div className="grid grid-cols-[minmax(0,1fr)_3rem_4rem_6rem] divide-x divide-slate-400 border-b border-slate-400 last:border-b-0">
+      <div className="px-2 py-1">{label}</div>
+      <div className="px-1 py-1 text-center font-mono">
         <SymbolText value={symbol} />
-      </td>
-      {/* 単位 */}
-      <td className="w-16 border-x border-slate-400 px-1 py-1 text-center font-mono">{unit}</td>
-      {/* 入力値 */}
-      <td className="w-24 border-x border-slate-400 bg-white">{children}</td>
-    </tr>
+      </div>
+      <div className="px-1 py-1 text-center font-mono">{unit}</div>
+      <div className="bg-white">{children}</div>
+    </div>
+  );
+}
+
+function FieldGridHeader() {
+  return (
+    <div className="grid grid-cols-[minmax(0,1fr)_3rem_4rem_6rem] divide-x divide-slate-400 border-b border-slate-400 bg-slate-200/50 text-xs font-semibold text-slate-600">
+      <div className="px-2 py-1 text-center">項目名</div>
+      <div className="px-1 py-1 text-center">記号</div>
+      <div className="px-1 py-1 text-center">単位</div>
+      <div className="px-1 py-1 text-center">入力値</div>
+    </div>
   );
 }
 
@@ -287,9 +264,9 @@ function RebarFieldRow({ form, onChangeField, onCommitField }: RebarFieldRowProp
   const unit = isRound ? "mm" : "-";
 
   return (
-    <tr className="border-b border-slate-400 last:border-b-0">
+    <div className="grid grid-cols-[minmax(0,1fr)_3rem_4rem_6rem] divide-x divide-slate-400 border-b border-slate-400 last:border-b-0">
       {/* 項目名 */}
-      <td className="border-x border-slate-400 px-2 py-1 align-top">
+      <div className="px-2 py-1 align-top">
         <div className="flex flex-col gap-1">
           <span>鉄筋径</span>
           <div className="flex flex-wrap gap-x-3 text-xs text-slate-700">
@@ -321,15 +298,15 @@ function RebarFieldRow({ form, onChangeField, onCommitField }: RebarFieldRowProp
             </label>
           </div>
         </div>
-      </td>
+      </div>
       {/* 記号 */}
-      <td className="w-12 border-x border-slate-400 px-1 py-1 text-center font-mono">
+      <div className="flex items-center justify-center px-1 py-1 text-center font-mono">
         <SymbolText value={symbol} />
-      </td>
+      </div>
       {/* 単位 */}
-      <td className="w-16 border-x border-slate-400 px-1 py-1 text-center font-mono">{unit}</td>
+      <div className="flex items-center justify-center px-1 py-1 text-center font-mono">{unit}</div>
       {/* 入力値 */}
-      <td className="w-24 border-x border-slate-400 bg-white">
+      <div className="bg-white">
         {isRound ? (
           // 丸鋼の場合は数値入力
           <FieldInput
@@ -351,8 +328,8 @@ function RebarFieldRow({ form, onChangeField, onCommitField }: RebarFieldRowProp
             }))}
           />
         )}
-      </td>
-    </tr>
+      </div>
+    </div>
   );
 }
 
@@ -366,8 +343,8 @@ type FieldInputProps = {
 /** 数値入力用のコンポーネント */
 function FieldInput({ value, onChange, onBlur, inputMode = "decimal" }: FieldInputProps) {
   const className = cn(
-    "w-full [appearance:textfield] px-1 py-0.5 text-right font-mono outline-none placeholder:text-slate-400",
-    "focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15",
+    "block h-full w-full border border-transparent [appearance:textfield] px-1 py-0.5 text-right font-mono outline-none box-border placeholder:text-slate-400",
+    "focus:border-amber-500 focus:ring-2 focus:ring-inset focus:ring-amber-500/15",
     "[&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
   );
 
@@ -407,8 +384,8 @@ type FieldSelectProps = {
 /** 選択入力用のコンポーネント */
 function FieldSelect({ value, onChange, options }: FieldSelectProps) {
   const className = cn(
-    "w-full px-1 py-0.5 text-right font-mono outline-none placeholder:text-slate-400",
-    "focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15",
+    "block h-full w-full border border-transparent px-1 py-0.5 text-right font-mono outline-none box-border placeholder:text-slate-400",
+    "focus:border-amber-500 focus:ring-2 focus:ring-inset focus:ring-amber-500/15",
   );
 
   return (
