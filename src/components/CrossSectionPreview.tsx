@@ -98,7 +98,12 @@ export function CrossSectionPreview({ form, result }: CrossSectionPreviewProps) 
             ? Array.from({ length: barCount }, (_, index) => {
                 const angle = (index / barCount) * Math.PI * 2 - Math.PI / 2;
                 const point = polarToCartesian(displayRebarRadius, angle);
-                const maxBarRadius = (Math.PI * 2 * displayRebarRadius) / barCount / 2;
+                const maxBarRadius = Math.min(
+                  // 鉄筋同士が接触しない最大半径
+                  (Math.PI * 2 * displayRebarRadius) / barCount / 2,
+                  // 鉄筋径がコンクリート幅の半分となる半径
+                  (displayOuterRadius - displayInnerRadius) / 2 / 2,
+                );
                 const barRadius = Math.min(displayRebarDiameter_Mm / 2, maxBarRadius);
 
                 return (
