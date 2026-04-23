@@ -319,7 +319,7 @@ export function useAnnularSectionPageState(): UseAnnularSectionPageStateResult {
     commitField,
     updateSectionForceMode: (value: SectionForceMode) => {
       setSectionForceMode(value);
-      applyCommittedState(committedForm, value);
+      applyCommittedState(form, value);
     },
     openPrintPreview: () => setIsPrintPreviewOpen(true),
     closePrintPreview: () => setIsPrintPreviewOpen(false),
