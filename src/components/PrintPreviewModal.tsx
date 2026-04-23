@@ -3,14 +3,10 @@ import { useRef } from "react";
 import type { AnnularSectionResult } from "@/model/annular-section";
 import type { FormState } from "@/forms/form-state";
 import { AppButton } from "@/components/AppButton";
-import { SymbolText } from "@/components/SymbolText";
+import { PrintPreviewTable } from "@/components/PrintPreviewTable";
 import { Toast } from "@/components/Toast";
 import { type SectionForceMode } from "@/components/SectionForceModeSelector";
-import {
-  buildInputPreviewSections,
-  buildResultPreviewSections,
-  type PrintPreviewSection,
-} from "@/utils/print-preview-data";
+import { buildInputPreviewSections, buildResultPreviewSections } from "@/utils/print-preview-data";
 import { printElementContent } from "@/utils/print-preview-frame";
 import { FiPrinter, FiX } from "react-icons/fi";
 import { cn } from "@/utils/cn";
@@ -31,70 +27,6 @@ type PrintPreviewModalProps = {
   onClose: () => void;
 };
 
-type PreviewTableProps = {
-  title: string;
-  sections: PrintPreviewSection[];
-  valueHeader: string;
-  includeSectionLabel: boolean;
-};
-
-/** 項目と値のテーブルを表示するコンポーネント */
-function PreviewTable({ title, sections, valueHeader, includeSectionLabel }: PreviewTableProps) {
-  return (
-    <section>
-      <h5 className="mb-2">{title}</h5>
-
-      <div className="max-w-full overflow-x-auto">
-        <table className="w-lg border-collapse border-2 border-slate-600 text-sm print:text-[12px]">
-          <thead>
-            <tr className="bg-slate-200">
-              <th
-                colSpan={includeSectionLabel ? 2 : 1}
-                className="border border-slate-600 px-1 py-0.5 text-center font-semibold"
-                scope="col"
-              >
-                項目
-              </th>
-              <th className="w-12 border border-slate-600 px-1 py-0.5 text-center font-semibold" scope="col">
-                記号
-              </th>
-              <th className="w-18 border border-slate-600 px-1 py-0.5 text-center font-semibold" scope="col">
-                単位
-              </th>
-              <th className="w-24 border border-slate-600 px-1 py-0.5 text-center font-semibold" scope="col">
-                {valueHeader}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {sections.map((section) =>
-              section.rows.map((row, rowIndex) => (
-                <tr key={`${section.title}-${row.symbol}`} className="border border-slate-600">
-                  {includeSectionLabel && rowIndex === 0 ? (
-                    <td
-                      rowSpan={section.rows.length}
-                      className="border border-slate-600 bg-slate-50 text-center align-middle"
-                      style={{ writingMode: "vertical-rl", textOrientation: "upright" }}
-                    >
-                      {section.title}
-                    </td>
-                  ) : null}
-                  <td className="border border-slate-600 px-1 py-0.5 font-mono">{row.label}</td>
-                  <td className="border border-slate-600 px-1 py-0.5 text-center font-mono">
-                    <SymbolText value={row.symbol} />
-                  </td>
-                  <td className="border border-slate-600 px-1 py-0.5 text-center font-mono">{row.unit}</td>
-                  <td className="border border-slate-600 px-1 py-0.5 text-right font-mono">{row.value}</td>
-                </tr>
-              )),
-            )}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  );
-}
-
 /** 印刷プレビュー用モーダルを表示するコンポーネント */
 export function PrintPreviewModal({ open, form, sectionForceMode, result, onClose }: PrintPreviewModalProps) {
   const { message: toastMessage, isVisible: toastIsVisible, showToast } = useTransientToast();
@@ -108,8 +40,7 @@ export function PrintPreviewModal({ open, form, sectionForceMode, result, onClos
   const inputSections = buildInputPreviewSections(form, sectionForceMode);
   const resultSections = buildResultPreviewSections(result);
 
-  // 印刷ボタンのクリックハンドラー
-  const handlePrint = async () => {
+  const handlePrintPreview = async () => {
     const printRoot = printContentRef.current;
 
     if (!printRoot) {
@@ -138,7 +69,7 @@ export function PrintPreviewModal({ open, form, sectionForceMode, result, onClos
           <div className="flex flex-col gap-3 p-4 print:hidden">
             <div className="flex flex-row items-center gap-2">
               <div className="flex flex-row gap-2">
-                <AppButton icon={FiPrinter} onClick={handlePrint} className="text-blue-700">
+                <AppButton icon={FiPrinter} onClick={handlePrintPreview} className="text-blue-700">
                   印刷
                 </AppButton>
                 <AppButton icon={LuClipboardCopy} onClick={handleCopy} disabled={!canCopy}>
@@ -167,7 +98,7 @@ export function PrintPreviewModal({ open, form, sectionForceMode, result, onClos
               )}
             >
               <h4 className="mb-4 text-center text-xl font-semibold">RC断面計算【円環断面】</h4>
-              <PreviewTable
+              <PrintPreviewTable
                 title="入力値"
                 sections={inputSections}
                 valueHeader="入力値"
@@ -176,7 +107,7 @@ export function PrintPreviewModal({ open, form, sectionForceMode, result, onClos
 
               <div className="h-8" />
 
-              <PreviewTable
+              <PrintPreviewTable
                 title="計算結果"
                 sections={resultSections}
                 valueHeader="計算値"
