@@ -47,48 +47,49 @@ export async function printElementContent(sourceElement: HTMLElement): Promise<v
     "<!doctype html><html><head><title>印刷用テーブル</title><style>html,body{margin:0;padding:0}body{display:flex;flex-direction:column;align-items:center;}</style></head><body></body></html>";
   document.body.appendChild(iframe);
 
-  await new Promise<void>((resolve) => {
-    iframe.addEventListener("load", () => resolve(), { once: true });
-  });
+  try {
+    await new Promise<void>((resolve) => {
+      iframe.addEventListener("load", () => resolve(), { once: true });
+    });
 
-  const frameDocument = iframe.contentDocument;
+    const frameDocument = iframe.contentDocument;
 
-  if (!frameDocument) {
-    iframe.remove();
-    throw new Error("印刷用ドキュメントを作成できませんでした。");
-  }
+    if (!frameDocument) {
+      throw new Error("印刷用ドキュメントを作成できませんでした。");
+    }
 
-  await copyStylesToDocument(frameDocument);
+    await copyStylesToDocument(frameDocument);
 
-  const content = frameDocument.createElement("div");
-  content.className = "p-8";
+    const content = frameDocument.createElement("div");
+    content.className = "p-8";
 
-  if (hasSelection && selection) {
-    const range = selection.getRangeAt(0);
+    if (hasSelection && selection) {
+      const range = selection.getRangeAt(0);
 
-    if (sourceElement.contains(range.commonAncestorContainer)) {
-      content.appendChild(range.cloneContents());
+      if (sourceElement.contains(range.commonAncestorContainer)) {
+        content.appendChild(range.cloneContents());
+      } else {
+        content.appendChild(sourceElement.cloneNode(true));
+      }
     } else {
       content.appendChild(sourceElement.cloneNode(true));
     }
-  } else {
-    content.appendChild(sourceElement.cloneNode(true));
-  }
 
-  frameDocument.body.appendChild(content);
+    frameDocument.body.appendChild(content);
 
-  await new Promise<void>((resolve) => {
-    requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
-  });
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+    });
 
-  const frameWindow = iframe.contentWindow;
+    const frameWindow = iframe.contentWindow;
 
-  if (!frameWindow) {
+    if (!frameWindow) {
+      throw new Error("印刷用ウィンドウを取得できませんでした。");
+    }
+
+    frameWindow.focus();
+    frameWindow.print();
+  } finally {
     iframe.remove();
-    throw new Error("印刷用ウィンドウを取得できませんでした。");
   }
-
-  frameWindow.focus();
-  frameWindow.print();
-  iframe.remove();
 }
