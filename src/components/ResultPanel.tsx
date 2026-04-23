@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { AppButton } from "@/components/AppButton";
 import type { FormState } from "@/forms/form-state";
 import type { AnnularSectionResult } from "@/model/annular-section";
@@ -8,11 +8,9 @@ import { Toast } from "@/components/Toast";
 import type { SectionForceMode } from "@/components/SectionForceModeSelector";
 import { useAnnularSectionPreviewClipboard } from "@/hooks/useAnnularSectionPreviewClipboard";
 import { useTransientToast } from "@/hooks/useTransientToast";
+import { usePersistedSectionCollapse } from "@/hooks/usePersistedSectionCollapse";
 import { cn } from "@/utils/cn";
 import { LuClipboardCopy, LuPrinter } from "react-icons/lu";
-
-const UI_STORAGE_KEY_PREFIX = "rc:ui:";
-const RESULT_PANEL_COLLAPSIBLE_SECTION_STORAGE_KEY = `${UI_STORAGE_KEY_PREFIX}result-panel:collapsible`;
 
 type AnnularSectionResultPanelProps = {
   form: FormState;
@@ -169,22 +167,14 @@ type CollapsibleSectionProps = {
 
 /** 折りたたみ可能なセクションコンポーネント */
 function CollapsibleSection({ title, defaultOpen = false, children }: CollapsibleSectionProps) {
-  const [isOpen, setIsOpen] = useState(() => loadCollapsedState(title, defaultOpen));
-
-  function handleToggle() {
-    setIsOpen((current) => {
-      const nextValue = !current;
-      saveCollapsedState(title, nextValue);
-      return nextValue;
-    });
-  }
+  const { isOpen, toggleOpen } = usePersistedSectionCollapse(title, defaultOpen);
 
   return (
     <section className="space-y-1">
       <h3>
         <button
           type="button"
-          onClick={handleToggle}
+          onClick={toggleOpen}
           aria-expanded={isOpen}
           className="flex w-full items-center gap-2 rounded-sm text-left font-semibold text-slate-600 outline-none hover:text-blue-700"
         >
@@ -204,49 +194,4 @@ function CollapsibleSection({ title, defaultOpen = false, children }: Collapsibl
       ) : null}
     </section>
   );
-}
-
-/** 折りたたみ状態をローカルストレージから読み込む */
-function loadCollapsedState(title: string, defaultOpen: boolean): boolean {
-  if (typeof window === "undefined") {
-    return defaultOpen;
-  }
-
-  try {
-    const storedValue = window.localStorage.getItem(RESULT_PANEL_COLLAPSIBLE_SECTION_STORAGE_KEY);
-    if (storedValue === null) {
-      return defaultOpen;
-    }
-
-    const parsedValue = JSON.parse(storedValue) as unknown;
-    if (typeof parsedValue !== "object" || parsedValue === null) {
-      return defaultOpen;
-    }
-
-    const stateMap = parsedValue as Record<string, unknown>;
-    const currentValue = stateMap[title];
-    return typeof currentValue === "boolean" ? currentValue : defaultOpen;
-  } catch {
-    return defaultOpen;
-  }
-}
-
-/** 折りたたみ状態をローカルストレージに保存する */
-function saveCollapsedState(title: string, isOpen: boolean): void {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  try {
-    const storedValue = window.localStorage.getItem(RESULT_PANEL_COLLAPSIBLE_SECTION_STORAGE_KEY);
-    const parsedValue = storedValue ? (JSON.parse(storedValue) as unknown) : {};
-    const stateMap = typeof parsedValue === "object" && parsedValue !== null ? (parsedValue as Record<string, boolean>) : {};
-
-    window.localStorage.setItem(
-      RESULT_PANEL_COLLAPSIBLE_SECTION_STORAGE_KEY,
-      JSON.stringify({ ...stateMap, [title]: isOpen }),
-    );
-  } catch {
-    // 保存失敗でも折りたたみ操作は継続する
-  }
 }
