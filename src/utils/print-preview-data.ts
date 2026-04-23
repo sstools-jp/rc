@@ -125,7 +125,7 @@ export function buildInputPreviewSections(
 }
 
 /**
- * 計算結果から印刷用のセクションデータを構築する関数
+ * 計算結果から印刷用の断面データを構築する関数
  *
  * 結果が `null` の場合は空の値を表示する
  */

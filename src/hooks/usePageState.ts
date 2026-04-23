@@ -209,22 +209,6 @@ function buildInput(form: FormState, sectionForceMode: SectionForceMode): Annula
   };
 }
 
-/** フォームの状態から計算結果を生成し、入力に問題がある場合は `null` を返す */
-function createResult(form: FormState, sectionForceMode: SectionForceMode): AnnularSectionResult | null {
-  const calculator = new AnnularSectionCalculator(buildInput(form, sectionForceMode));
-  const validationIssues = calculator.validate();
-
-  if (validationIssues.length > 0) {
-    return null;
-  }
-
-  try {
-    return calculator.calculate();
-  } catch {
-    return null;
-  }
-}
-
 /** フォームの状態から画面に表示する計算状態を生成する */
 function evaluatePageState(form: FormState, sectionForceMode: SectionForceMode): PageCalculationState {
   const calculator = new AnnularSectionCalculator(buildInput(form, sectionForceMode));
@@ -277,12 +261,11 @@ type UseAnnularSectionPageStateResult = {
 /** 円環断面計算画面の状態とイベントを管理する */
 export function useAnnularSectionPageState(): UseAnnularSectionPageStateResult {
   const initialPageState = loadPageState();
+  const initialEvaluation = evaluatePageState(initialPageState.form, initialPageState.sectionForceMode);
   const [form, setForm] = useState<FormState>(initialPageState.form);
   const [committedForm, setCommittedForm] = useState<FormState>(initialPageState.form);
-  const [result, setResult] = useState<AnnularSectionResult | null>(() =>
-    createResult(initialPageState.form, initialPageState.sectionForceMode),
-  );
-  const [issues, setIssues] = useState<AnnularSectionValidationIssue[]>([]);
+  const [result, setResult] = useState<AnnularSectionResult | null>(initialEvaluation.result);
+  const [issues, setIssues] = useState<AnnularSectionValidationIssue[]>(initialEvaluation.issues);
   const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
   const [sectionForceMode, setSectionForceMode] = useState<SectionForceMode>(
     initialPageState.sectionForceMode,
@@ -336,7 +319,7 @@ export function useAnnularSectionPageState(): UseAnnularSectionPageStateResult {
     commitField,
     updateSectionForceMode: (value: SectionForceMode) => {
       setSectionForceMode(value);
-      applyCommittedState(committedForm, value);
+      applyCommittedState(form, value);
     },
     openPrintPreview: () => setIsPrintPreviewOpen(true),
     closePrintPreview: () => setIsPrintPreviewOpen(false),
