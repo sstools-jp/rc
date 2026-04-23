@@ -1,4 +1,3 @@
-import { REBAR_DIAMETERS_MM, isRebarKind } from "@/model/rebar";
 import { getTauC_NPerMm2 } from "@/model/concrete";
 import { AnnularSectionGeometry } from "@/model/annular-section-geometry";
 import {
@@ -7,13 +6,14 @@ import {
   type SectionForce,
   type SectionForceComponents,
 } from "@/model/section-force";
-import type { AnnularSectionGeometryInput, AnnularSectionInput, MaterialParams } from "@/model/section-types";
+import type { AnnularSectionInput, MaterialParams } from "@/model/section-types";
 import {
   calculateConcreteUltimateMoment_KNm,
   calculateRebarYieldMoment_KNm,
   solveNeutralAxisAngleDeg,
 } from "@/model/section-solver";
 import type { NeutralAxisSolverResult, StrengthMomentSolverInput } from "@/model/section-solver";
+import { validateAnnularSectionInput } from "@/model/annular-section-validation";
 
 export { AnnularSectionGeometry } from "@/model/annular-section-geometry";
 
@@ -78,97 +78,6 @@ export interface AnnularSectionResult {
   strength: SectionStrengthState;
 }
 
-/** 断面力の入力値を検査する */
-function validateSectionForce(
-  force: SectionForce | undefined,
-  issues: AnnularSectionValidationIssue[],
-): void {
-  if (!Number.isFinite(force?.fx_KN)) {
-    issues.push({ field: "force", message: "軸力は数値で指定してください。" });
-  }
-  if (!Number.isFinite(force?.fy_KN)) {
-    issues.push({ field: "force", message: "せん断力（面外）は数値で指定してください。" });
-  }
-  if (!Number.isFinite(force?.fz_KN)) {
-    issues.push({ field: "force", message: "せん断力（面内）は数値で指定してください。" });
-  }
-  if (!Number.isFinite(force?.mx_KNm)) {
-    issues.push({ field: "force", message: "ねじりモーメントは数値で指定してください。" });
-  }
-  if (!Number.isFinite(force?.my_KNm)) {
-    issues.push({ field: "force", message: "曲げモーメント（面内）は数値で指定してください。" });
-  }
-  if (!Number.isFinite(force?.mz_KNm)) {
-    issues.push({ field: "force", message: "曲げモーメント（面外）は数値で指定してください。" });
-  }
-}
-
-/** 断面形状の入力値を検査する */
-function validateGeometry(
-  geometry: AnnularSectionGeometryInput,
-  issues: AnnularSectionValidationIssue[],
-): void {
-  const { outerRadius_Mm, innerRadius_Mm, rebarRadius_Mm, rebarKind, rebarDiameter_Mm, barCount } = geometry;
-
-  if (!Number.isFinite(outerRadius_Mm) || outerRadius_Mm <= 0) {
-    issues.push({ field: "geometry", message: "半径（外）は正の数で指定してください。" });
-  }
-  if (!Number.isFinite(innerRadius_Mm) || innerRadius_Mm < 0) {
-    issues.push({ field: "geometry", message: "半径（内）は 0 以上で指定してください。" });
-  }
-  if (!Number.isFinite(rebarRadius_Mm) || rebarRadius_Mm < 0) {
-    issues.push({ field: "geometry", message: "鉄筋の位置（有効半径）は 0 以上で指定してください。" });
-  }
-  if (!Number.isFinite(barCount) || barCount <= 0) {
-    issues.push({ field: "geometry", message: "本数は正の数で指定してください。" });
-  }
-
-  if (!isRebarKind(rebarKind)) {
-    issues.push({ field: "geometry", message: "鉄筋種別は異形棒鋼または丸鋼で指定してください。" });
-  } else if (rebarKind === "deformed") {
-    const validDiameters = new Set<number>(REBAR_DIAMETERS_MM);
-    if (!validDiameters.has(rebarDiameter_Mm)) {
-      issues.push({
-        field: "materialParams",
-        message: "異形棒鋼の径は D6 から D51 の範囲で指定してください。",
-      });
-    }
-  } else if (!Number.isFinite(rebarDiameter_Mm) || rebarDiameter_Mm <= 0) {
-    issues.push({ field: "materialParams", message: "丸鋼の直径は正の数で指定してください。" });
-  }
-
-  if (Number.isFinite(outerRadius_Mm) && Number.isFinite(innerRadius_Mm) && innerRadius_Mm > outerRadius_Mm) {
-    issues.push({ field: "geometry", message: "半径（内）は半径（外）以下で指定してください。" });
-  }
-  if (Number.isFinite(outerRadius_Mm) && Number.isFinite(rebarRadius_Mm) && rebarRadius_Mm > outerRadius_Mm) {
-    issues.push({ field: "geometry", message: "鉄筋の位置（有効半径）は半径（外）以下で指定してください。" });
-  }
-  if (Number.isFinite(innerRadius_Mm) && Number.isFinite(rebarRadius_Mm) && rebarRadius_Mm < innerRadius_Mm) {
-    issues.push({ field: "geometry", message: "鉄筋の位置（有効半径）は半径（内）以上で指定してください。" });
-  }
-}
-
-/** 諸係数の入力値を検査する */
-function validateMaterialParams(
-  materialParams: MaterialParams,
-  issues: AnnularSectionValidationIssue[],
-): void {
-  const { youngRatio, rebarYieldStrength_NPerMm2, concreteDesignStrength_NPerMm2 } = materialParams;
-
-  if (!Number.isFinite(youngRatio) || youngRatio <= 0) {
-    issues.push({ field: "materialParams", message: "ヤング係数比は正の数で指定してください。" });
-  }
-  if (!Number.isFinite(rebarYieldStrength_NPerMm2) || rebarYieldStrength_NPerMm2 <= 0) {
-    issues.push({ field: "materialParams", message: "鉄筋降伏強度は正の数で指定してください。" });
-  }
-  if (!Number.isFinite(concreteDesignStrength_NPerMm2) || concreteDesignStrength_NPerMm2 <= 0) {
-    issues.push({ field: "materialParams", message: "コンクリート設計基準強度は正の数で指定してください。" });
-  }
-}
-
-/** 数値計算用の極小値（ゼロ判定用） */
-const EPSILON = 1e-9;
-
 /**
  * 円環断面の計算クラス
  */
@@ -181,15 +90,7 @@ export class AnnularSectionCalculator {
 
   /** 入力値の検査 */
   validate(): AnnularSectionValidationIssue[] {
-    const issues: AnnularSectionValidationIssue[] = [];
-    const { force, geometry, materialParams } = this.input;
-
-    validateSectionForce(force, issues);
-
-    validateGeometry(geometry, issues);
-    validateMaterialParams(materialParams, issues);
-
-    return issues;
+    return validateAnnularSectionInput(this.input);
   }
 
   /** 計算処理 */
@@ -373,6 +274,8 @@ function calculateStrengthState(context: SectionCalculationContext): SectionStre
     rebarYieldMoment_KNm: calculateRebarYieldMoment_KNm(solverInput),
   };
 }
+
+const EPSILON = 1e-9;
 
 /**
  * 軸力の符号を判定する関数
