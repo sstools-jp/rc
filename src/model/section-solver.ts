@@ -1,4 +1,4 @@
-import type { AnnularSectionGeometry } from "@/model/annular-section";
+import type { AnnularSectionGeometry } from "@/model/annular-section-geometry";
 import { resolveSectionForceComponents, type SectionForce } from "@/model/section-force";
 import type { MaterialParams } from "@/model/section-types";
 
