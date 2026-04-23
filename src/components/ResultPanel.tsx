@@ -177,7 +177,7 @@ function CollapsibleSection({ title, defaultOpen = false, children }: Collapsibl
           type="button"
           onClick={toggleOpen}
           aria-expanded={isOpen}
-          className="flex w-full items-center gap-2 rounded-sm text-left font-semibold text-slate-600 outline-none hover:text-blue-700"
+          className="flex items-center gap-2 rounded-sm text-left font-semibold text-slate-600 outline-none hover:text-blue-700"
         >
           <span
             aria-hidden="true"
