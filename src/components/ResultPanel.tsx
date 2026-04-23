@@ -11,6 +11,7 @@ import { useTransientToast } from "@/hooks/useTransientToast";
 import { usePersistedSectionCollapse } from "@/hooks/usePersistedSectionCollapse";
 import { cn } from "@/utils/cn";
 import { LuClipboardCopy, LuPrinter } from "react-icons/lu";
+import { SelectableText } from "@/components/SelectableText";
 
 type AnnularSectionResultPanelProps = {
   form: FormState;
@@ -152,7 +153,7 @@ function ResultCell({ label, value, unit }: ResultCellProps) {
     <article className="flex border-b border-slate-400 px-3 py-1 text-sm last:border-b-0">
       <span className="flex-1">{label}</span>
       <div className="space-x-2 text-right font-mono">
-        <span className="inline-block">{value}</span>
+        <SelectableText>{value}</SelectableText>
         {unit ? <span className="inline-block w-10 text-left select-none">{unit}</span> : null}
       </div>
     </article>
