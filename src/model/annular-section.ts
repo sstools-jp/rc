@@ -1,19 +1,16 @@
-import { getTauC_NPerMm2 } from "@/model/concrete";
-import { AnnularSectionGeometry } from "@/model/annular-section-geometry";
-import {
-  resolveSectionForceComponents,
-  type AxialForceSign,
-  type SectionForce,
-  type SectionForceComponents,
-} from "@/model/section-force";
-import type { AnnularSectionInput, MaterialParams } from "@/model/section-types";
-import {
-  calculateConcreteUltimateMoment_KNm,
-  calculateRebarYieldMoment_KNm,
-  solveNeutralAxisAngleDeg,
-} from "@/model/section-solver";
-import type { NeutralAxisSolverResult, StrengthMomentSolverInput } from "@/model/section-solver";
+import { type AxialForceSign } from "@/model/section-force";
+import type { AnnularSectionInput } from "@/model/section-types";
+import { solveNeutralAxisAngleDeg } from "@/model/section-solver";
 import { validateAnnularSectionInput } from "@/model/annular-section-validation";
+import {
+  calculateNeutralAxisPosition_Mm,
+  calculateStressState,
+  calculateStrengthState,
+  classifyAxialForce,
+  createCalculationContext,
+  type SectionStrengthState,
+  type SectionStressState,
+} from "@/model/annular-section-calculation";
 
 export { AnnularSectionGeometry } from "@/model/annular-section-geometry";
 
@@ -142,150 +139,4 @@ export class AnnularSectionCalculator {
       strength,
     };
   }
-}
-
-/** フォームの状態を表す型定義 */
-interface SectionCalculationContext {
-  /** 断面形状 */
-  geometry: AnnularSectionGeometry;
-  /** 諸係数 */
-  materialParams: MaterialParams;
-  /** 断面力 */
-  force: SectionForce;
-  /** 3成分に換算した断面力 */
-  forceComponents: SectionForceComponents;
-  /** モーメント [kN.m] */
-  moment_KNm: number;
-  shear_KN: number;
-  axial_KN: number;
-  combinedMoment_KNmm: number;
-  combinedMoment_KNm: number;
-}
-
-/** 応力度の状態をまとめる型定義 */
-interface SectionStressState {
-  /** コンクリート圧縮応力度 [N/mm2] */
-  concreteCompressionStress_NPerMm2: number;
-  /** 鉄筋応力度 [N/mm2] */
-  rebarStress_NPerMm2: number;
-  /** コンクリートせん断応力度 [N/mm2] */
-  concreteShearStress_NPerMm2: number;
-  /** 鉄筋せん断応力度 [N/mm2] */
-  rebarShearStress_NPerMm2: number;
-}
-
-/** 耐力の状態をまとめる型定義 */
-interface SectionStrengthState {
-  /** コンクリート終局曲げモーメント [kN.m] */
-  concreteUltimateMoment_KNm: number;
-  /** 鉄筋降伏曲げモーメント [kN.m] */
-  rebarYieldMoment_KNm: number;
-}
-
-/** 計算に必要な入力と荷重状態をまとめる */
-function createCalculationContext(input: AnnularSectionInput): SectionCalculationContext {
-  const geometry = AnnularSectionGeometry.fromInput(input.geometry);
-  if (!input.force) {
-    throw new Error("断面力が指定されていません。");
-  }
-
-  const force = input.force;
-  const forceComponents = resolveSectionForceComponents(force);
-  const moment_KNm = forceComponents.moment_KNm;
-  const shear_KN = forceComponents.shear_KN;
-  const axial_KN = forceComponents.axial_KN;
-  const combinedMoment_KNmm = moment_KNm * 1000 + axial_KN * geometry.outerRadius_Mm;
-
-  return {
-    geometry,
-    materialParams: input.materialParams,
-    force,
-    forceComponents,
-    moment_KNm,
-    shear_KN,
-    axial_KN,
-    combinedMoment_KNmm,
-    combinedMoment_KNm: combinedMoment_KNmm / 1000,
-  };
-}
-
-/** 中立軸位置 [mm] を算出する */
-function calculateNeutralAxisPosition_Mm(
-  geometry: AnnularSectionGeometry,
-  solver: NeutralAxisSolverResult,
-): number {
-  return (
-    (solver.concreteCompressionCoefficient /
-      (solver.concreteCompressionCoefficient + solver.steelStressCoefficient)) *
-    (geometry.outerRadius_Mm + geometry.rebarRadius_Mm)
-  );
-}
-
-/** 応力度の状態を算出する */
-function calculateStressState(
-  context: SectionCalculationContext,
-  solver: NeutralAxisSolverResult,
-): SectionStressState {
-  const combinedMomentNmm = context.combinedMoment_KNmm * 1000;
-  const outerRadius_Mm = context.geometry.outerRadius_Mm;
-  const scale = combinedMomentNmm / outerRadius_Mm ** 3;
-
-  /** コンクリート圧縮応力度 [N/mm2] */
-  const concreteCompressionStress_NPerMm2 = scale * solver.concreteCompressionCoefficient;
-
-  /** 鉄筋応力度 [N/mm2] */
-  const rebarStress_NPerMm2 = scale * solver.steelStressCoefficient * context.materialParams.youngRatio;
-
-  /** せん断応力度 [N/mm2]  */
-  const shearStress_NPerMm2 =
-    // せん断力によるせん断応力度 (S / A)
-    ((context.shear_KN * 1000) / outerRadius_Mm ** 2) * solver.shearCoefficient +
-    // ねじりモーメントによるせん断応力度 (Mx / Zp)
-    (Math.abs(context.force.mx_KNm) * 1000 ** 2) / context.geometry.polarSectionModulus_Mm3;
-
-  // コンクリートが負担できる平均せん断応力度の基本値 τc の超過分を鉄筋が負担する
-  const tauC_NPerMm2 = getTauC_NPerMm2(context.materialParams.concreteDesignStrength_NPerMm2);
-
-  /** コンクリートせん断応力度 [N/mm2] */
-  const concreteShearStress_NPerMm2 = Math.min(shearStress_NPerMm2, tauC_NPerMm2);
-
-  /** 鉄筋せん断応力度 [N/mm2] */
-  const rebarShearStress_NPerMm2 =
-    shearStress_NPerMm2 > tauC_NPerMm2 ? shearStress_NPerMm2 - tauC_NPerMm2 : 0;
-
-  return {
-    concreteCompressionStress_NPerMm2,
-    rebarStress_NPerMm2,
-    concreteShearStress_NPerMm2,
-    rebarShearStress_NPerMm2,
-  };
-}
-
-/** 耐力の状態を算出する */
-function calculateStrengthState(context: SectionCalculationContext): SectionStrengthState {
-  const solverInput: StrengthMomentSolverInput = {
-    force: context.force,
-    geometry: context.geometry,
-    materialParams: context.materialParams,
-  };
-
-  return {
-    concreteUltimateMoment_KNm: calculateConcreteUltimateMoment_KNm(solverInput),
-    rebarYieldMoment_KNm: calculateRebarYieldMoment_KNm(solverInput),
-  };
-}
-
-const EPSILON = 1e-9;
-
-/**
- * 軸力の符号を判定する関数
- */
-function classifyAxialForce(axial_KN: number): AxialForceSign {
-  if (axial_KN > EPSILON) {
-    return "tension";
-  }
-  if (axial_KN < -EPSILON) {
-    return "compression";
-  }
-  return "zero";
 }
