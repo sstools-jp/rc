@@ -1,4 +1,5 @@
 import { type AxialForceSign } from "@/model/section-force";
+import type { SectionForce } from "@/model/section-force";
 import type { AnnularSectionInput } from "@/model/section-types";
 import { solveNeutralAxisAngleDeg } from "@/model/section-solver";
 import { validateAnnularSectionInput } from "@/model/annular-section-validation";
@@ -14,9 +15,11 @@ import {
 
 export { AnnularSectionGeometry } from "@/model/annular-section-geometry";
 
+export type AnnularSectionValidationIssueField = "force" | keyof AnnularSectionInput | keyof SectionForce;
+
 /** 検算結果の型定義 */
 export interface AnnularSectionValidationIssue {
-  field: keyof AnnularSectionInput;
+  field: AnnularSectionValidationIssueField;
   message: string;
 }
 
