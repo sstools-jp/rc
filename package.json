@@ -9,7 +9,10 @@
     "build": "tsc -b && vite build",
     "test": "vitest run",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "neu:run": "neu run",
+    "neu:build": "pnpm build && neu build --release",
+    "neu:version": "neu version"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.10",

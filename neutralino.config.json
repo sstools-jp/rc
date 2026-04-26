@@ -1,29 +1,29 @@
 {
-  "applicationId": "js.neutralino.zero",
-  "version": "1.0.0",
+  "applicationId": "io.github.sstools_jp.rc",
+  "version": "0.5.1",
   "defaultMode": "window",
-  "documentRoot": "/www/",
+  "documentRoot": "/dist/",
   "url": "/",
   "enableServer": true,
-  "enableNativeAPI": true,
-  "nativeAllowList": [
-    "app.*"
-  ],
+  "nativeAllowList": ["app.*", "os.*", "window.*"],
+  "logging": {
+    "enabled": true,
+    "writeToLogFile": false
+  },
   "modes": {
     "window": {
-      "title": "temp",
-      "width": 800,
-      "height": 500,
-      "minWidth": 400,
+      "title": "RC断面計算",
+      "width": 1000,
+      "height": 800,
+      "minWidth": 540,
       "minHeight": 200,
-      "icon": "/www/icon.png"
+      "injectClientLibrary": true
     }
   },
   "cli": {
-    "binaryName": "temp",
-    "resourcesPath": "/www/",
+    "binaryName": "rc",
+    "resourcesPath": "/dist/",
     "extensionsPath": "/extensions/",
-    "clientLibrary": "/www/neutralino.js",
     "binaryVersion": "6.7.0",
     "clientVersion": "6.7.0"
   }
