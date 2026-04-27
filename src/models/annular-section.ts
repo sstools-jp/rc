@@ -15,11 +15,9 @@ import {
 
 export { AnnularSectionGeometry } from "@/models/annular-section-geometry";
 
-export type AnnularSectionValidationIssueField = "force" | keyof AnnularSectionInput | keyof SectionForce;
-
 /** 検算結果の型定義 */
 export interface AnnularSectionValidationIssue {
-  field: AnnularSectionValidationIssueField;
+  field: "force" | keyof AnnularSectionInput | keyof SectionForce;
   message: string;
 }
 
@@ -65,6 +63,7 @@ export interface AnnularSectionNeutralAxisResult {
   shearCoefficient: number;
 }
 
+/** 円環断面の計算結果をまとめた型定義 */
 export interface AnnularSectionResult {
   /** 断面形状の結果 */
   section: AnnularSectionSectionResult;
