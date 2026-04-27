@@ -1,6 +1,6 @@
-import type { AnnularSectionGeometry } from "@/model/annular-section-geometry";
-import { resolveSectionForceComponents, type SectionForce } from "@/model/section-force";
-import type { MaterialParams } from "@/model/section-types";
+import type { AnnularSectionGeometry } from "@/models/annular-section-geometry";
+import { resolveSectionForceComponents, type SectionForce } from "@/models/section-force";
+import type { MaterialParams } from "@/models/section-types";
 
 /** 中立軸ソルバーの入力 */
 export interface NeutralAxisSolverInput {

@@ -1,4 +1,4 @@
-import type { AnnularSectionResult } from "@/model/annular-section";
+import type { AnnularSectionResult } from "@/models/annular-section";
 import type { FormState } from "@/forms/form-state";
 import type { SectionForceMode } from "@/components/SectionForceModeSelector";
 import { formatNumber, parseNumber } from "@/utils/number-format";

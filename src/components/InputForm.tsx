@@ -1,8 +1,8 @@
 import type { SubmitEventHandler } from "react";
 import { AppButton } from "@/components/AppButton";
 import { SectionForceModeSelector, type SectionForceMode } from "@/components/SectionForceModeSelector";
-import { type AnnularSectionValidationIssue } from "@/model/annular-section";
-import { CONCRETE_DESIGN_STRENGTHS_N_PER_MM2 } from "@/model/concrete";
+import { type AnnularSectionValidationIssue } from "@/models/annular-section";
+import { CONCRETE_DESIGN_STRENGTHS_N_PER_MM2 } from "@/models/concrete";
 import type { FormState } from "@/forms/form-state";
 import {
   FieldGridHeader,
@@ -209,7 +209,7 @@ export function AnnularSectionInputFormPanel({
           <p className="text-sm font-semibold">入力エラー</p>
           <ul className="mt-2 list-disc space-y-1 ps-5 text-sm">
             {issues.map((issue) => (
-              <li key={`${issue.field}-${issue.message}`}>{issue.message}</li>
+              <li key={`${String(issue.field)}-${issue.message}`}>{issue.message}</li>
             ))}
           </ul>
         </div>

@@ -1,5 +1,5 @@
-import { getRebarAreaMm2ByKind, type RebarKind } from "@/model/rebar";
-import type { AnnularSectionGeometryInput } from "@/model/section-types";
+import { getRebarAreaMm2ByKind, type RebarKind } from "@/models/rebar";
+import type { AnnularSectionGeometryInput } from "@/models/section-types";
 
 /** 円環断面の形状を表す値オブジェクト */
 export class AnnularSectionGeometry {

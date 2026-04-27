@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { FormState } from "@/forms/form-state";
-import type { AnnularSectionResult } from "@/model/annular-section";
+import type { AnnularSectionResult } from "@/models/annular-section";
 import type { SectionForceMode } from "@/components/SectionForceModeSelector";
 import {
   buildClipboardText,

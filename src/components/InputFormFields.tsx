@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { SymbolText } from "@/components/SymbolText";
 import type { FormState } from "@/forms/form-state";
-import { REBAR_DIAMETERS_MM } from "@/model/rebar";
+import { REBAR_DIAMETERS_MM } from "@/models/rebar";
 import { cn } from "@/utils/cn";
 
 type FieldRowProps = {

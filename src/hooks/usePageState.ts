@@ -4,18 +4,18 @@ import {
   AnnularSectionGeometry,
   type AnnularSectionResult,
   type AnnularSectionValidationIssue,
-} from "@/model/annular-section";
+} from "@/models/annular-section";
 import type {
   SectionForceFormState,
   GeometryFormState,
   MaterialParamsFormState,
   FormState,
 } from "@/forms/form-state";
-import type { AnnularSectionInput } from "@/model/section-types";
+import type { AnnularSectionInput } from "@/models/section-types";
 import { type SectionForceMode } from "@/components/SectionForceModeSelector";
 import { parseNumber } from "@/utils/number-format";
-import { isRebarKind } from "@/model/rebar";
-import type { ConcreteDesignStrength_NPerMm2 } from "@/model/concrete";
+import { isRebarKind } from "@/models/rebar";
+import type { ConcreteDesignStrength_NPerMm2 } from "@/models/concrete";
 
 /** 断面力のデフォルト入力値 */
 const DEFAULT_SECTION_FORCE_FORM_STATE: SectionForceFormState = {
