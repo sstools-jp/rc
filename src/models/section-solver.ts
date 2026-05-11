@@ -501,7 +501,7 @@ function computeShearCoefficient(input: {
     (innerAngleRad - Math.sin(innerAngleRad) * Math.cos(innerAngleRad));
   z2 +=
     -(gamma ** 2) * gamma * Math.sin(innerAngleRad) ** 3 * ((gamma * Math.cos(innerAngleRad)) / 2 - 4 / 3);
-  z2 += Math.PI * youngRatio * rebarRatio * (alpha ** 2 / 2 + (1 - z3 ** 2));
+  z2 += Math.PI * youngRatio * rebarRatio * (alpha ** 2 / 2 + (1 - z3) ** 2);
 
   const numerator = youngRatio * rebarRatio * (alpha * Math.sin(xs) - (Math.PI - xs) * (z3 - 1));
   const denominator = 2 * (Math.sin(angleRad) - gamma * Math.sin(innerAngleRad)) * z2;
