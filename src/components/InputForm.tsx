@@ -10,6 +10,7 @@ import {
   FieldRow,
   FieldSelect,
   RebarFieldRow,
+  RebarStrengthFieldRow,
 } from "@/components/InputFormFields";
 
 const CONCRETE_DESIGN_STRENGTH_OPTIONS = CONCRETE_DESIGN_STRENGTHS_N_PER_MM2.map((strength) => ({
@@ -168,13 +169,11 @@ export function AnnularSectionInputFormPanel({
                   inputMode="decimal"
                 />
               </FieldRow>
-              <FieldRow label="鉄筋降伏強度" symbol="σsy" unit="N/mm²">
-                <FieldInput
-                  value={form.rebarYieldStrength_NPerMm2}
-                  onChange={onChangeField("rebarYieldStrength_NPerMm2")}
-                  onBlur={onCommitField("rebarYieldStrength_NPerMm2")}
-                />
-              </FieldRow>
+              <RebarStrengthFieldRow
+                form={form}
+                onChangeField={onChangeField}
+                onCommitField={onCommitField}
+              />
               <FieldRow label="コンクリート設計基準強度" symbol="σck" unit="N/mm²">
                 <FieldSelect
                   value={form.concreteDesignStrength_NPerMm2}

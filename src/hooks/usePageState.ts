@@ -10,11 +10,12 @@ import type {
   GeometryFormState,
   MaterialParamsFormState,
   FormState,
+  RebarStrengthMode,
 } from "@/forms/form-state";
 import type { AnnularSectionInput } from "@/models/section-types";
 import { type SectionForceMode } from "@/components/SectionForceModeSelector";
 import { parseNumber } from "@/utils/number-format";
-import { isRebarKind } from "@/models/rebar";
+import { getRebarYieldStrengthMm2, isRebarKind, isRebarMaterialName } from "@/models/rebar";
 import type { ConcreteDesignStrength_NPerMm2 } from "@/models/concrete";
 
 /** 断面力のデフォルト入力値 */
@@ -40,6 +41,8 @@ const DEFAULT_GEOMETRY_FORM_STATE: GeometryFormState = {
 
 /** 諸係数のデフォルト入力値  */
 const DEFAULT_MATERIAL_PARAMS_FORM_STATE: MaterialParamsFormState = {
+  rebarStrengthMode: "material",
+  rebarMaterialName: "SD345",
   youngRatio: "15",
   rebarYieldStrength_NPerMm2: "345",
   concreteDesignStrength_NPerMm2: "30",
@@ -68,6 +71,33 @@ type PageCalculationState = {
   issues: AnnularSectionValidationIssue[];
 };
 
+function isRebarStrengthMode(value: unknown): value is RebarStrengthMode {
+  return value === "material" || value === "direct";
+}
+
+function hasRebarStrengthMode(value: unknown): boolean {
+  return typeof value === "object" && value !== null && "rebarStrengthMode" in value;
+}
+
+function hasRebarMaterialName(value: unknown): boolean {
+  return typeof value === "object" && value !== null && "rebarMaterialName" in value;
+}
+
+function normalizeMaterialParamsFormState(form: FormState): FormState {
+  const rebarStrengthMode = isRebarStrengthMode(form.rebarStrengthMode) ? form.rebarStrengthMode : "material";
+  const rebarMaterialName = isRebarMaterialName(form.rebarMaterialName) ? form.rebarMaterialName : "SD345";
+
+  return {
+    ...form,
+    rebarStrengthMode,
+    rebarMaterialName,
+    rebarYieldStrength_NPerMm2:
+      rebarStrengthMode === "material"
+        ? String(getRebarYieldStrengthMm2(rebarMaterialName))
+        : form.rebarYieldStrength_NPerMm2,
+  };
+}
+
 /** フォーム状態の型ガード */
 function isFormState(value: unknown): value is FormState {
   if (typeof value !== "object" || value === null) {
@@ -89,6 +119,8 @@ function isFormState(value: unknown): value is FormState {
     typeof candidate.rebarDiameter_Mm === "string" &&
     (candidate.roundRebarDiameter_Mm === undefined || typeof candidate.roundRebarDiameter_Mm === "string") &&
     typeof candidate.barCount === "string" &&
+    (candidate.rebarStrengthMode === undefined || typeof candidate.rebarStrengthMode === "string") &&
+    (candidate.rebarMaterialName === undefined || typeof candidate.rebarMaterialName === "string") &&
     typeof candidate.youngRatio === "string" &&
     typeof candidate.rebarYieldStrength_NPerMm2 === "string" &&
     typeof candidate.concreteDesignStrength_NPerMm2 === "string"
@@ -123,8 +155,12 @@ function loadPageState(): StoredPageState {
       const candidate = parsedValue as Record<string, unknown>;
 
       if (isFormState(candidate.form)) {
+        const nextForm = { ...DEFAULT_FORM_STATE, ...candidate.form };
         return {
-          form: { ...DEFAULT_FORM_STATE, ...candidate.form },
+          form:
+            hasRebarStrengthMode(candidate.form) || hasRebarMaterialName(candidate.form)
+              ? normalizeMaterialParamsFormState(nextForm)
+              : normalizeMaterialParamsFormState({ ...nextForm, rebarStrengthMode: "direct" }),
           sectionForceMode: isSectionForceMode(candidate.sectionForceMode)
             ? candidate.sectionForceMode
             : DEFAULT_SECTION_FORCE_MODE,
@@ -134,7 +170,11 @@ function loadPageState(): StoredPageState {
 
     if (isFormState(parsedValue)) {
       return {
-        form: { ...DEFAULT_FORM_STATE, ...parsedValue },
+        form: normalizeMaterialParamsFormState({
+          ...DEFAULT_FORM_STATE,
+          ...parsedValue,
+          rebarStrengthMode: "direct",
+        }),
         sectionForceMode: DEFAULT_SECTION_FORCE_MODE,
       };
     }
@@ -169,6 +209,10 @@ function buildInput(form: FormState, sectionForceMode: SectionForceMode): Annula
   const rebarKind = isRebarKind(form.rebarKind) ? form.rebarKind : "deformed";
   const rebarDiameter_Mm =
     rebarKind === "round" ? parseNumber(form.roundRebarDiameter_Mm) : parseNumber(form.rebarDiameter_Mm);
+  const rebarYieldStrength_NPerMm2 =
+    form.rebarStrengthMode === "material"
+      ? getRebarYieldStrengthMm2(form.rebarMaterialName)
+      : parseNumber(form.rebarYieldStrength_NPerMm2);
 
   const force: AnnularSectionInput["force"] =
     sectionForceMode === "3"
@@ -201,7 +245,7 @@ function buildInput(form: FormState, sectionForceMode: SectionForceMode): Annula
     }),
     materialParams: {
       youngRatio: parseNumber(form.youngRatio),
-      rebarYieldStrength_NPerMm2: parseNumber(form.rebarYieldStrength_NPerMm2),
+      rebarYieldStrength_NPerMm2,
       concreteDesignStrength_NPerMm2: parseNumber(
         form.concreteDesignStrength_NPerMm2,
       ) as ConcreteDesignStrength_NPerMm2,

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { SymbolText } from "@/components/SymbolText";
 import type { FormState } from "@/forms/form-state";
-import { REBAR_DIAMETERS_MM } from "@/models/rebar";
+import { REBAR_DIAMETERS_MM, REBAR_MATERIALS, getRebarYieldStrengthMm2 } from "@/models/rebar";
 import { cn } from "@/utils/cn";
 
 type FieldRowProps = {
@@ -167,6 +167,89 @@ export function RebarFieldRow({ form, onChangeField, onCommitField }: RebarField
               value: String(diameter),
               label: `D${diameter}`,
             }))}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+type RebarStrengthFieldRowProps = {
+  form: FormState;
+  onChangeField: (field: keyof FormState) => (value: string) => void;
+  onCommitField: (field: keyof FormState) => (value: string) => void;
+};
+
+export function RebarStrengthFieldRow({ form, onChangeField, onCommitField }: RebarStrengthFieldRowProps) {
+  const isMaterialMode = form.rebarStrengthMode === "material";
+
+  return (
+    <div className="grid grid-cols-[minmax(0,1fr)_3rem_4rem_6rem] divide-x divide-slate-400 border-b border-slate-400 last:border-b-0">
+      <div className="px-2 py-1 align-top">
+        <div className="flex flex-col gap-1">
+          <span>鉄筋降伏強度</span>
+          <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
+            <label className="flex items-center gap-1">
+              <input
+                type="radio"
+                name="rebarStrengthMode"
+                value="material"
+                checked={isMaterialMode}
+                onChange={(event) => {
+                  const nextMode = event.target.value;
+                  onChangeField("rebarStrengthMode")(nextMode);
+                  onCommitField("rebarStrengthMode")(nextMode);
+                  const nextStrength = getRebarYieldStrengthMm2(form.rebarMaterialName);
+                  onChangeField("rebarYieldStrength_NPerMm2")(String(nextStrength));
+                  onCommitField("rebarYieldStrength_NPerMm2")(String(nextStrength));
+                }}
+              />
+              材質選択
+            </label>
+            <label className="flex items-center gap-1">
+              <input
+                type="radio"
+                name="rebarStrengthMode"
+                value="direct"
+                checked={!isMaterialMode}
+                onChange={(event) => {
+                  const nextMode = event.target.value;
+                  onChangeField("rebarStrengthMode")(nextMode);
+                  onCommitField("rebarStrengthMode")(nextMode);
+                }}
+              />
+              直接入力
+            </label>
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center justify-center px-1 py-1 text-center font-mono">
+        <SymbolText value="σsy" />
+      </div>
+      <div className="flex items-center justify-center px-1 py-1 text-center font-mono">N/mm²</div>
+      <div className="bg-white">
+        {isMaterialMode ? (
+          <FieldSelect
+            value={form.rebarMaterialName}
+            onChange={(value) => {
+              onChangeField("rebarMaterialName")(value);
+              onCommitField("rebarMaterialName")(value);
+              const nextStrength = getRebarYieldStrengthMm2(
+                value as (typeof REBAR_MATERIALS)[number]["name"],
+              );
+              onChangeField("rebarYieldStrength_NPerMm2")(String(nextStrength));
+              onCommitField("rebarYieldStrength_NPerMm2")(String(nextStrength));
+            }}
+            options={REBAR_MATERIALS.map((material) => ({
+              value: material.name,
+              label: `${material.name}`,
+            }))}
+          />
+        ) : (
+          <FieldInput
+            value={form.rebarYieldStrength_NPerMm2}
+            onChange={onChangeField("rebarYieldStrength_NPerMm2")}
+            onBlur={onCommitField("rebarYieldStrength_NPerMm2")}
           />
         )}
       </div>
