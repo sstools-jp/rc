@@ -1,6 +1,7 @@
 import type { AnnularSectionGeometry } from "@/models/annular-section-geometry";
 import { resolveSectionForceComponents, type SectionForce } from "@/models/section-force";
 import type { MaterialParams } from "@/models/section-types";
+import { EPSILON } from "@/models/constants";
 
 /** 中立軸ソルバーの入力 */
 export interface NeutralAxisSolverInput {
@@ -53,9 +54,6 @@ export interface MomentStressEvaluation {
   /* 鉄筋応力度 [N/mm2] */
   rebarStress_NPerMm2: number;
 }
-
-/** 数値計算用の極小値（ゼロ判定用） */
-const EPSILON = 1e-9;
 
 /** 中立軸角度を求めるソルバー関数 */
 export function solveNeutralAxisAngleDeg(input: NeutralAxisSolverInput): NeutralAxisSolverResult {

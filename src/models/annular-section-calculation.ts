@@ -2,13 +2,13 @@ import { getTauC_NPerMm2 } from "@/models/concrete";
 import { AnnularSectionGeometry } from "@/models/annular-section-geometry";
 import {
   resolveSectionForceComponents,
-  type AxialForceSign,
   type SectionForce,
   type SectionForceComponents,
 } from "@/models/section-force";
 import type { AnnularSectionInput, MaterialParams } from "@/models/section-types";
 import { calculateConcreteUltimateMoment_KNm, calculateRebarYieldMoment_KNm } from "@/models/section-solver";
 import type { NeutralAxisSolverResult, StrengthMomentSolverInput } from "@/models/section-solver";
+export { classifyAxialForce } from "@/models/section-force-utils";
 
 /** フォームの状態を表す型定義 */
 export interface SectionCalculationContext {
@@ -47,9 +47,6 @@ export interface SectionStrengthState {
   /** 鉄筋降伏曲げモーメント [kN.m] */
   rebarYieldMoment_KNm: number;
 }
-
-/** 数値計算用の極小値（ゼロ判定用） */
-const EPSILON = 1e-9;
 
 /** 計算に必要な入力と荷重状態をまとめる */
 export function createCalculationContext(input: AnnularSectionInput): SectionCalculationContext {
@@ -128,15 +125,4 @@ export function calculateStrengthState(context: SectionCalculationContext): Sect
     concreteUltimateMoment_KNm: calculateConcreteUltimateMoment_KNm(solverInput),
     rebarYieldMoment_KNm: calculateRebarYieldMoment_KNm(solverInput),
   };
-}
-
-/** 軸力の符号を判定する関数 */
-export function classifyAxialForce(axial_KN: number): AxialForceSign {
-  if (axial_KN > EPSILON) {
-    return "tension";
-  }
-  if (axial_KN < -EPSILON) {
-    return "compression";
-  }
-  return "zero";
 }

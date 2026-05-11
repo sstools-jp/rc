@@ -1,34 +1,7 @@
 import { REBAR_DIAMETERS_MM, isRebarKind } from "@/models/rebar";
-import type {
-  AnnularSectionGeometryInput,
-  AnnularSectionInput,
-  MaterialParams,
-} from "@/models/section-types";
+import type { AnnularSectionGeometryInput, AnnularSectionInput } from "@/models/section-types";
 import type { AnnularSectionValidationIssue } from "@/models/annular-section";
-import type { SectionForce } from "@/models/section-force";
-
-/** 断面力の入力値を検査する */
-function validateSectionForce(
-  force: SectionForce | undefined,
-  issues: AnnularSectionValidationIssue[],
-): void {
-  const forceLabels: Record<keyof SectionForce, string> = {
-    fx_KN: "軸力",
-    fy_KN: "せん断力（面外）",
-    fz_KN: "せん断力（面内）",
-    mx_KNm: "ねじりモーメント",
-    my_KNm: "曲げモーメント（面内）",
-    mz_KNm: "曲げモーメント（面外）",
-  };
-
-  for (const [key, label] of Object.entries(forceLabels)) {
-    const value = force?.[key as keyof SectionForce];
-    if (!Number.isFinite(value)) {
-      const field: AnnularSectionValidationIssue["field"] = key as keyof SectionForce;
-      issues.push({ field, message: `${label}は数値で指定してください。` });
-    }
-  }
-}
+import { validateMaterialParams, validateSectionForce } from "@/models/section-validation";
 
 /** 断面形状の入力値を検査する */
 function validateGeometry(
@@ -75,31 +48,17 @@ function validateGeometry(
   }
 }
 
-/** 諸係数を検査する */
-function validateMaterialParams(
-  materialParams: MaterialParams,
-  issues: AnnularSectionValidationIssue[],
-): void {
-  const { youngRatio, rebarYieldStrength_NPerMm2, concreteDesignStrength_NPerMm2 } = materialParams;
-
-  if (!Number.isFinite(youngRatio) || youngRatio <= 0) {
-    issues.push({ field: "materialParams", message: "ヤング係数比は正の数で指定してください。" });
-  }
-  if (!Number.isFinite(rebarYieldStrength_NPerMm2) || rebarYieldStrength_NPerMm2 <= 0) {
-    issues.push({ field: "materialParams", message: "鉄筋降伏強度は正の数で指定してください。" });
-  }
-  if (!Number.isFinite(concreteDesignStrength_NPerMm2) || concreteDesignStrength_NPerMm2 <= 0) {
-    issues.push({ field: "materialParams", message: "コンクリート設計基準強度は正の数で指定してください。" });
-  }
-}
-
 /** 円環断面の入力値を検査する */
 export function validateAnnularSectionInput(input: AnnularSectionInput): AnnularSectionValidationIssue[] {
   const issues: AnnularSectionValidationIssue[] = [];
 
-  validateSectionForce(input.force, issues);
+  validateSectionForce(input.force, (field, message) => {
+    issues.push({ field, message });
+  });
   validateGeometry(input.geometry, issues);
-  validateMaterialParams(input.materialParams, issues);
+  validateMaterialParams(input.materialParams, (field, message) => {
+    issues.push({ field, message });
+  });
 
   return issues;
 }
