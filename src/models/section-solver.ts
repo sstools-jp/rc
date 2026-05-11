@@ -1,6 +1,6 @@
-import type { AnnularSectionGeometry } from "@/model/annular-section-geometry";
-import { resolveSectionForceComponents, type SectionForce } from "@/model/section-force";
-import type { MaterialParams } from "@/model/section-types";
+import type { AnnularSectionGeometry } from "@/models/annular-section-geometry";
+import { resolveSectionForceComponents, type SectionForce } from "@/models/section-force";
+import type { MaterialParams } from "@/models/section-types";
 
 /** 中立軸ソルバーの入力 */
 export interface NeutralAxisSolverInput {
@@ -106,7 +106,7 @@ export function solveNeutralAxisAngleDeg(input: NeutralAxisSolverInput): Neutral
   };
 }
 
-/** 鉄筋降伏曲げモーメントを計算する関数 */
+/** 鉄筋降伏曲げモーメントを算出 */
 export function calculateRebarYieldMoment_KNm(input: StrengthMomentSolverInput): number {
   // 鉄筋降伏応力度は、鉄筋の降伏強度とする
   const sigmaSy_NPerMm2 = input.materialParams.rebarYieldStrength_NPerMm2;
@@ -120,7 +120,7 @@ export function calculateRebarYieldMoment_KNm(input: StrengthMomentSolverInput):
   );
 }
 
-/** コンクリート終局曲げモーメントを計算する関数 */
+/** コンクリート終局曲げモーメントを算出 */
 export function calculateConcreteUltimateMoment_KNm(input: StrengthMomentSolverInput): number {
   // コンクリート終局圧縮応力度は、コンクリート設計基準強度の 0.85 倍とする
   const sigmaC_NPerMm2 = 0.85 * input.materialParams.concreteDesignStrength_NPerMm2;
@@ -134,7 +134,7 @@ export function calculateConcreteUltimateMoment_KNm(input: StrengthMomentSolverI
   );
 }
 
-/** 曲げモーメントに対する応力度を算出する */
+/** 曲げモーメントに対する応力度を算出 */
 function evaluateMomentStress(input: StrengthMomentSolverInput, moment_KNm: number): MomentStressEvaluation {
   const { force, geometry, materialParams } = input;
   const resolvedForce = resolveSectionForceComponents(force);

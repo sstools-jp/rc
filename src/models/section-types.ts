@@ -1,6 +1,6 @@
-import type { RebarKind } from "@/model/rebar";
-import type { ConcreteDesignStrength_NPerMm2 } from "@/model/concrete";
-import type { SectionForce } from "@/model/section-force";
+import type { RebarKind } from "@/models/rebar";
+import type { ConcreteDesignStrength_NPerMm2 } from "@/models/concrete";
+import type { SectionForce } from "@/models/section-force";
 
 /** 円環断面の入力全体を表す型定義 */
 export interface AnnularSectionInput {

@@ -4,18 +4,19 @@ import {
   AnnularSectionGeometry,
   type AnnularSectionResult,
   type AnnularSectionValidationIssue,
-} from "@/model/annular-section";
+} from "@/models/annular-section";
 import type {
   SectionForceFormState,
   GeometryFormState,
   MaterialParamsFormState,
   FormState,
+  RebarStrengthMode,
 } from "@/forms/form-state";
-import type { AnnularSectionInput } from "@/model/section-types";
+import type { AnnularSectionInput } from "@/models/section-types";
 import { type SectionForceMode } from "@/components/SectionForceModeSelector";
 import { parseNumber } from "@/utils/number-format";
-import { isRebarKind } from "@/model/rebar";
-import type { ConcreteDesignStrength_NPerMm2 } from "@/model/concrete";
+import { getRebarYieldStrengthMm2, isRebarKind, isRebarMaterialName } from "@/models/rebar";
+import type { ConcreteDesignStrength_NPerMm2 } from "@/models/concrete";
 
 /** 断面力のデフォルト入力値 */
 const DEFAULT_SECTION_FORCE_FORM_STATE: SectionForceFormState = {
@@ -40,6 +41,8 @@ const DEFAULT_GEOMETRY_FORM_STATE: GeometryFormState = {
 
 /** 諸係数のデフォルト入力値  */
 const DEFAULT_MATERIAL_PARAMS_FORM_STATE: MaterialParamsFormState = {
+  rebarStrengthMode: "material",
+  rebarMaterialName: "SD345",
   youngRatio: "15",
   rebarYieldStrength_NPerMm2: "345",
   concreteDesignStrength_NPerMm2: "30",
@@ -68,7 +71,11 @@ type PageCalculationState = {
   issues: AnnularSectionValidationIssue[];
 };
 
-/** フォーム状態の型ガード */
+function isRebarStrengthMode(value: unknown): value is RebarStrengthMode {
+  return value === "material" || value === "direct";
+}
+
+/** フォームの状態が有効であるかを判定する */
 function isFormState(value: unknown): value is FormState {
   if (typeof value !== "object" || value === null) {
     return false;
@@ -89,14 +96,67 @@ function isFormState(value: unknown): value is FormState {
     typeof candidate.rebarDiameter_Mm === "string" &&
     (candidate.roundRebarDiameter_Mm === undefined || typeof candidate.roundRebarDiameter_Mm === "string") &&
     typeof candidate.barCount === "string" &&
+    (candidate.rebarStrengthMode === undefined || typeof candidate.rebarStrengthMode === "string") &&
+    (candidate.rebarMaterialName === undefined || typeof candidate.rebarMaterialName === "string") &&
     typeof candidate.youngRatio === "string" &&
     typeof candidate.rebarYieldStrength_NPerMm2 === "string" &&
     typeof candidate.concreteDesignStrength_NPerMm2 === "string"
   );
 }
 
+/** フォームの状態を正規化する */
+function normalizeMaterialParamsFormState(rawForm: Record<string, unknown>): FormState {
+  const form = { ...DEFAULT_FORM_STATE, ...rawForm } as FormState;
+  const isLegacyForm = !("rebarStrengthMode" in rawForm) && !("rebarMaterialName" in rawForm);
+  const rebarStrengthMode =
+    isLegacyForm || !isRebarStrengthMode(form.rebarStrengthMode) ? "material" : form.rebarStrengthMode;
+  const rebarMaterialName = isRebarMaterialName(form.rebarMaterialName) ? form.rebarMaterialName : "SD345";
+
+  return {
+    ...form,
+    rebarStrengthMode,
+    rebarMaterialName,
+    rebarYieldStrength_NPerMm2:
+      rebarStrengthMode === "material"
+        ? String(getRebarYieldStrengthMm2(rebarMaterialName))
+        : form.rebarYieldStrength_NPerMm2,
+  };
+}
+
+function resolveStoredFormState(value: unknown): FormState | null {
+  if (typeof value !== "object" || value === null) {
+    return null;
+  }
+
+  const candidate = value as Record<string, unknown>;
+
+  if (isFormState(candidate.form)) {
+    return normalizeMaterialParamsFormState(candidate.form);
+  }
+
+  if (isFormState(value)) {
+    return normalizeMaterialParamsFormState(value);
+  }
+
+  return null;
+}
+
+/** 有効な断面力タイプであるかを判定する */
 function isSectionForceMode(value: unknown): value is SectionForceMode {
   return value === "3" || value === "6";
+}
+
+/** 保存データから断面力モードを復元する */
+function resolveStoredSectionForceMode(value: unknown): SectionForceMode {
+  if (
+    typeof value === "object" &&
+    value !== null &&
+    isSectionForceMode((value as Record<string, unknown>).sectionForceMode)
+  ) {
+    return (value as Record<string, unknown>).sectionForceMode as SectionForceMode;
+  }
+
+  return DEFAULT_SECTION_FORCE_MODE;
 }
 
 /** ローカルストレージからページ状態を読み込む */
@@ -119,23 +179,11 @@ function loadPageState(): StoredPageState {
 
     const parsedValue = JSON.parse(storedValue) as unknown;
 
-    if (typeof parsedValue === "object" && parsedValue !== null) {
-      const candidate = parsedValue as Record<string, unknown>;
-
-      if (isFormState(candidate.form)) {
-        return {
-          form: { ...DEFAULT_FORM_STATE, ...candidate.form },
-          sectionForceMode: isSectionForceMode(candidate.sectionForceMode)
-            ? candidate.sectionForceMode
-            : DEFAULT_SECTION_FORCE_MODE,
-        };
-      }
-    }
-
-    if (isFormState(parsedValue)) {
+    const resolvedForm = resolveStoredFormState(parsedValue);
+    if (resolvedForm) {
       return {
-        form: { ...DEFAULT_FORM_STATE, ...parsedValue },
-        sectionForceMode: DEFAULT_SECTION_FORCE_MODE,
+        form: resolvedForm,
+        sectionForceMode: resolveStoredSectionForceMode(parsedValue),
       };
     }
 
@@ -169,6 +217,10 @@ function buildInput(form: FormState, sectionForceMode: SectionForceMode): Annula
   const rebarKind = isRebarKind(form.rebarKind) ? form.rebarKind : "deformed";
   const rebarDiameter_Mm =
     rebarKind === "round" ? parseNumber(form.roundRebarDiameter_Mm) : parseNumber(form.rebarDiameter_Mm);
+  const rebarYieldStrength_NPerMm2 =
+    form.rebarStrengthMode === "material"
+      ? getRebarYieldStrengthMm2(form.rebarMaterialName)
+      : parseNumber(form.rebarYieldStrength_NPerMm2);
 
   const force: AnnularSectionInput["force"] =
     sectionForceMode === "3"
@@ -201,7 +253,7 @@ function buildInput(form: FormState, sectionForceMode: SectionForceMode): Annula
     }),
     materialParams: {
       youngRatio: parseNumber(form.youngRatio),
-      rebarYieldStrength_NPerMm2: parseNumber(form.rebarYieldStrength_NPerMm2),
+      rebarYieldStrength_NPerMm2,
       concreteDesignStrength_NPerMm2: parseNumber(
         form.concreteDesignStrength_NPerMm2,
       ) as ConcreteDesignStrength_NPerMm2,

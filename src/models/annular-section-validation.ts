@@ -1,7 +1,11 @@
-import { REBAR_DIAMETERS_MM, isRebarKind } from "@/model/rebar";
-import type { AnnularSectionGeometryInput, AnnularSectionInput, MaterialParams } from "@/model/section-types";
-import type { AnnularSectionValidationIssue } from "@/model/annular-section";
-import type { SectionForce } from "@/model/section-force";
+import { REBAR_DIAMETERS_MM, isRebarKind } from "@/models/rebar";
+import type {
+  AnnularSectionGeometryInput,
+  AnnularSectionInput,
+  MaterialParams,
+} from "@/models/section-types";
+import type { AnnularSectionValidationIssue } from "@/models/annular-section";
+import type { SectionForce } from "@/models/section-force";
 
 /** 断面力の入力値を検査する */
 function validateSectionForce(

@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { AnnularSectionCalculator } from "@/model/annular-section";
-import type { MaterialParams } from "@/model/section-types";
-import { getRebarAreaMm2, type RebarDiameter_Mm } from "@/model/rebar";
-import type { SectionForce } from "@/model/section-force";
+import { AnnularSectionCalculator } from "@/models/annular-section";
+import type { MaterialParams } from "@/models/section-types";
+import { getRebarAreaMm2, type RebarDiameter_Mm } from "@/models/rebar";
+import type { SectionForce } from "@/models/section-force";
 
 const materialParams: MaterialParams = {
   youngRatio: 15, // ヤング係数比

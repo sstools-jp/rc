@@ -1,6 +1,6 @@
 import { Dialog, DialogPanel } from "@headlessui/react";
 import { useRef } from "react";
-import type { AnnularSectionResult } from "@/model/annular-section";
+import type { AnnularSectionResult } from "@/models/annular-section";
 import type { FormState } from "@/forms/form-state";
 import { AppButton } from "@/components/AppButton";
 import { PrintPreviewTable } from "@/components/PrintPreviewTable";

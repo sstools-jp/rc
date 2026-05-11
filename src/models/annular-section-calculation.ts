@@ -1,17 +1,14 @@
-import { getTauC_NPerMm2 } from "@/model/concrete";
-import { AnnularSectionGeometry } from "@/model/annular-section-geometry";
+import { getTauC_NPerMm2 } from "@/models/concrete";
+import { AnnularSectionGeometry } from "@/models/annular-section-geometry";
 import {
   resolveSectionForceComponents,
   type AxialForceSign,
   type SectionForce,
   type SectionForceComponents,
-} from "@/model/section-force";
-import type { AnnularSectionInput, MaterialParams } from "@/model/section-types";
-import {
-  calculateConcreteUltimateMoment_KNm,
-  calculateRebarYieldMoment_KNm,
-} from "@/model/section-solver";
-import type { NeutralAxisSolverResult, StrengthMomentSolverInput } from "@/model/section-solver";
+} from "@/models/section-force";
+import type { AnnularSectionInput, MaterialParams } from "@/models/section-types";
+import { calculateConcreteUltimateMoment_KNm, calculateRebarYieldMoment_KNm } from "@/models/section-solver";
+import type { NeutralAxisSolverResult, StrengthMomentSolverInput } from "@/models/section-solver";
 
 /** フォームの状態を表す型定義 */
 export interface SectionCalculationContext {
@@ -108,7 +105,8 @@ export function calculateStressState(
   const tauC_NPerMm2 = getTauC_NPerMm2(context.materialParams.concreteDesignStrength_NPerMm2);
 
   const concreteShearStress_NPerMm2 = Math.min(shearStress_NPerMm2, tauC_NPerMm2);
-  const rebarShearStress_NPerMm2 = shearStress_NPerMm2 > tauC_NPerMm2 ? shearStress_NPerMm2 - tauC_NPerMm2 : 0;
+  const rebarShearStress_NPerMm2 =
+    shearStress_NPerMm2 > tauC_NPerMm2 ? shearStress_NPerMm2 - tauC_NPerMm2 : 0;
 
   return {
     concreteCompressionStress_NPerMm2,

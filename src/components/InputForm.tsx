@@ -1,8 +1,8 @@
 import type { SubmitEventHandler } from "react";
 import { AppButton } from "@/components/AppButton";
 import { SectionForceModeSelector, type SectionForceMode } from "@/components/SectionForceModeSelector";
-import { type AnnularSectionValidationIssue } from "@/model/annular-section";
-import { CONCRETE_DESIGN_STRENGTHS_N_PER_MM2 } from "@/model/concrete";
+import { type AnnularSectionValidationIssue } from "@/models/annular-section";
+import { CONCRETE_DESIGN_STRENGTHS_N_PER_MM2 } from "@/models/concrete";
 import type { FormState } from "@/forms/form-state";
 import {
   FieldGridHeader,
@@ -10,6 +10,7 @@ import {
   FieldRow,
   FieldSelect,
   RebarFieldRow,
+  RebarStrengthFieldRow,
 } from "@/components/InputFormFields";
 
 const CONCRETE_DESIGN_STRENGTH_OPTIONS = CONCRETE_DESIGN_STRENGTHS_N_PER_MM2.map((strength) => ({
@@ -168,13 +169,11 @@ export function AnnularSectionInputFormPanel({
                   inputMode="decimal"
                 />
               </FieldRow>
-              <FieldRow label="鉄筋降伏強度" symbol="σsy" unit="N/mm²">
-                <FieldInput
-                  value={form.rebarYieldStrength_NPerMm2}
-                  onChange={onChangeField("rebarYieldStrength_NPerMm2")}
-                  onBlur={onCommitField("rebarYieldStrength_NPerMm2")}
-                />
-              </FieldRow>
+              <RebarStrengthFieldRow
+                form={form}
+                onChangeField={onChangeField}
+                onCommitField={onCommitField}
+              />
               <FieldRow label="コンクリート設計基準強度" symbol="σck" unit="N/mm²">
                 <FieldSelect
                   value={form.concreteDesignStrength_NPerMm2}
@@ -209,7 +208,7 @@ export function AnnularSectionInputFormPanel({
           <p className="text-sm font-semibold">入力エラー</p>
           <ul className="mt-2 list-disc space-y-1 ps-5 text-sm">
             {issues.map((issue) => (
-              <li key={`${issue.field}-${issue.message}`}>{issue.message}</li>
+              <li key={`${String(issue.field)}-${issue.message}`}>{issue.message}</li>
             ))}
           </ul>
         </div>

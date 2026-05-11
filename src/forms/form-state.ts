@@ -1,3 +1,5 @@
+import type { RebarMaterialName } from "@/models/rebar";
+
 /** 断面力のフォーム状態の型定義 */
 export type SectionForceFormState = {
   /** 軸力 [kN] */
@@ -13,6 +15,9 @@ export type SectionForceFormState = {
   /** 曲げモーメント（面外） [kN.m] */
   mz_KNm: string;
 };
+
+/** 鉄筋降伏強度の入力モード */
+export type RebarStrengthMode = "material" | "direct";
 
 /** 断面形状のフォーム状態の型定義 */
 export type GeometryFormState = {
@@ -34,6 +39,10 @@ export type GeometryFormState = {
 
 /** 諸係数のフォーム状態の型定義 */
 export type MaterialParamsFormState = {
+  /** 鉄筋降伏強度の入力モード */
+  rebarStrengthMode: RebarStrengthMode;
+  /** 鉄筋材質名 */
+  rebarMaterialName: RebarMaterialName;
   /** 鉄筋降伏強度 [N/mm2] */
   rebarYieldStrength_NPerMm2: string;
   /** コンクリート設計基準強度 [N/mm2] */

@@ -1,8 +1,8 @@
-import { type AxialForceSign } from "@/model/section-force";
-import type { SectionForce } from "@/model/section-force";
-import type { AnnularSectionInput } from "@/model/section-types";
-import { solveNeutralAxisAngleDeg } from "@/model/section-solver";
-import { validateAnnularSectionInput } from "@/model/annular-section-validation";
+import { type AxialForceSign } from "@/models/section-force";
+import type { SectionForce } from "@/models/section-force";
+import type { AnnularSectionInput } from "@/models/section-types";
+import { solveNeutralAxisAngleDeg } from "@/models/section-solver";
+import { validateAnnularSectionInput } from "@/models/annular-section-validation";
 import {
   calculateNeutralAxisPosition_Mm,
   calculateStressState,
@@ -11,15 +11,13 @@ import {
   createCalculationContext,
   type SectionStrengthState,
   type SectionStressState,
-} from "@/model/annular-section-calculation";
+} from "@/models/annular-section-calculation";
 
-export { AnnularSectionGeometry } from "@/model/annular-section-geometry";
-
-export type AnnularSectionValidationIssueField = "force" | keyof AnnularSectionInput | keyof SectionForce;
+export { AnnularSectionGeometry } from "@/models/annular-section-geometry";
 
 /** 検算結果の型定義 */
 export interface AnnularSectionValidationIssue {
-  field: AnnularSectionValidationIssueField;
+  field: "force" | keyof AnnularSectionInput | keyof SectionForce;
   message: string;
 }
 
@@ -65,6 +63,7 @@ export interface AnnularSectionNeutralAxisResult {
   shearCoefficient: number;
 }
 
+/** 円環断面の計算結果をまとめた型定義 */
 export interface AnnularSectionResult {
   /** 断面形状の結果 */
   section: AnnularSectionSectionResult;

@@ -1,5 +1,5 @@
 import type { FormState } from "@/forms/form-state";
-import type { AnnularSectionResult } from "@/model/annular-section";
+import type { AnnularSectionResult } from "@/models/annular-section";
 import { parseNumber } from "@/utils/number-format";
 import { cn } from "@/utils/cn";
 

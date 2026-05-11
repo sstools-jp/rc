@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { AppButton } from "@/components/AppButton";
 import type { FormState } from "@/forms/form-state";
-import type { AnnularSectionResult } from "@/model/annular-section";
+import type { AnnularSectionResult } from "@/models/annular-section";
 import { formatNumber } from "@/utils/number-format";
 import { CrossSectionPreview } from "@/components/CrossSectionPreview";
 import { Toast } from "@/components/Toast";
