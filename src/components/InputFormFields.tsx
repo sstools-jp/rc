@@ -99,6 +99,37 @@ export function FieldSelect({ value, onChange, options }: FieldSelectProps) {
   );
 }
 
+type RadioOption = {
+  value: string;
+  label: string;
+  checked: boolean;
+  onChange: (value: string) => void;
+};
+
+type RadioOptionListProps = {
+  name: string;
+  options: Array<RadioOption>;
+};
+
+function RadioOptionList({ name, options }: RadioOptionListProps) {
+  return (
+    <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
+      {options.map((option) => (
+        <label key={option.value} className="flex items-center gap-1">
+          <input
+            type="radio"
+            name={name}
+            value={option.value}
+            checked={option.checked}
+            onChange={(event) => option.onChange(event.target.value)}
+          />
+          {option.label}
+        </label>
+      ))}
+    </div>
+  );
+}
+
 type RebarFieldRowProps = {
   form: FormState;
   onChangeField: (field: keyof FormState) => (value: string) => void;
@@ -115,34 +146,29 @@ export function RebarFieldRow({ form, onChangeField, onCommitField }: RebarField
       <div className="px-2 py-1 align-top">
         <div className="flex flex-col gap-1">
           <span>鉄筋径</span>
-          <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
-            <label className="flex items-center gap-1">
-              <input
-                type="radio"
-                name="rebarKind"
-                value="deformed"
-                checked={!isRound}
-                onChange={(event) => {
-                  onChangeField("rebarKind")(event.target.value);
-                  onCommitField("rebarKind")(event.target.value);
-                }}
-              />
-              異形棒鋼(DB)
-            </label>
-            <label className="flex items-center gap-1">
-              <input
-                type="radio"
-                name="rebarKind"
-                value="round"
-                checked={isRound}
-                onChange={(event) => {
-                  onChangeField("rebarKind")(event.target.value);
-                  onCommitField("rebarKind")(event.target.value);
-                }}
-              />
-              丸鋼(RB)
-            </label>
-          </div>
+          <RadioOptionList
+            name="rebarKind"
+            options={[
+              {
+                value: "deformed",
+                label: "異形棒鋼(DB)",
+                checked: !isRound,
+                onChange: (value) => {
+                  onChangeField("rebarKind")(value);
+                  onCommitField("rebarKind")(value);
+                },
+              },
+              {
+                value: "round",
+                label: "丸鋼(RB)",
+                checked: isRound,
+                onChange: (value) => {
+                  onChangeField("rebarKind")(value);
+                  onCommitField("rebarKind")(value);
+                },
+              },
+            ]}
+          />
         </div>
       </div>
       <div className="flex items-center justify-center px-1 py-1 text-center font-mono">
@@ -188,39 +214,32 @@ export function RebarStrengthFieldRow({ form, onChangeField, onCommitField }: Re
       <div className="px-2 py-1 align-top">
         <div className="flex flex-col gap-1">
           <span>鉄筋降伏強度</span>
-          <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
-            <label className="flex items-center gap-1">
-              <input
-                type="radio"
-                name="rebarStrengthMode"
-                value="material"
-                checked={isMaterialMode}
-                onChange={(event) => {
-                  const nextMode = event.target.value;
-                  onChangeField("rebarStrengthMode")(nextMode);
-                  onCommitField("rebarStrengthMode")(nextMode);
+          <RadioOptionList
+            name="rebarStrengthMode"
+            options={[
+              {
+                value: "material",
+                label: "材質選択",
+                checked: isMaterialMode,
+                onChange: (value) => {
+                  onChangeField("rebarStrengthMode")(value);
+                  onCommitField("rebarStrengthMode")(value);
                   const nextStrength = getRebarYieldStrengthMm2(form.rebarMaterialName);
                   onChangeField("rebarYieldStrength_NPerMm2")(String(nextStrength));
                   onCommitField("rebarYieldStrength_NPerMm2")(String(nextStrength));
-                }}
-              />
-              材質選択
-            </label>
-            <label className="flex items-center gap-1">
-              <input
-                type="radio"
-                name="rebarStrengthMode"
-                value="direct"
-                checked={!isMaterialMode}
-                onChange={(event) => {
-                  const nextMode = event.target.value;
-                  onChangeField("rebarStrengthMode")(nextMode);
-                  onCommitField("rebarStrengthMode")(nextMode);
-                }}
-              />
-              直接入力
-            </label>
-          </div>
+                },
+              },
+              {
+                value: "direct",
+                label: "直接入力",
+                checked: !isMaterialMode,
+                onChange: (value) => {
+                  onChangeField("rebarStrengthMode")(value);
+                  onCommitField("rebarStrengthMode")(value);
+                },
+              },
+            ]}
+          />
         </div>
       </div>
       <div className="flex items-center justify-center px-1 py-1 text-center font-mono">

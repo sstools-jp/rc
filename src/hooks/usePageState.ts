@@ -75,30 +75,7 @@ function isRebarStrengthMode(value: unknown): value is RebarStrengthMode {
   return value === "material" || value === "direct";
 }
 
-function hasRebarStrengthMode(value: unknown): boolean {
-  return typeof value === "object" && value !== null && "rebarStrengthMode" in value;
-}
-
-function hasRebarMaterialName(value: unknown): boolean {
-  return typeof value === "object" && value !== null && "rebarMaterialName" in value;
-}
-
-function normalizeMaterialParamsFormState(form: FormState): FormState {
-  const rebarStrengthMode = isRebarStrengthMode(form.rebarStrengthMode) ? form.rebarStrengthMode : "material";
-  const rebarMaterialName = isRebarMaterialName(form.rebarMaterialName) ? form.rebarMaterialName : "SD345";
-
-  return {
-    ...form,
-    rebarStrengthMode,
-    rebarMaterialName,
-    rebarYieldStrength_NPerMm2:
-      rebarStrengthMode === "material"
-        ? String(getRebarYieldStrengthMm2(rebarMaterialName))
-        : form.rebarYieldStrength_NPerMm2,
-  };
-}
-
-/** フォーム状態の型ガード */
+/** フォームの状態が有効であるかを判定する */
 function isFormState(value: unknown): value is FormState {
   if (typeof value !== "object" || value === null) {
     return false;
@@ -127,8 +104,59 @@ function isFormState(value: unknown): value is FormState {
   );
 }
 
+/** フォームの状態を正規化する */
+function normalizeMaterialParamsFormState(rawForm: Record<string, unknown>): FormState {
+  const form = { ...DEFAULT_FORM_STATE, ...rawForm } as FormState;
+  const isLegacyForm = !("rebarStrengthMode" in rawForm) && !("rebarMaterialName" in rawForm);
+  const rebarStrengthMode =
+    isLegacyForm || !isRebarStrengthMode(form.rebarStrengthMode) ? "material" : form.rebarStrengthMode;
+  const rebarMaterialName = isRebarMaterialName(form.rebarMaterialName) ? form.rebarMaterialName : "SD345";
+
+  return {
+    ...form,
+    rebarStrengthMode,
+    rebarMaterialName,
+    rebarYieldStrength_NPerMm2:
+      rebarStrengthMode === "material"
+        ? String(getRebarYieldStrengthMm2(rebarMaterialName))
+        : form.rebarYieldStrength_NPerMm2,
+  };
+}
+
+function resolveStoredFormState(value: unknown): FormState | null {
+  if (typeof value !== "object" || value === null) {
+    return null;
+  }
+
+  const candidate = value as Record<string, unknown>;
+
+  if (isFormState(candidate.form)) {
+    return normalizeMaterialParamsFormState(candidate.form);
+  }
+
+  if (isFormState(value)) {
+    return normalizeMaterialParamsFormState(value);
+  }
+
+  return null;
+}
+
+/** 有効な断面力タイプであるかを判定する */
 function isSectionForceMode(value: unknown): value is SectionForceMode {
   return value === "3" || value === "6";
+}
+
+/** 保存データから断面力モードを復元する */
+function resolveStoredSectionForceMode(value: unknown): SectionForceMode {
+  if (
+    typeof value === "object" &&
+    value !== null &&
+    isSectionForceMode((value as Record<string, unknown>).sectionForceMode)
+  ) {
+    return (value as Record<string, unknown>).sectionForceMode as SectionForceMode;
+  }
+
+  return DEFAULT_SECTION_FORCE_MODE;
 }
 
 /** ローカルストレージからページ状態を読み込む */
@@ -151,31 +179,11 @@ function loadPageState(): StoredPageState {
 
     const parsedValue = JSON.parse(storedValue) as unknown;
 
-    if (typeof parsedValue === "object" && parsedValue !== null) {
-      const candidate = parsedValue as Record<string, unknown>;
-
-      if (isFormState(candidate.form)) {
-        const nextForm = { ...DEFAULT_FORM_STATE, ...candidate.form };
-        return {
-          form:
-            hasRebarStrengthMode(candidate.form) || hasRebarMaterialName(candidate.form)
-              ? normalizeMaterialParamsFormState(nextForm)
-              : normalizeMaterialParamsFormState({ ...nextForm, rebarStrengthMode: "direct" }),
-          sectionForceMode: isSectionForceMode(candidate.sectionForceMode)
-            ? candidate.sectionForceMode
-            : DEFAULT_SECTION_FORCE_MODE,
-        };
-      }
-    }
-
-    if (isFormState(parsedValue)) {
+    const resolvedForm = resolveStoredFormState(parsedValue);
+    if (resolvedForm) {
       return {
-        form: normalizeMaterialParamsFormState({
-          ...DEFAULT_FORM_STATE,
-          ...parsedValue,
-          rebarStrengthMode: "direct",
-        }),
-        sectionForceMode: DEFAULT_SECTION_FORCE_MODE,
+        form: resolvedForm,
+        sectionForceMode: resolveStoredSectionForceMode(parsedValue),
       };
     }
 
