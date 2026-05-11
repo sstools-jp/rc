@@ -1,14 +1,9 @@
 import { getTauC_NPerMm2 } from "@/models/concrete";
 import { AnnularSectionGeometry } from "@/models/annular-section-geometry";
-import {
-  resolveSectionForceComponents,
-  type SectionForce,
-  type SectionForceComponents,
-} from "@/models/section-force";
+import { type SectionForce } from "@/models/section-force";
 import type { AnnularSectionInput, MaterialParams } from "@/models/section-types";
 import { calculateConcreteUltimateMoment_KNm, calculateRebarYieldMoment_KNm } from "@/models/section-solver";
 import type { NeutralAxisSolverResult, StrengthMomentSolverInput } from "@/models/section-solver";
-export { classifyAxialForce } from "@/models/section-force-utils";
 
 /** フォームの状態を表す型定義 */
 export interface SectionCalculationContext {
@@ -18,13 +13,9 @@ export interface SectionCalculationContext {
   materialParams: MaterialParams;
   /** 断面力 */
   force: SectionForce;
-  /** 3成分に換算した断面力 */
-  forceComponents: SectionForceComponents;
-  /** モーメント [kN.m] */
-  moment_KNm: number;
-  shear_KN: number;
-  axial_KN: number;
+  /** 換算モーメント [kN.mm] */
   combinedMoment_KNmm: number;
+  /** 換算モーメント [kN.m] */
   combinedMoment_KNm: number;
 }
 
@@ -52,9 +43,8 @@ export interface SectionStrengthState {
 export function createCalculationContext(input: AnnularSectionInput): SectionCalculationContext {
   const geometry = AnnularSectionGeometry.fromInput(input.geometry);
   const force = input.force;
-  const forceComponents = resolveSectionForceComponents(force);
+  const forceComponents = force.threeForce;
   const moment_KNm = forceComponents.moment_KNm;
-  const shear_KN = forceComponents.shear_KN;
   const axial_KN = forceComponents.axial_KN;
   const combinedMoment_KNmm = moment_KNm * 1000 + axial_KN * geometry.outerRadius_Mm;
 
@@ -62,10 +52,6 @@ export function createCalculationContext(input: AnnularSectionInput): SectionCal
     geometry,
     materialParams: input.materialParams,
     force,
-    forceComponents,
-    moment_KNm,
-    shear_KN,
-    axial_KN,
     combinedMoment_KNmm,
     combinedMoment_KNm: combinedMoment_KNmm / 1000,
   };
@@ -88,6 +74,7 @@ export function calculateStressState(
   context: SectionCalculationContext,
   solver: NeutralAxisSolverResult,
 ): SectionStressState {
+  const { shear_KN } = context.force.threeForce;
   const combinedMomentNmm = context.combinedMoment_KNmm * 1000;
   const outerRadius_Mm = context.geometry.outerRadius_Mm;
   const scale = combinedMomentNmm / outerRadius_Mm ** 3;
@@ -96,7 +83,7 @@ export function calculateStressState(
   const rebarStress_NPerMm2 = scale * solver.steelStressCoefficient * context.materialParams.youngRatio;
 
   const shearStress_NPerMm2 =
-    ((context.shear_KN * 1000) / outerRadius_Mm ** 2) * solver.shearCoefficient +
+    ((shear_KN * 1000) / outerRadius_Mm ** 2) * solver.shearCoefficient +
     (Math.abs(context.force.mx_KNm) * 1000 ** 2) / context.geometry.polarSectionModulus_Mm3;
 
   const tauC_NPerMm2 = getTauC_NPerMm2(context.materialParams.concreteDesignStrength_NPerMm2);

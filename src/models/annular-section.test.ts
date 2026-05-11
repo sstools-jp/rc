@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { AnnularSectionCalculator } from "@/models/annular-section";
 import type { MaterialParams } from "@/models/section-types";
 import { getRebarAreaMm2, type RebarDiameter_Mm } from "@/models/rebar";
-import type { SectionForce } from "@/models/section-force";
+import { SectionForce } from "@/models/section-force";
 
 const materialParams: MaterialParams = {
   youngRatio: 15, // ヤング係数比
@@ -10,26 +10,26 @@ const materialParams: MaterialParams = {
   concreteDesignStrength_NPerMm2: 30, // コンクリート設計基準強度 [N/mm2]
 };
 
-const myForce: SectionForce = {
+const myForce = new SectionForce({
   fx_KN: 0, // 軸力 [kN]
   fy_KN: 0, // せん断力（面外） [kN]
   fz_KN: 0, // せん断力（面内） [kN]
   mx_KNm: 0, // ねじりモーメント [kN.m]
   my_KNm: 1000, // 曲げモーメント（面内） [kN.m]
   mz_KNm: 0, // 曲げモーメント（面外） [kN.m]
-};
+});
 
 describe("AnnularSectionCalculator", () => {
   it("計算結果の照合 (1)", () => {
     const calculator = new AnnularSectionCalculator({
-      force: {
+      force: new SectionForce({
         fx_KN: -500, // 軸力 [kN]
         fy_KN: 0, // せん断力（面外） [kN]
         fz_KN: 200, // せん断力（面内） [kN]
         mx_KNm: 0, // ねじりモーメント [kN.m]
         my_KNm: 1250, // 曲げモーメント（面内） [kN.m]
         mz_KNm: 0, // 曲げモーメント（面外） [kN.m]
-      },
+      }),
       geometry: {
         outerRadius_Mm: 800, // 外径 [mm]
         innerRadius_Mm: 600, // 内径 [mm]
@@ -61,14 +61,14 @@ describe("AnnularSectionCalculator", () => {
 
   it("計算結果の照合 (2)", () => {
     const calculator = new AnnularSectionCalculator({
-      force: {
+      force: new SectionForce({
         fx_KN: -1800, // 軸力 [kN]
         fy_KN: 0, // せん断力（面外） [kN]
         fz_KN: 1200, // せん断力（面内） [kN]
         mx_KNm: 0, // ねじりモーメント [kN.m]
         my_KNm: 850, // 曲げモーメント（面内） [kN.m]
         mz_KNm: 0, // 曲げモーメント（面外） [kN.m]
-      },
+      }),
       geometry: {
         outerRadius_Mm: 1200, // 外径 [mm]
         innerRadius_Mm: 900, // 内径 [mm]
@@ -100,14 +100,14 @@ describe("AnnularSectionCalculator", () => {
 
   it("コンクリート設計基準強度を変更した場合のせん断応力度の照合", () => {
     const calculator = new AnnularSectionCalculator({
-      force: {
+      force: new SectionForce({
         fx_KN: -500, // 軸力 [kN]
         fy_KN: 0, // せん断力（面外） [kN]
         fz_KN: 200, // せん断力（面内） [kN]
         mx_KNm: 0, // ねじりモーメント [kN.m]
         my_KNm: 1250, // 曲げモーメント（面内） [kN.m]
         mz_KNm: 0, // 曲げモーメント（面外） [kN.m]
-      },
+      }),
       geometry: {
         outerRadius_Mm: 800, // 外径 [mm]
         innerRadius_Mm: 600, // 内径 [mm]
@@ -133,14 +133,14 @@ describe("AnnularSectionCalculator", () => {
 
   it("計算結果の照合 (曲げモーメントのみ)", () => {
     const calculator = new AnnularSectionCalculator({
-      force: {
+      force: new SectionForce({
         fx_KN: 0, // 軸力 [kN]
         fy_KN: 0, // せん断力（面外） [kN]
         fz_KN: 0, // せん断力（面内） [kN]
         mx_KNm: 0, // ねじりモーメント [kN.m]
         my_KNm: 2.5, // 曲げモーメント（面内） [kN.m]
         mz_KNm: 0, // 曲げモーメント（面外） [kN.m]
-      },
+      }),
       geometry: {
         outerRadius_Mm: 1200, // 外径 [mm]
         innerRadius_Mm: 800, // 内径 [mm]

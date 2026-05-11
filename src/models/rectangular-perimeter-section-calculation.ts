@@ -1,5 +1,4 @@
-import { classifyAxialForce, normalizeSectionForce } from "@/models/section-force-utils";
-import type { SectionForce } from "@/models/section-force";
+import { SectionForce } from "@/models/section-force";
 import type { MaterialParams } from "@/models/section-types";
 import type {
   RectanglarPerimeterSectionGeometry,
@@ -157,14 +156,14 @@ function solveCubicRootInRange(a: number, b: number, c: number, d: number): numb
 /** 中立軸の結果を算出する */
 function calculateNeutralAxisResult(input: {
   geometry: RectanglarPerimeterSectionGeometry;
-  axial_KN: number;
-  moment_KNm: number;
+  force: SectionForce;
   mainRebarRatio: number;
   sideRebarRatio: number;
   c: number;
   youngRatio: number;
 }): RectanglarPerimeterSectionNeutralAxisResult {
-  const { geometry, axial_KN, moment_KNm, mainRebarRatio, sideRebarRatio, c, youngRatio } = input;
+  const { geometry, force, mainRebarRatio, sideRebarRatio, c, youngRatio } = input;
+  const { axial_KN, moment_KNm } = force.threeForce;
   const d = geometry.subRebarEffectiveHeight_Mm;
   const a = geometry.subRebarCover_Mm / d;
   const b =
@@ -217,11 +216,12 @@ function calculateNeutralAxisResult(input: {
 function calculateStressResult(input: {
   geometry: RectanglarPerimeterSectionGeometry;
   combinedMoment_Nmm: number;
-  shear_KN: number;
+  force: SectionForce;
   youngRatio: number;
   neutralAxis: RectanglarPerimeterSectionNeutralAxisResult;
 }): RectanglarPerimeterSectionStressResult {
-  const { geometry, combinedMoment_Nmm, shear_KN, youngRatio, neutralAxis } = input;
+  const { geometry, combinedMoment_Nmm, force, youngRatio, neutralAxis } = input;
+  const { shear_KN } = force.threeForce;
   const scale = combinedMoment_Nmm / (geometry.width_Mm * geometry.subRebarEffectiveHeight_Mm ** 2);
   const averageShearStress_NPerMm2 =
     (shear_KN * 1000) / (geometry.width_Mm * geometry.subRebarEffectiveHeight_Mm);
@@ -241,10 +241,9 @@ export function calculateRectanglarPerimeterSectionResult(input: {
   materialParams: MaterialParams;
 }): RectanglarPerimeterSectionResult {
   const geometry = input.geometry;
-  const force = normalizeSectionForce(input.force);
-  const axial_KN = -force.fx_KN;
-  const moment_KNm = Math.sqrt(force.my_KNm ** 2 + force.mz_KNm ** 2);
-  const shear_KN = Math.sqrt(force.fy_KN ** 2 + force.fz_KN ** 2);
+  const force = new SectionForce(input.force);
+  const axial_KN = force.threeForce.axial_KN;
+  const moment_KNm = force.threeForce.moment_KNm;
   const mainRebarAreaPerBar_Mm2 = geometry.subRebarAreaPerBar_Mm2;
   const sideRebarAreaPerBar_Mm2 = geometry.sideRebarAreaPerBar_Mm2;
   const sideRebarArea_Mm2 = geometry.sideRebarArea_Mm2;
@@ -262,8 +261,7 @@ export function calculateRectanglarPerimeterSectionResult(input: {
 
   const neutralAxis = calculateNeutralAxisResult({
     geometry,
-    axial_KN,
-    moment_KNm,
+    force,
     mainRebarRatio,
     sideRebarRatio,
     c,
@@ -273,7 +271,7 @@ export function calculateRectanglarPerimeterSectionResult(input: {
   const stress = calculateStressResult({
     geometry,
     combinedMoment_Nmm,
-    shear_KN,
+    force,
     youngRatio,
     neutralAxis,
   });
@@ -290,7 +288,7 @@ export function calculateRectanglarPerimeterSectionResult(input: {
     },
     loading: {
       combinedMoment_KNm,
-      axialForceSign: classifyAxialForce(axial_KN),
+      axialForceSign: force.axialForceSign,
     },
     neutralAxis: {
       k: neutralAxis.k,

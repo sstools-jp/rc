@@ -17,6 +17,7 @@ import { type SectionForceMode } from "@/components/SectionForceModeSelector";
 import { parseNumber } from "@/utils/number-format";
 import { getRebarYieldStrengthMm2, isRebarKind, isRebarMaterialName } from "@/models/rebar";
 import type { ConcreteDesignStrength_NPerMm2 } from "@/models/concrete";
+import { SectionForce } from "@/models/section-force";
 
 /** 断面力のデフォルト入力値 */
 const DEFAULT_SECTION_FORCE_FORM_STATE: SectionForceFormState = {
@@ -222,15 +223,12 @@ function buildInput(form: FormState, sectionForceMode: SectionForceMode): Annula
       ? getRebarYieldStrengthMm2(form.rebarMaterialName)
       : parseNumber(form.rebarYieldStrength_NPerMm2);
 
-  const force: AnnularSectionInput["force"] =
+  const force: AnnularSectionInput["force"] = new SectionForce(
     sectionForceMode === "3"
       ? {
           fx_KN: parseNumber(form.fx_KN),
-          fy_KN: 0,
           fz_KN: parseNumber(form.fz_KN),
-          mx_KNm: 0,
           my_KNm: parseNumber(form.my_KNm),
-          mz_KNm: 0,
         }
       : {
           fx_KN: parseNumber(form.fx_KN),
@@ -239,7 +237,8 @@ function buildInput(form: FormState, sectionForceMode: SectionForceMode): Annula
           mx_KNm: parseNumber(form.mx_KNm),
           my_KNm: parseNumber(form.my_KNm),
           mz_KNm: parseNumber(form.mz_KNm),
-        };
+        },
+  );
 
   return {
     force,

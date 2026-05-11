@@ -1,5 +1,5 @@
 import { type AxialForceSign } from "@/models/section-force";
-import type { SectionForce } from "@/models/section-force";
+import type { SectionForceField } from "@/models/section-force";
 import type { AnnularSectionInput } from "@/models/section-types";
 import { solveNeutralAxisAngleDeg } from "@/models/section-solver";
 import { validateAnnularSectionInput } from "@/models/annular-section-validation";
@@ -7,7 +7,6 @@ import {
   calculateNeutralAxisPosition_Mm,
   calculateStressState,
   calculateStrengthState,
-  classifyAxialForce,
   createCalculationContext,
   type SectionStrengthState,
   type SectionStressState,
@@ -17,7 +16,7 @@ export { AnnularSectionGeometry } from "@/models/annular-section-geometry";
 
 /** 検算結果の型定義 */
 export interface AnnularSectionValidationIssue {
-  field: "force" | keyof AnnularSectionInput | keyof SectionForce;
+  field: "force" | keyof AnnularSectionInput | SectionForceField;
   message: string;
 }
 
@@ -128,7 +127,7 @@ export class AnnularSectionCalculator {
       },
       loading: {
         combinedMoment_KNm: context.combinedMoment_KNm,
-        axialForceSign: classifyAxialForce(context.force.fx_KN),
+        axialForceSign: context.force.axialForceSign,
       },
       neutralAxis: {
         neutralAxisAngleDeg: solver.neutralAxisAngleDeg,

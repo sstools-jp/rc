@@ -1,12 +1,12 @@
 import type { MaterialParams } from "@/models/section-types";
-import type { SectionForce } from "@/models/section-force";
+import type { SectionForce, SectionForceField } from "@/models/section-force";
 
 /** 断面力の入力値を検査する */
 export function validateSectionForce(
-  force: Partial<SectionForce> | undefined,
-  addIssue: (field: keyof SectionForce, message: string) => void,
+  force: Partial<Pick<SectionForce, SectionForceField>> | undefined,
+  addIssue: (field: SectionForceField, message: string) => void,
 ): void {
-  const forceLabels: Record<keyof SectionForce, string> = {
+  const forceLabels: Record<SectionForceField, string> = {
     fx_KN: "軸力",
     fy_KN: "せん断力（面外）",
     fz_KN: "せん断力（面内）",
@@ -16,9 +16,9 @@ export function validateSectionForce(
   };
 
   for (const [key, label] of Object.entries(forceLabels)) {
-    const value = force?.[key as keyof SectionForce];
+    const value = force?.[key as SectionForceField];
     if (value !== undefined && !Number.isFinite(value)) {
-      addIssue(key as keyof SectionForce, `${label}は数値で指定してください。`);
+      addIssue(key as SectionForceField, `${label}は数値で指定してください。`);
     }
   }
 }
