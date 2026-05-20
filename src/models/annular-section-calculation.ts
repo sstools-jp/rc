@@ -98,9 +98,10 @@ export function calculateStressState(
   const concreteCompressionStress_NPerMm2 = scale * solver.concreteCompressionCoefficient;
   const rebarStress_NPerMm2 = scale * solver.steelStressCoefficient * context.materialParams.youngRatio;
 
+  const mx_KNm = Math.abs(context.force.mx_KNm ?? 0);
   const shearStress_NPerMm2 =
     ((context.shear_KN * 1000) / outerRadius_Mm ** 2) * solver.shearCoefficient +
-    (Math.abs(context.force.mx_KNm) * 1000 ** 2) / context.geometry.polarSectionModulus_Mm3;
+    (mx_KNm * 1000 ** 2) / context.geometry.polarSectionModulus_Mm3;
 
   const tauC_NPerMm2 = getTauC_NPerMm2(context.materialParams.concreteDesignStrength_NPerMm2);
 
@@ -116,10 +117,11 @@ export function calculateStressState(
   };
 }
 
-/** 耐力の状態を算出する */
+/** 終局耐力の状態を算出する */
 export function calculateStrengthState(context: SectionCalculationContext): SectionStrengthState {
   const solverInput: StrengthMomentSolverInput = {
-    force: context.force,
+    // 終局耐力は作用荷重に依存させず、断面固有の曲げ耐力として算出する
+    force: {},
     geometry: context.geometry,
     materialParams: context.materialParams,
   };
