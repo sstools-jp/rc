@@ -1,10 +1,19 @@
 import { describe, expect, it } from "vitest";
 import { AnnularSectionCalculator } from "@/models/annular-section";
-import type { MaterialParams } from "@/models/section-types";
+import type { MaterialParams, AnnularSectionGeometryInput } from "@/models/section-types";
 import { getRebarAreaMm2, type RebarDiameter_Mm } from "@/models/rebar";
 import type { SectionForce } from "@/models/section-force";
 
-const materialParams: MaterialParams = {
+const defaultGeometry: AnnularSectionGeometryInput = {
+  outerRadius_Mm: 800, // 外径 [mm]
+  innerRadius_Mm: 600, // 内径 [mm]
+  rebarRadius_Mm: 700, // 鉄筋半径 [mm]
+  rebarKind: "deformed", // 鉄筋種別
+  rebarDiameter_Mm: 22, // 鉄筋径 [mm]
+  barCount: 16, // 鉄筋本数
+};
+
+const defaultMaterialParams: MaterialParams = {
   youngRatio: 15, // ヤング係数比
   rebarYieldStrength_NPerMm2: 345, // 鉄筋降伏強度 [N/mm2]
   concreteDesignStrength_NPerMm2: 30, // コンクリート設計基準強度 [N/mm2]
@@ -30,15 +39,8 @@ describe("AnnularSectionCalculator", () => {
         my_KNm: 1250, // 曲げモーメント（面内） [kN.m]
         mz_KNm: 0, // 曲げモーメント（面外） [kN.m]
       },
-      geometry: {
-        outerRadius_Mm: 800, // 外径 [mm]
-        innerRadius_Mm: 600, // 内径 [mm]
-        rebarRadius_Mm: 700, // 鉄筋半径 [mm]
-        rebarKind: "deformed", // 鉄筋種別
-        rebarDiameter_Mm: 22, // 鉄筋径 [mm]
-        barCount: 16, // 鉄筋本数
-      },
-      materialParams,
+      geometry: defaultGeometry,
+      materialParams: defaultMaterialParams,
     });
 
     const result = calculator.calculate(); // 円環断面を計算
@@ -77,7 +79,7 @@ describe("AnnularSectionCalculator", () => {
         rebarDiameter_Mm: 22, // 鉄筋径 [mm]
         barCount: 24, // 鉄筋本数
       },
-      materialParams,
+      materialParams: defaultMaterialParams,
     });
 
     const result = calculator.calculate(); // 円環断面を計算
@@ -149,7 +151,7 @@ describe("AnnularSectionCalculator", () => {
         rebarDiameter_Mm: 51, // 鉄筋径 [mm]
         barCount: 16, // 鉄筋本数
       },
-      materialParams,
+      materialParams: defaultMaterialParams,
     });
 
     const result = calculator.calculate(); // 円環断面を計算
@@ -181,7 +183,7 @@ describe("AnnularSectionCalculator", () => {
         rebarDiameter_Mm: 10, // 鉄筋径 [mm]
         barCount: 8, // 鉄筋本数
       },
-      materialParams,
+      materialParams: defaultMaterialParams,
     });
 
     expect(() => calculator.calculate()).toThrow("半径（内）は半径（外）以下で指定してください。");
@@ -198,7 +200,7 @@ describe("AnnularSectionCalculator", () => {
         rebarDiameter_Mm: 10, // 鉄筋径 [mm]
         barCount: 8.5, // 鉄筋本数
       },
-      materialParams,
+      materialParams: defaultMaterialParams,
     });
 
     const result = calculator.calculate();
@@ -227,7 +229,7 @@ describe("AnnularSectionCalculator", () => {
         rebarDiameter_Mm, // 鉄筋径 [mm]
         barCount, // 鉄筋本数
       },
-      materialParams,
+      materialParams: defaultMaterialParams,
     });
 
     const result = calculator.calculate();
@@ -255,11 +257,60 @@ describe("AnnularSectionCalculator", () => {
         rebarDiameter_Mm, // 鉄筋径 [mm]
         barCount, // 鉄筋本数
       },
-      materialParams,
+      materialParams: defaultMaterialParams,
     });
 
     const result = calculator.calculate();
 
     expect(result.section.totalRebarArea_Mm2).toBeCloseTo(totalRebarArea_Mm2, 0); // 鉄筋断面積 [mm2]
+  });
+
+  it("終局耐力の照合", () => {
+    // 1. 断面計算を実行
+    const calculator = new AnnularSectionCalculator({
+      force: {
+        fx_KN: -800, // 軸力 [kN]
+        fy_KN: 0, // せん断力（面外） [kN]
+        fz_KN: 0, // せん断力（面内） [kN]
+        mx_KNm: 0, // ねじりモーメント [kN.m]
+        my_KNm: 2400, // 曲げモーメント（面内） [kN.m]
+        mz_KNm: 800, // 曲げモーメント（面外） [kN.m]
+      },
+      geometry: defaultGeometry,
+      materialParams: defaultMaterialParams,
+    });
+
+    const result = calculator.calculate(); // 円環断面を計算
+    const strength = result.strength;
+
+    // 2. 計算結果（コンクリート終局曲げモーメント）を基に断面力を更新して再計算
+    const updatedCalculator1 = new AnnularSectionCalculator({
+      force: {
+        my_KNm: strength.concreteUltimateMoment_KNm, // コンクリート終局曲げモーメント [kN.m]
+      },
+      geometry: defaultGeometry,
+      materialParams: defaultMaterialParams,
+    });
+    const updatedResult1 = updatedCalculator1.calculate();
+    const updatedStress1 = updatedResult1.stress;
+
+    // 3. 計算結果を検証（コンクリート圧縮応力度）
+    const sigmaC_NPerMm2 = 0.85 * defaultMaterialParams.concreteDesignStrength_NPerMm2;
+    expect(updatedStress1.concreteCompressionStress_NPerMm2).toBeCloseTo(sigmaC_NPerMm2, 2); // コンクリート圧縮応力度 [N/mm2]
+
+    // 4. 計算結果（鉄筋終局曲げモーメント）を基に断面力を更新して再計算
+    const updatedCalculator2 = new AnnularSectionCalculator({
+      force: {
+        my_KNm: strength.rebarYieldMoment_KNm, // 鉄筋終局曲げモーメント [kN.m]
+      },
+      geometry: defaultGeometry,
+      materialParams: defaultMaterialParams,
+    });
+    const updatedResult2 = updatedCalculator2.calculate();
+    const updatedStress2 = updatedResult2.stress;
+
+    // 5. 計算結果を検証（鉄筋応力度）
+    const sigmaS_NPerMm2 = defaultMaterialParams.rebarYieldStrength_NPerMm2;
+    expect(updatedStress2.rebarStress_NPerMm2).toBeCloseTo(sigmaS_NPerMm2, 2); // 鉄筋応力度 [N/mm2]
   });
 });
