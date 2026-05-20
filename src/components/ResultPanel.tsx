@@ -1,39 +1,19 @@
 import type { ReactNode } from "react";
-import { AppButton } from "@/components/AppButton";
 import type { FormState } from "@/forms/form-state";
 import type { AnnularSectionResult } from "@/models/annular-section";
 import { formatNumber } from "@/utils/number-format";
 import { CrossSectionPreview } from "@/components/CrossSectionPreview";
-import { Toast } from "@/components/Toast";
-import type { SectionForceMode } from "@/components/SectionForceModeSelector";
-import { useAnnularSectionPreviewClipboard } from "@/hooks/useAnnularSectionPreviewClipboard";
-import { useTransientToast } from "@/hooks/useTransientToast";
 import { usePersistedSectionCollapse } from "@/hooks/usePersistedSectionCollapse";
 import { cn } from "@/utils/cn";
-import { LuClipboardCopy, LuPrinter } from "react-icons/lu";
 import { SelectableText } from "@/components/SelectableText";
 
 type AnnularSectionResultPanelProps = {
   form: FormState;
-  sectionForceMode: SectionForceMode;
   result: AnnularSectionResult | null;
-  onOpenPrintPreview: () => void;
 };
 
 /** 計算結果表示パネル */
-export function AnnularSectionResultPanel({
-  form,
-  sectionForceMode,
-  result,
-  onOpenPrintPreview,
-}: AnnularSectionResultPanelProps) {
-  const { message: toastMessage, isVisible: toastIsVisible, showToast } = useTransientToast();
-  const { canCopy, copyError, handleCopy } = useAnnularSectionPreviewClipboard({
-    form,
-    sectionForceMode,
-    result,
-    onCopySuccess: () => showToast("クリップボードにコピーしました。"),
-  });
+export function AnnularSectionResultPanel({ form, result }: AnnularSectionResultPanelProps) {
   const section = result?.section;
   const loading = result?.loading;
   const neutralAxis = result?.neutralAxis;
@@ -47,24 +27,7 @@ export function AnnularSectionResultPanel({
     >
       <div className="flex items-start justify-between gap-3">
         <h2>計算結果</h2>
-        <div className="flex flex-col items-end gap-2">
-          <div className="flex flex-wrap justify-end gap-2">
-            <AppButton
-              icon={LuPrinter}
-              onClick={onOpenPrintPreview}
-              disabled={result === null}
-              className="text-blue-700"
-            >
-              印刷プレビュー
-            </AppButton>
-            <AppButton icon={LuClipboardCopy} onClick={handleCopy} disabled={!canCopy}>
-              コピー
-            </AppButton>
-          </div>
-          {copyError ? <p className="text-sm text-rose-600">{copyError}</p> : null}
-        </div>
       </div>
-      {toastMessage ? <Toast message={toastMessage} isVisible={toastIsVisible} /> : null}
 
       <div className="flex flex-col gap-2">
         <CollapsibleSection title="断面図">

@@ -1,10 +1,19 @@
 import { AnnularSectionInputFormPanel } from "@/components/InputForm";
+import { Header } from "@/components/Header";
+import { MenuBar } from "@/components/MenuBar";
+import { PrintPreviewContent } from "@/components/PrintPreviewContent";
 import { AnnularSectionResultPanel } from "@/components/ResultPanel";
 import { PrintPreviewModal } from "@/components/PrintPreviewModal";
 import { useAnnularSectionPageState } from "@/hooks/usePageState";
-import { FaGithub } from "react-icons/fa";
+import { useAnnularSectionPreviewClipboard } from "@/hooks/useAnnularSectionPreviewClipboard";
+import { Toast } from "@/components/Toast";
+import { printElementContent } from "@/utils/print-preview-frame";
+import { useRef } from "react";
+import { useTransientToast } from "@/hooks/useTransientToast";
 
 function App() {
+  const printPreviewContentRef = useRef<HTMLDivElement | null>(null);
+  const { message: toastMessage, isVisible: toastIsVisible, showToast } = useTransientToast();
   const {
     form,
     committedForm,
@@ -20,29 +29,50 @@ function App() {
     openPrintPreview,
     closePrintPreview,
   } = useAnnularSectionPageState();
+  const { canCopy, copyError, handleCopy } = useAnnularSectionPreviewClipboard({
+    form: committedForm,
+    sectionForceMode,
+    result,
+    onCopySuccess: () => showToast("クリップボードにコピーしました。"),
+  });
+
+  const handlePrint = async () => {
+    const printRoot = printPreviewContentRef.current;
+
+    if (!printRoot) {
+      window.print();
+      return;
+    }
+
+    try {
+      await printElementContent(printRoot);
+    } catch {
+      window.print();
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-100">
-      {/* ヘッダー */}
-      <header className="overflow-hidden border-b border-slate-300 bg-white px-4 pt-3 pb-1">
-        <div className="flex items-end justify-between gap-4 sm:items-center">
-          <h1 className="flex flex-col gap-1 text-xl sm:flex-row sm:items-end">
-            RC断面計算【円環断面】
-            <small className="pb-1 font-mono text-xs text-slate-500">ver {__APP_VERSION__}</small>
-          </h1>
-          <div className="flex flex-col items-end gap-1 max-sm:pb-1">
-            <a
-              href="https://github.com/sstools-jp/rc"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1 text-sm text-slate-500 transition-colors hover:text-slate-900"
-            >
-              <FaGithub className="h-5 w-5" aria-hidden="true" />
-              sstools-jp/rc
-            </a>
-          </div>
-        </div>
-      </header>
+      <Header />
+      <MenuBar
+        onPrint={handlePrint}
+        onOpenPrintPreview={openPrintPreview}
+        onCopyClipboard={handleCopy}
+        canCopy={canCopy}
+        copyError={copyError}
+        isPrintPreviewEnabled={result !== null}
+      />
+
+      <div aria-hidden="true" className="fixed top-0 left-[-10000px] h-0 w-0 overflow-hidden">
+        <PrintPreviewContent
+          ref={printPreviewContentRef}
+          form={committedForm}
+          sectionForceMode={sectionForceMode}
+          result={result}
+        />
+      </div>
+
+      {toastMessage ? <Toast message={toastMessage} isVisible={toastIsVisible} /> : null}
 
       <main className="mx-auto flex w-full flex-wrap items-start justify-center gap-6 px-4 pt-6 pb-8">
         {/* 入力フォームパネル */}
@@ -58,12 +88,7 @@ function App() {
         />
 
         {/* 結果表示パネル */}
-        <AnnularSectionResultPanel
-          form={committedForm}
-          sectionForceMode={sectionForceMode}
-          result={result}
-          onOpenPrintPreview={openPrintPreview}
-        />
+        <AnnularSectionResultPanel form={committedForm} result={result} />
       </main>
 
       <PrintPreviewModal
