@@ -23,6 +23,9 @@ function validateSectionForce(
 
   for (const [key, label] of Object.entries(forceLabels)) {
     const value = force?.[key as keyof SectionForce];
+    if (value === undefined) {
+      continue;
+    }
     if (!Number.isFinite(value)) {
       const field: AnnularSectionValidationIssue["field"] = key as keyof SectionForce;
       issues.push({ field, message: `${label}は数値で指定してください。` });

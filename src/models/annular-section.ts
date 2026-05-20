@@ -128,7 +128,7 @@ export class AnnularSectionCalculator {
       },
       loading: {
         combinedMoment_KNm: context.combinedMoment_KNm,
-        axialForceSign: classifyAxialForce(context.force.fx_KN),
+        axialForceSign: classifyAxialForce(context.force.fx_KN ?? 0),
       },
       neutralAxis: {
         neutralAxisAngleDeg: solver.neutralAxisAngleDeg,
