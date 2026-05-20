@@ -3,10 +3,9 @@ import { useRef } from "react";
 import type { AnnularSectionResult } from "@/models/annular-section";
 import type { FormState } from "@/forms/form-state";
 import { AppButton } from "@/components/AppButton";
-import { PrintPreviewTable } from "@/components/PrintPreviewTable";
 import { Toast } from "@/components/Toast";
 import { type SectionForceMode } from "@/components/SectionForceModeSelector";
-import { buildInputPreviewSections, buildResultPreviewSections } from "@/utils/print-preview-data";
+import { PrintPreviewContent } from "@/components/PrintPreviewContent";
 import { printElementContent } from "@/utils/print-preview-frame";
 import { FiPrinter, FiX } from "react-icons/fi";
 import { cn } from "@/utils/cn";
@@ -37,8 +36,6 @@ export function PrintPreviewModal({ open, form, sectionForceMode, result, onClos
     onCopySuccess: () => showToast("クリップボードにコピーしました。"),
   });
   const printContentRef = useRef<HTMLDivElement | null>(null);
-  const inputSections = buildInputPreviewSections(form, sectionForceMode);
-  const resultSections = buildResultPreviewSections(result);
 
   const handlePrintPreview = async () => {
     const printRoot = printContentRef.current;
@@ -90,30 +87,12 @@ export function PrintPreviewModal({ open, form, sectionForceMode, result, onClos
           {toastMessage ? <Toast message={toastMessage} isVisible={toastIsVisible} /> : null}
 
           <div className="overflow-auto p-4 pt-0 print:overflow-visible print:p-0">
-            <div
+            <PrintPreviewContent
               ref={printContentRef}
-              className={cn(
-                "rounded-sm bg-white p-8 shadow-sm",
-                "print:rounded-none print:p-0 print:shadow-none",
-              )}
-            >
-              <h4 className="mb-4 text-center text-xl font-semibold">RC断面計算【円環断面】</h4>
-              <PrintPreviewTable
-                title="入力値"
-                sections={inputSections}
-                valueHeader="入力値"
-                includeSectionLabel
-              />
-
-              <div className="h-8" />
-
-              <PrintPreviewTable
-                title="計算結果"
-                sections={resultSections}
-                valueHeader="計算値"
-                includeSectionLabel={false}
-              />
-            </div>
+              form={form}
+              sectionForceMode={sectionForceMode}
+              result={result}
+            />
           </div>
         </DialogPanel>
       </div>
