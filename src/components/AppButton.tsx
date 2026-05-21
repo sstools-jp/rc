@@ -55,7 +55,7 @@ export function AppButton({
       )}
     >
       {Icon ? <Icon className="h-5 w-5 shrink-0" aria-hidden={true} /> : null}
-      <span className="transition-transform duration-75 group-active:translate-y-px">{children}</span>
+      <span className="pt-0.5 transition-transform duration-75 group-active:translate-y-px">{children}</span>
     </Button>
   );
 }

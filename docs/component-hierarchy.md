@@ -11,6 +11,7 @@
 flowchart TB
   Main["src/main.tsx"] --> App["App"]
   App --> InputFormPanel["AnnularSectionInputFormPanel"]
+  App --> PreviewPanel["AnnularSectionPreviewPanel"]
   App --> ResultPanel["AnnularSectionResultPanel"]
   App --> PrintPreviewModal["PrintPreviewModal"]
   App --> StatusBar["StatusBar"]
@@ -34,8 +35,8 @@ flowchart TB
 ```mermaid
 %%{init: {'flowchart': {'curve': 'linear'}} }%%
 flowchart TB
+  PreviewPanel["AnnularSectionPreviewPanel"] --> CrossSectionPreview["CrossSectionPreview"]
   ResultPanel["AnnularSectionResultPanel"] --> AppButton["AppButton"]
-  ResultPanel --> CrossSectionPreview["CrossSectionPreview"]
   ResultPanel --> CollapsibleSection["CollapsibleSection"]
   ResultPanel --> ResultCell["ResultCell"]
   CrossSectionPreview --> PreviewLegend["PreviewLegend"]
@@ -60,7 +61,9 @@ flowchart TB
   - 内部の `FieldRow`、`FieldInput`、`FieldSelect`
 - [src/components/ResultPanel.tsx](../src/components/ResultPanel.tsx)
   - 結果表示パネル
-  - 折りたたみセクション、断面プレビュー
+- [src/components/SectionPreviewPanel.tsx](../src/components/SectionPreviewPanel.tsx)
+  - 断面図表示パネル
+  - `CrossSectionPreview`
 - [src/components/PrintPreviewModal.tsx](../src/components/PrintPreviewModal.tsx)
   - 印刷プレビュー用のモーダル
   - 印刷・コピー用の操作部品

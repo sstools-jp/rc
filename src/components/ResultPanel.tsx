@@ -1,39 +1,14 @@
 import type { ReactNode } from "react";
-import { AppButton } from "@/components/AppButton";
-import type { FormState } from "@/forms/form-state";
 import type { AnnularSectionResult } from "@/models/annular-section";
 import { formatNumber } from "@/utils/number-format";
-import { CrossSectionPreview } from "@/components/CrossSectionPreview";
-import { Toast } from "@/components/Toast";
-import type { SectionForceMode } from "@/components/SectionForceModeSelector";
-import { useAnnularSectionPreviewClipboard } from "@/hooks/useAnnularSectionPreviewClipboard";
-import { useTransientToast } from "@/hooks/useTransientToast";
 import { usePersistedSectionCollapse } from "@/hooks/usePersistedSectionCollapse";
 import { cn } from "@/utils/cn";
-import { LuClipboardCopy, LuPrinter } from "react-icons/lu";
 import { SelectableText } from "@/components/SelectableText";
 
-type AnnularSectionResultPanelProps = {
-  form: FormState;
-  sectionForceMode: SectionForceMode;
-  result: AnnularSectionResult | null;
-  onOpenPrintPreview: () => void;
-};
+import { SectionCard } from "@/components/SectionCard";
 
 /** 計算結果表示パネル */
-export function AnnularSectionResultPanel({
-  form,
-  sectionForceMode,
-  result,
-  onOpenPrintPreview,
-}: AnnularSectionResultPanelProps) {
-  const { message: toastMessage, isVisible: toastIsVisible, showToast } = useTransientToast();
-  const { canCopy, copyError, handleCopy } = useAnnularSectionPreviewClipboard({
-    form,
-    sectionForceMode,
-    result,
-    onCopySuccess: () => showToast("クリップボードにコピーしました。"),
-  });
+export function AnnularSectionResultPanel({ result }: { result: AnnularSectionResult | null }) {
   const section = result?.section;
   const loading = result?.loading;
   const neutralAxis = result?.neutralAxis;
@@ -41,36 +16,8 @@ export function AnnularSectionResultPanel({
   const strength = result?.strength;
 
   return (
-    <section
-      aria-live="polite"
-      className="flex w-md flex-col rounded-sm border border-slate-300 bg-white p-5"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <h2>計算結果</h2>
-        <div className="flex flex-col items-end gap-2">
-          <div className="flex flex-wrap justify-end gap-2">
-            <AppButton
-              icon={LuPrinter}
-              onClick={onOpenPrintPreview}
-              disabled={result === null}
-              className="text-blue-700"
-            >
-              印刷プレビュー
-            </AppButton>
-            <AppButton icon={LuClipboardCopy} onClick={handleCopy} disabled={!canCopy}>
-              コピー
-            </AppButton>
-          </div>
-          {copyError ? <p className="text-sm text-rose-600">{copyError}</p> : null}
-        </div>
-      </div>
-      {toastMessage ? <Toast message={toastMessage} isVisible={toastIsVisible} /> : null}
-
-      <div className="flex flex-col gap-2">
-        <CollapsibleSection title="断面図">
-          <CrossSectionPreview form={form} result={result} />
-        </CollapsibleSection>
-
+    <SectionCard title="計算結果">
+      <div className="flex w-full flex-col gap-2">
         <CollapsibleSection title="中立軸および換算曲げモーメント" defaultOpen>
           <ResultCell
             label="中立軸角度"
@@ -137,7 +84,7 @@ export function AnnularSectionResultPanel({
           <ResultCell label="せん断係数" value={formatNumber(neutralAxis?.shearCoefficient, 4)} />
         </CollapsibleSection>
       </div>
-    </section>
+    </SectionCard>
   );
 }
 
@@ -177,12 +124,12 @@ function CollapsibleSection({ title, defaultOpen = false, children }: Collapsibl
           type="button"
           onClick={toggleOpen}
           aria-expanded={isOpen}
-          className="flex items-center gap-2 rounded-sm text-left font-semibold text-slate-600 outline-none hover:text-blue-700"
+          className="flex items-center gap-1.5 rounded-sm text-left text-sm text-slate-700 outline-none hover:text-blue-700"
         >
           <span
             aria-hidden="true"
             className={cn(
-              "inline-block h-0 w-0 shrink-0 border-y-[5px] border-l-[7px] border-y-transparent border-l-slate-600",
+              "inline-block h-0 w-0 shrink-0 border-y-[5px] border-l-[7px] border-y-transparent border-l-slate-500",
               isOpen ? "rotate-90" : "rotate-0",
             )}
           />

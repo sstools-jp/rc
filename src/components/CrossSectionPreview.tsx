@@ -76,7 +76,7 @@ export function CrossSectionPreview({ form, result }: CrossSectionPreviewProps) 
   const neutralAxisColor = "#cf172a";
 
   return (
-    <div className="space-y-3 p-3">
+    <div className="w-full space-y-3 p-3">
       <div className="flex justify-center rounded-xs border border-slate-200 bg-white p-2">
         <svg
           viewBox={`${-viewBoxRadius} ${-viewBoxRadius} ${viewBoxRadius * 2} ${viewBoxRadius * 2}`}
