@@ -2,6 +2,7 @@ import { AnnularSectionInputFormPanel } from "@/components/InputForm";
 import { Header } from "@/components/Header";
 import { MenuBar } from "@/components/MenuBar";
 import { PrintPreviewContent } from "@/components/PrintPreviewContent";
+import { AnnularSectionPreviewPanel } from "@/components/SectionPreviewPanel";
 import { AnnularSectionResultPanel } from "@/components/ResultPanel";
 import { PrintPreviewModal } from "@/components/PrintPreviewModal";
 import { useAnnularSectionPageState } from "@/hooks/usePageState";
@@ -63,7 +64,8 @@ function App() {
         isPrintPreviewEnabled={result !== null}
       />
 
-      <div aria-hidden="true" className="fixed top-0 left-[-10000px] h-0 w-0 overflow-hidden">
+      {/* 印刷プレビュー */}
+      <div aria-hidden="true" className="fixed top-0 -left-2500 h-0 w-0 overflow-hidden">
         <PrintPreviewContent
           ref={printPreviewContentRef}
           form={committedForm}
@@ -74,21 +76,24 @@ function App() {
 
       {toastMessage ? <Toast message={toastMessage} isVisible={toastIsVisible} /> : null}
 
-      <main className="mx-auto flex w-full flex-wrap items-start justify-center gap-6 px-4 pt-6 pb-8">
-        {/* 入力フォームパネル */}
-        <AnnularSectionInputFormPanel
-          form={form}
-          issues={issues}
-          onSubmit={handleSubmit}
-          onReset={handleReset}
-          onChangeField={updateField}
-          onCommitField={commitField}
-          sectionForceMode={sectionForceMode}
-          onChangeSectionForceMode={updateSectionForceMode}
-        />
-
-        {/* 結果表示パネル */}
-        <AnnularSectionResultPanel form={committedForm} result={result} />
+      <main className="flex w-full">
+        <div className="m-4 columns-1 gap-2 min-[810px]:columns-2 min-[1210px]:columns-3">
+          {/* 入力フォームパネル */}
+          <AnnularSectionInputFormPanel
+            form={form}
+            issues={issues}
+            onSubmit={handleSubmit}
+            onReset={handleReset}
+            onChangeField={updateField}
+            onCommitField={commitField}
+            sectionForceMode={sectionForceMode}
+            onChangeSectionForceMode={updateSectionForceMode}
+          />
+          {/* 結果表示パネル */}
+          <AnnularSectionResultPanel result={result} />
+          {/* 断面図プレビュー */}
+          <AnnularSectionPreviewPanel form={committedForm} result={result} />
+        </div>
       </main>
 
       <PrintPreviewModal

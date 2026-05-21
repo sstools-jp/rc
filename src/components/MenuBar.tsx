@@ -20,7 +20,7 @@ export function MenuBar({
   isPrintPreviewEnabled,
 }: MenuBarProps) {
   return (
-    <nav className="flex flex-wrap items-center gap-1 border-b border-slate-300 bg-white px-4 py-2">
+    <nav className="flex flex-wrap items-center gap-1 border-b border-slate-300 bg-white px-4 py-1">
       <AppButton
         icon={LuPrinter}
         onClick={onPrint}

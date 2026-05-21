@@ -13,7 +13,7 @@ type FieldRowProps = {
 
 export function FieldRow({ label, symbol, unit, children }: FieldRowProps) {
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_3rem_4rem_6rem] divide-x divide-slate-400 border-b border-slate-400 last:border-b-0">
+    <div className="grid grid-cols-[minmax(0,1fr)_2.5rem_3rem_4rem] divide-x divide-slate-400 border-b border-slate-400 last:border-b-0">
       <div className="px-2 py-1">{label}</div>
       <div className="px-1 py-1 text-center font-mono">
         <SymbolText value={symbol} />
@@ -26,7 +26,7 @@ export function FieldRow({ label, symbol, unit, children }: FieldRowProps) {
 
 export function FieldGridHeader() {
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_3rem_4rem_6rem] divide-x divide-slate-400 border-b border-slate-400 bg-slate-200/50 text-xs font-semibold tracking-wider text-slate-600">
+    <div className="grid grid-cols-[minmax(0,1fr)_2.5rem_3rem_4rem] divide-x divide-slate-400 border-b border-slate-400 bg-slate-200/50 text-xs font-semibold tracking-wider text-slate-600">
       <div className="px-2 py-1 text-center">項目名</div>
       <div className="px-1 py-1 text-center">記号</div>
       <div className="px-1 py-1 text-center">単位</div>
@@ -142,7 +142,7 @@ export function RebarFieldRow({ form, onChangeField, onCommitField }: RebarField
   const unit = isRound ? "mm" : "-";
 
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_3rem_4rem_6rem] divide-x divide-slate-400 border-b border-slate-400 last:border-b-0">
+    <div className="grid grid-cols-[minmax(0,1fr)_2.5rem_3rem_4rem] divide-x divide-slate-400 border-b border-slate-400 last:border-b-0">
       <div className="px-2 py-1 align-top">
         <div className="flex flex-col gap-1">
           <span>鉄筋径</span>
@@ -210,7 +210,7 @@ export function RebarStrengthFieldRow({ form, onChangeField, onCommitField }: Re
   const isMaterialMode = form.rebarStrengthMode === "material";
 
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_3rem_4rem_6rem] divide-x divide-slate-400 border-b border-slate-400 last:border-b-0">
+    <div className="grid grid-cols-[minmax(0,1fr)_2.5rem_3rem_4rem] divide-x divide-slate-400 border-b border-slate-400 last:border-b-0">
       <div className="px-2 py-1 align-top">
         <div className="flex flex-col gap-1">
           <span>鉄筋降伏強度</span>

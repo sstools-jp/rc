@@ -9,7 +9,7 @@ type SectionForceModeSelectorProps = {
 /** 断面力モード選択コンポーネント */
 export function SectionForceModeSelector({ value, onChange }: SectionForceModeSelectorProps) {
   return (
-    <fieldset className="mr-2 flex gap-4 text-sm">
+    <fieldset className="mr-1 flex gap-3 text-xs">
       <legend className="sr-only">断面力タイプ</legend>
       <label className="flex gap-1.5">
         <input
