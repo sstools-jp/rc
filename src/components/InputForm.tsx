@@ -1,6 +1,7 @@
 import type { SubmitEventHandler } from "react";
 import { AppButton } from "@/components/AppButton";
-import { SectionForceModeSelector, type SectionForceMode } from "@/components/SectionForceModeSelector";
+import MoreActionsMenu from "@/components/MoreActionsMenu";
+import type { SectionForceMode } from "@/components/SectionForceModeSelector";
 import { type AnnularSectionValidationIssue } from "@/models/annular-section";
 import { CONCRETE_DESIGN_STRENGTHS_N_PER_MM2 } from "@/models/concrete";
 import type { FormState } from "@/forms/form-state";
@@ -49,16 +50,87 @@ export function AnnularSectionInputFormPanel({
   sectionForceMode,
   onChangeSectionForceMode,
 }: AnnularSectionInputFormProps) {
+  const sectionForceMenuGroups = [
+    {
+      key: "section-force-type",
+      label: "断面力タイプ",
+      items: [
+        {
+          key: "sf-3",
+          label: "3断面力",
+          selected: sectionForceMode === "3",
+          onClick: () => onChangeSectionForceMode("3" as SectionForceMode),
+        },
+        {
+          key: "sf-6",
+          label: "6断面力",
+          selected: sectionForceMode === "6",
+          onClick: () => onChangeSectionForceMode("6" as SectionForceMode),
+        },
+      ],
+    },
+  ];
+
+  const geometryMenuGroups = [
+    {
+      key: "rebar-kind",
+      label: "鉄筋径の種類",
+      items: [
+        {
+          key: "rebar-db",
+          label: "異形棒鋼 (DB)",
+          selected: form.rebarKind === "deformed",
+          onClick: () => {
+            onChangeField("rebarKind")("deformed");
+            onCommitField("rebarKind")("deformed");
+          },
+        },
+        {
+          key: "rebar-rb",
+          label: "丸鋼 (RB)",
+          selected: form.rebarKind === "round",
+          onClick: () => {
+            onChangeField("rebarKind")("round");
+            onCommitField("rebarKind")("round");
+          },
+        },
+      ],
+    },
+    {
+      key: "rebar-strength-mode",
+      label: "鉄筋降伏強度",
+      items: [
+        {
+          key: "strength-material",
+          label: "材質選択",
+          selected: form.rebarStrengthMode === "material",
+          onClick: () => {
+            onChangeField("rebarStrengthMode")("material");
+            onCommitField("rebarStrengthMode")("material");
+          },
+        },
+        {
+          key: "strength-direct",
+          label: "直接入力",
+          selected: form.rebarStrengthMode === "direct",
+          onClick: () => {
+            onChangeField("rebarStrengthMode")("direct");
+            onCommitField("rebarStrengthMode")("direct");
+          },
+        },
+      ],
+    },
+  ];
+
   return (
     <SectionCard title="入力値">
       <form onSubmit={onSubmit} className="flex flex-col gap-1">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between">
           <h3 className="text-sm text-slate-700">断面力</h3>
-          <SectionForceModeSelector value={sectionForceMode} onChange={onChangeSectionForceMode} />
+          <MoreActionsMenu groups={sectionForceMenuGroups} />
         </div>
         <div className="overflow-hidden border border-slate-400 bg-slate-50/80 text-sm">
           <FieldGridHeader />
-          {/* 3断面力 */}
           {sectionForceMode === "3" && (
             <>
               <FieldRow label="曲げモーメント" symbol="M" unit="kN.m">
@@ -84,7 +156,6 @@ export function AnnularSectionInputFormPanel({
               </FieldRow>
             </>
           )}
-          {/* 6断面力 */}
           {sectionForceMode === "6" && (
             <>
               <FieldRow label="軸力" symbol="Fx" unit="kN">
@@ -133,8 +204,9 @@ export function AnnularSectionInputFormPanel({
           )}
         </div>
 
-        <div className="mt-4">
+        <div className="mt-4 flex items-center justify-between">
           <h3 className="text-sm text-slate-700">寸法・鉄筋</h3>
+          <MoreActionsMenu groups={geometryMenuGroups} />
         </div>
         <div className="overflow-hidden border border-slate-400 bg-slate-50/80 text-sm">
           <FieldGridHeader />
@@ -160,7 +232,12 @@ export function AnnularSectionInputFormPanel({
                 onBlur={onCommitField("rebarRadius_Mm")}
               />
             </FieldRow>
-            <RebarFieldRow form={form} onChangeField={onChangeField} onCommitField={onCommitField} />
+            <RebarFieldRow
+              label="鉄筋径"
+              form={form}
+              onChangeField={onChangeField}
+              onCommitField={onCommitField}
+            />
             <FieldRow label="鉄筋本数" symbol="H" unit="本">
               <FieldInput
                 value={form.barCount}
@@ -169,7 +246,12 @@ export function AnnularSectionInputFormPanel({
                 inputMode="decimal"
               />
             </FieldRow>
-            <RebarStrengthFieldRow form={form} onChangeField={onChangeField} onCommitField={onCommitField} />
+            <RebarStrengthFieldRow
+              label="鉄筋降伏強度"
+              form={form}
+              onChangeField={onChangeField}
+              onCommitField={onCommitField}
+            />
             <FieldRow label="コンクリート設計基準強度" symbol="σck" unit="N/mm²">
               <FieldSelect
                 value={form.concreteDesignStrength_NPerMm2}
@@ -215,3 +297,5 @@ export function AnnularSectionInputFormPanel({
     </SectionCard>
   );
 }
+
+export default AnnularSectionInputFormPanel;
