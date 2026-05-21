@@ -205,7 +205,7 @@ export function buildResultPreviewSections(result: AnnularSectionResult | null):
           value: formatNumber(section?.totalRebarArea_Mm2, 0),
         },
         {
-          label: "鉄筋比 [=As/(π*r*r)]",
+          label: "鉄筋比 (As/πr²)",
           symbol: "P",
           unit: "%",
           value: formatNumber(section?.rebarRatioPercent, 2),
