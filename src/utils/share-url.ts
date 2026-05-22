@@ -1,106 +1,115 @@
 import type { FormState } from "@/forms/form-state";
 import type { SectionForceMode } from "@/components/SectionForceModeSelector";
+import { deflateRaw, inflateRaw } from "pako";
 
-const SHARE_PARAM_KEYS = [
-  "s",
-  "fx",
-  "fy",
-  "fz",
-  "mx",
-  "my",
-  "mz",
-  "or",
-  "ir",
-  "rr",
-  "rk",
-  "rd",
-  "rdd",
-  "bc",
-  "rsm",
-  "rm",
-  "ry",
-  "cd",
-  "yr",
-] as const;
+const SHARE_PARAM_VALUE = "v";
 
+const FORM_FIELD_ORDER = [
+  "fx_KN",
+  "fy_KN",
+  "fz_KN",
+  "mx_KNm",
+  "my_KNm",
+  "mz_KNm",
+  "outerRadius_Mm",
+  "innerRadius_Mm",
+  "rebarRadius_Mm",
+  "rebarKind",
+  "rebarDiameter_Mm",
+  "roundRebarDiameter_Mm",
+  "barCount",
+  "rebarStrengthMode",
+  "rebarMaterialName",
+  "rebarYieldStrength_NPerMm2",
+  "concreteDesignStrength_NPerMm2",
+  "youngRatio",
+] as const satisfies ReadonlyArray<keyof FormState>;
+
+const PAYLOAD_LENGTH = FORM_FIELD_ORDER.length + 1;
+
+const textEncoder = new TextEncoder();
+const textDecoder = new TextDecoder();
 /** 正しい断面力モードの場合 true を返す */
 function isSectionForceMode(value: string | null): value is SectionForceMode {
   return value === "3" || value === "6";
 }
 
-/** URL クエリへ値を設定する */
-function setParam(params: URLSearchParams, key: string, value: string) {
-  params.set(key, value);
+/** Uint8Array を Base64 へ変換する */
+function bytesToBase64(bytes: Uint8Array): string {
+  let binary = "";
+
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
+  }
+
+  return btoa(binary);
 }
 
-/** パラメータが存在する場合 true を返す */
-function hasShareParams(searchParams: URLSearchParams): boolean {
-  return SHARE_PARAM_KEYS.some((key) => searchParams.has(key));
+/** Base64 文字列を Uint8Array へ変換する */
+function base64ToBytes(base64: string): Uint8Array {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+
+  return bytes;
 }
 
-/** URL クエリをフォームへ反映する */
-function applyShareParams(searchParams: URLSearchParams, rawForm: Record<string, unknown>): void {
-  for (const [key, value] of searchParams.entries()) {
-    switch (key) {
-      // 断面力
-      case "fx":
-        rawForm.fx_KN = value;
-        break;
-      case "fy":
-        rawForm.fy_KN = value;
-        break;
-      case "fz":
-        rawForm.fz_KN = value;
-        break;
-      case "mx":
-        rawForm.mx_KNm = value;
-        break;
-      case "my":
-        rawForm.my_KNm = value;
-        break;
-      case "mz":
-        rawForm.mz_KNm = value;
-        break;
-      // 断面形状
-      case "or":
-        rawForm.outerRadius_Mm = value;
-        break;
-      case "ir":
-        rawForm.innerRadius_Mm = value;
-        break;
-      case "rr":
-        rawForm.rebarRadius_Mm = value;
-        break;
-      case "rk":
-        rawForm.rebarKind = value;
-        break;
-      case "rd":
-        rawForm.rebarDiameter_Mm = value;
-        break;
-      case "rdd":
-        rawForm.roundRebarDiameter_Mm = value;
-        break;
-      case "bc":
-        rawForm.barCount = value;
-        break;
-      case "rsm":
-        rawForm.rebarStrengthMode = value;
-        break;
-      case "rm":
-        rawForm.rebarMaterialName = value;
-        break;
-      case "ry":
-        rawForm.rebarYieldStrength_NPerMm2 = value;
-        break;
-      case "cd":
-        rawForm.concreteDesignStrength_NPerMm2 = value;
-        break;
-      case "yr":
-        rawForm.youngRatio = value;
-        break;
-      default:
-        break;
+/** Base64URL 文字列にする */
+function toBase64Url(bytes: Uint8Array): string {
+  return bytesToBase64(bytes).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+/** Base64URL を Uint8Array に戻す */
+function fromBase64Url(encoded: string): Uint8Array {
+  const normalized = encoded.replace(/-/g, "+").replace(/_/g, "/");
+  const padding = (4 - (normalized.length % 4)) % 4;
+  return base64ToBytes(normalized + "=".repeat(padding));
+}
+
+/** 共有URL用の圧縮文字列を生成する */
+function encodeSharePayload(form: FormState, sectionForceMode: SectionForceMode): string {
+  const payload = [sectionForceMode, ...FORM_FIELD_ORDER.map((fieldName) => form[fieldName])] as const;
+  const compressed = deflateRaw(textEncoder.encode(JSON.stringify(payload)));
+  return toBase64Url(compressed);
+}
+
+/** 圧縮文字列をフォーム状態へ戻す */
+function decodeSharePayload(
+  encodedValue: string,
+): { rawForm: Record<string, unknown>; sectionForceMode: SectionForceMode } | null {
+  try {
+    const inflatedBytes = inflateRaw(fromBase64Url(encodedValue));
+    const parsedValue = JSON.parse(textDecoder.decode(inflatedBytes)) as unknown;
+
+    if (!Array.isArray(parsedValue) || parsedValue.length !== PAYLOAD_LENGTH) {
+      return null;
     }
+
+    const [sectionForceModeValue, ...formValues] = parsedValue;
+
+    if (!isSectionForceMode(sectionForceModeValue)) {
+      return null;
+    }
+
+    if (!formValues.every((value) => typeof value === "string")) {
+      return null;
+    }
+
+    const rawForm: Record<string, unknown> = {};
+
+    FORM_FIELD_ORDER.forEach((fieldName, index) => {
+      rawForm[fieldName] = formValues[index];
+    });
+
+    return {
+      rawForm,
+      sectionForceMode: sectionForceModeValue,
+    };
+  } catch {
+    return null;
   }
 }
 
@@ -116,24 +125,21 @@ export function resolveAnnularSectionPageStateFromUrl(
   }
 
   const searchParams = new URL(window.location.href).searchParams;
+  const encodedValue = searchParams.get(SHARE_PARAM_VALUE);
 
-  if (!hasShareParams(searchParams)) {
+  if (!encodedValue) {
     return null;
   }
 
-  const rawForm: Record<string, unknown> = {
-    ...defaults.form,
-  };
+  const decodedPayload = decodeSharePayload(encodedValue);
 
-  applyShareParams(searchParams, rawForm);
-
-  const sectionForceModeValue = searchParams.get("s");
+  if (!decodedPayload) {
+    return null;
+  }
 
   return {
-    form: normalizeForm(rawForm),
-    sectionForceMode: isSectionForceMode(sectionForceModeValue)
-      ? sectionForceModeValue
-      : defaults.sectionForceMode,
+    form: normalizeForm({ ...defaults.form, ...decodedPayload.rawForm }),
+    sectionForceMode: decodedPayload.sectionForceMode,
   };
 }
 
@@ -144,28 +150,9 @@ export function buildAnnularSectionShareUrl(form: FormState, sectionForceMode: S
   }
 
   const url = new URL(window.location.href);
-  const params = new URLSearchParams();
-
-  setParam(params, "s", sectionForceMode);
-  setParam(params, "fx", form.fx_KN);
-  setParam(params, "fy", form.fy_KN);
-  setParam(params, "fz", form.fz_KN);
-  setParam(params, "mx", form.mx_KNm);
-  setParam(params, "my", form.my_KNm);
-  setParam(params, "mz", form.mz_KNm);
-  setParam(params, "or", form.outerRadius_Mm);
-  setParam(params, "ir", form.innerRadius_Mm);
-  setParam(params, "rr", form.rebarRadius_Mm);
-  setParam(params, "rk", form.rebarKind);
-  setParam(params, "rd", form.rebarDiameter_Mm);
-  setParam(params, "rdd", form.roundRebarDiameter_Mm);
-  setParam(params, "bc", form.barCount);
-
-  setParam(params, "rsm", form.rebarStrengthMode);
-  setParam(params, "rm", form.rebarMaterialName);
-  setParam(params, "ry", form.rebarYieldStrength_NPerMm2);
-  setParam(params, "cd", form.concreteDesignStrength_NPerMm2);
-  setParam(params, "yr", form.youngRatio);
+  const params = new URLSearchParams({
+    [SHARE_PARAM_VALUE]: encodeSharePayload(form, sectionForceMode),
+  });
 
   url.search = params.toString();
   url.hash = "";
