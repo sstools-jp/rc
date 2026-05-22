@@ -17,6 +17,12 @@ import { type SectionForceMode } from "@/components/SectionForceModeSelector";
 import { parseNumber } from "@/utils/number-format";
 import { getRebarYieldStrengthMm2, isRebarKind, isRebarMaterialName } from "@/models/rebar";
 import type { ConcreteDesignStrength_NPerMm2 } from "@/models/concrete";
+import {
+  loadAnnularSectionPageStateFromStorage,
+  resolveAnnularSectionPageStateFromUrl,
+  saveAnnularSectionPageStateToStorage,
+  type AnnularSectionPageState,
+} from "@/utils/annular-section-page-state";
 
 /** 断面力のデフォルト入力値 */
 const DEFAULT_SECTION_FORCE_FORM_STATE: SectionForceFormState = {
@@ -60,11 +66,6 @@ const DEFAULT_SECTION_FORCE_MODE: SectionForceMode = "3";
 
 /** ローカルストレージ用のキー */
 const FORM_STORAGE_KEY = "rc:annular-section-form";
-
-type StoredPageState = {
-  form: FormState;
-  sectionForceMode: SectionForceMode;
-};
 
 type PageCalculationState = {
   result: AnnularSectionResult | null;
@@ -123,7 +124,8 @@ function normalizeMaterialParamsFormState(rawForm: Record<string, unknown>): For
   };
 }
 
-function resolveStoredFormState(value: unknown): FormState | null {
+/** 保存済みJSONからページ状態を復元する */
+function resolveStoredFormState(value: unknown): AnnularSectionPageState | null {
   if (typeof value !== "object" || value === null) {
     return null;
   }
@@ -131,11 +133,17 @@ function resolveStoredFormState(value: unknown): FormState | null {
   const candidate = value as Record<string, unknown>;
 
   if (isFormState(candidate.form)) {
-    return normalizeMaterialParamsFormState(candidate.form);
+    return {
+      form: normalizeMaterialParamsFormState(candidate.form),
+      sectionForceMode: resolveStoredSectionForceMode(candidate),
+    };
   }
 
   if (isFormState(value)) {
-    return normalizeMaterialParamsFormState(value);
+    return {
+      form: normalizeMaterialParamsFormState(value),
+      sectionForceMode: resolveStoredSectionForceMode(candidate),
+    };
   }
 
   return null;
@@ -159,57 +167,29 @@ function resolveStoredSectionForceMode(value: unknown): SectionForceMode {
   return DEFAULT_SECTION_FORCE_MODE;
 }
 
+/** 初期ページ状態 */
+const DEFAULT_PAGE_STATE: AnnularSectionPageState = {
+  form: DEFAULT_FORM_STATE,
+  sectionForceMode: DEFAULT_SECTION_FORCE_MODE,
+};
+
 /** ローカルストレージからページ状態を読み込む */
-function loadPageState(): StoredPageState {
-  if (typeof window === "undefined") {
-    return {
-      form: DEFAULT_FORM_STATE,
-      sectionForceMode: DEFAULT_SECTION_FORCE_MODE,
-    };
+function loadPageState(): AnnularSectionPageState {
+  const urlState = resolveAnnularSectionPageStateFromUrl(
+    DEFAULT_PAGE_STATE,
+    normalizeMaterialParamsFormState,
+  );
+
+  if (urlState) {
+    return urlState;
   }
 
-  try {
-    const storedValue = window.localStorage.getItem(FORM_STORAGE_KEY);
-    if (!storedValue) {
-      return {
-        form: DEFAULT_FORM_STATE,
-        sectionForceMode: DEFAULT_SECTION_FORCE_MODE,
-      };
-    }
-
-    const parsedValue = JSON.parse(storedValue) as unknown;
-
-    const resolvedForm = resolveStoredFormState(parsedValue);
-    if (resolvedForm) {
-      return {
-        form: resolvedForm,
-        sectionForceMode: resolveStoredSectionForceMode(parsedValue),
-      };
-    }
-
-    return {
-      form: DEFAULT_FORM_STATE,
-      sectionForceMode: DEFAULT_SECTION_FORCE_MODE,
-    };
-  } catch {
-    return {
-      form: DEFAULT_FORM_STATE,
-      sectionForceMode: DEFAULT_SECTION_FORCE_MODE,
-    };
-  }
+  return loadAnnularSectionPageStateFromStorage(FORM_STORAGE_KEY, DEFAULT_PAGE_STATE, resolveStoredFormState);
 }
 
 /** ページ状態をローカルストレージに保存する */
 function savePageState(form: FormState, sectionForceMode: SectionForceMode): void {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  try {
-    window.localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify({ form, sectionForceMode }));
-  } catch {
-    // 保存に失敗しても計算処理は継続する
-  }
+  saveAnnularSectionPageStateToStorage(FORM_STORAGE_KEY, form, sectionForceMode);
 }
 
 /** フォームの状態から計算用の入力オブジェクトを構築する */

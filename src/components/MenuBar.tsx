@@ -1,12 +1,14 @@
 import { AppButton } from "@/components/AppButton";
-import { LuClipboardCopy, LuFileSearch, LuPrinter } from "react-icons/lu";
+import { LuClipboardCopy, LuFileSearch, LuLink, LuPrinter } from "react-icons/lu";
 
 type MenuBarProps = {
   onPrint: () => void;
   onOpenPrintPreview: () => void;
   onCopyClipboard: () => void;
+  onCopyShareUrl: () => void;
   canCopy: boolean;
   copyError: string | null;
+  shareUrlError: string | null;
   isPrintPreviewEnabled: boolean;
 };
 
@@ -15,8 +17,10 @@ export function MenuBar({
   onPrint,
   onOpenPrintPreview,
   onCopyClipboard,
+  onCopyShareUrl,
   canCopy,
   copyError,
+  shareUrlError,
   isPrintPreviewEnabled,
 }: MenuBarProps) {
   return (
@@ -38,9 +42,13 @@ export function MenuBar({
         印刷プレビュー
       </AppButton>
       <AppButton icon={LuClipboardCopy} onClick={onCopyClipboard} disabled={!canCopy}>
-        クリップボードにコピー
+        計算結果をコピー
+      </AppButton>
+      <AppButton icon={LuLink} onClick={onCopyShareUrl}>
+        URLをコピー
       </AppButton>
       {copyError ? <p className="text-sm text-rose-600">{copyError}</p> : null}
+      {shareUrlError ? <p className="text-sm text-rose-600">{shareUrlError}</p> : null}
     </nav>
   );
 }
