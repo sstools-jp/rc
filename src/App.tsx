@@ -8,13 +8,16 @@ import { PrintPreviewModal } from "@/components/PrintPreviewModal";
 import { useAnnularSectionPageState } from "@/hooks/usePageState";
 import { useAnnularSectionPreviewClipboard } from "@/hooks/useAnnularSectionPreviewClipboard";
 import { Toast } from "@/components/Toast";
+import { buildAnnularSectionShareUrl } from "@/utils/annular-section-page-state";
 import { printElementContent } from "@/utils/print-preview-frame";
-import { useRef } from "react";
+import { copyTextToClipboard } from "@/utils/clipboard";
+import { useRef, useState } from "react";
 import { useTransientToast } from "@/hooks/useTransientToast";
 
 function App() {
   const printPreviewContentRef = useRef<HTMLDivElement | null>(null);
   const { message: toastMessage, isVisible: toastIsVisible, showToast } = useTransientToast();
+  const [shareUrlError, setShareUrlError] = useState<string | null>(null);
   const {
     form,
     committedForm,
@@ -36,6 +39,18 @@ function App() {
     result,
     onCopySuccess: () => showToast("クリップボードにコピーしました。"),
   });
+
+  /** URL をコピーするハンドラー */
+  const handleCopyShareUrl = async () => {
+    try {
+      setShareUrlError(null);
+      const shareUrl = buildAnnularSectionShareUrl(form, sectionForceMode);
+      await copyTextToClipboard(shareUrl);
+      showToast("URLをコピーしました。");
+    } catch {
+      setShareUrlError("URLのコピーに失敗しました。");
+    }
+  };
 
   const handlePrint = async () => {
     const printRoot = printPreviewContentRef.current;
@@ -59,8 +74,10 @@ function App() {
         onPrint={handlePrint}
         onOpenPrintPreview={openPrintPreview}
         onCopyClipboard={handleCopy}
+        onCopyShareUrl={handleCopyShareUrl}
         canCopy={canCopy}
         copyError={copyError}
+        shareUrlError={shareUrlError}
         isPrintPreviewEnabled={result !== null}
       />
 
