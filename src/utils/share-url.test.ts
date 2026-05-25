@@ -24,6 +24,7 @@ const defaultFormState: FormState = {
   rebarYieldStrength_NPerMm2: "345",
   concreteDesignStrength_NPerMm2: "30",
   youngRatio: "15",
+  concreteStrengthFactor: "0.85",
 };
 
 const sampleFormState: FormState = {
@@ -45,6 +46,7 @@ const sampleFormState: FormState = {
   rebarYieldStrength_NPerMm2: "365",
   concreteDesignStrength_NPerMm2: "27",
   youngRatio: "14",
+  concreteStrengthFactor: "0.85",
 };
 
 const defaults = {
