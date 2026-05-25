@@ -1,8 +1,6 @@
-import type { ReactNode } from "react";
 import type { AnnularSectionResult } from "@/models/annular-section";
 import { formatNumber } from "@/utils/number-format";
-import { usePersistedSectionCollapse } from "@/hooks/usePersistedSectionCollapse";
-import { cn } from "@/utils/cn";
+import AccordionSection from "@/components/AccordionSection";
 import { SelectableText } from "@/components/SelectableText";
 
 import { SectionCard } from "@/components/SectionCard";
@@ -18,7 +16,7 @@ export function AnnularSectionResultPanel({ result }: { result: AnnularSectionRe
   return (
     <SectionCard title="計算結果">
       <div className="flex w-full flex-col gap-2">
-        <CollapsibleSection title="中立軸および換算曲げモーメント" defaultOpen>
+        <AccordionSection title="中立軸および換算曲げモーメント" defaultOpen>
           <ResultCell
             label="中立軸角度"
             value={formatNumber(neutralAxis?.neutralAxisAngleDeg, 4)}
@@ -34,9 +32,9 @@ export function AnnularSectionResultPanel({ result }: { result: AnnularSectionRe
             value={formatNumber(loading?.combinedMoment_KNm, 1)}
             unit="kN.m"
           />
-        </CollapsibleSection>
+        </AccordionSection>
 
-        <CollapsibleSection title="発生応力度" defaultOpen>
+        <AccordionSection title="発生応力度" defaultOpen>
           <ResultCell
             label="コンクリート圧縮応力度"
             value={formatNumber(stress?.concreteCompressionStress_NPerMm2, 2)}
@@ -53,9 +51,9 @@ export function AnnularSectionResultPanel({ result }: { result: AnnularSectionRe
             value={formatNumber(stress?.rebarShearStress_NPerMm2, 2)}
             unit="N/mm²"
           />
-        </CollapsibleSection>
+        </AccordionSection>
 
-        <CollapsibleSection title="終局耐力" defaultOpen>
+        <AccordionSection title="終局耐力" defaultOpen>
           <ResultCell
             label="コンクリート終局曲げモーメント"
             value={formatNumber(strength?.concreteUltimateMoment_KNm, 0)}
@@ -66,14 +64,14 @@ export function AnnularSectionResultPanel({ result }: { result: AnnularSectionRe
             value={formatNumber(strength?.rebarYieldMoment_KNm, 0)}
             unit="kN.m"
           />
-        </CollapsibleSection>
+        </AccordionSection>
 
-        <CollapsibleSection title="断面情報" defaultOpen>
+        <AccordionSection title="断面情報" defaultOpen>
           <ResultCell label="鉄筋総断面積" value={formatNumber(section?.totalRebarArea_Mm2, 0)} unit="mm²" />
           <ResultCell label="鉄筋比" value={formatNumber(section?.rebarRatioPercent, 2)} unit="%" />
-        </CollapsibleSection>
+        </AccordionSection>
 
-        <CollapsibleSection title="係数">
+        <AccordionSection title="係数">
           <ResultCell label="α" value={formatNumber(section?.alpha, 4)} />
           <ResultCell label="γ" value={formatNumber(section?.gamma, 4)} />
           <ResultCell
@@ -82,7 +80,7 @@ export function AnnularSectionResultPanel({ result }: { result: AnnularSectionRe
           />
           <ResultCell label="鋼材応力度係数" value={formatNumber(neutralAxis?.steelStressCoefficient, 4)} />
           <ResultCell label="せん断係数" value={formatNumber(neutralAxis?.shearCoefficient, 4)} />
-        </CollapsibleSection>
+        </AccordionSection>
       </div>
     </SectionCard>
   );
@@ -104,42 +102,5 @@ function ResultCell({ label, value, unit }: ResultCellProps) {
         {unit ? <span className="inline-block w-8 text-left text-slate-700 select-none">{unit}</span> : null}
       </div>
     </article>
-  );
-}
-
-type CollapsibleSectionProps = {
-  title: string;
-  defaultOpen?: boolean;
-  children: ReactNode;
-};
-
-/** 折りたたみ可能なセクションコンポーネント */
-function CollapsibleSection({ title, defaultOpen = false, children }: CollapsibleSectionProps) {
-  const { isOpen, toggleOpen } = usePersistedSectionCollapse(title, defaultOpen);
-
-  return (
-    <section className="space-y-1">
-      <h3>
-        <button
-          type="button"
-          onClick={toggleOpen}
-          aria-expanded={isOpen}
-          className="flex items-center gap-1.5 rounded-sm text-left text-sm text-slate-700 outline-none hover:text-blue-700"
-        >
-          <span
-            aria-hidden="true"
-            className={cn(
-              "inline-block h-0 w-0 shrink-0 border-y-[5px] border-l-[7px] border-y-transparent border-l-slate-500",
-              isOpen ? "rotate-90" : "rotate-0",
-            )}
-          />
-          <span>{title}</span>
-        </button>
-      </h3>
-
-      {isOpen ? (
-        <div className="mb-2 overflow-hidden border border-slate-400 bg-slate-50/80">{children}</div>
-      ) : null}
-    </section>
   );
 }
