@@ -32,6 +32,8 @@ export interface AnnularSectionGeometryInput {
 export interface MaterialParams {
   /** ヤング係数比（鋼材のヤング係数 / コンクリートのヤング係数） */
   youngRatio: number;
+  /** コンクリート強度補正係数 */
+  concreteStrengthFactor: number;
   /** 鉄筋降伏強度 [N/mm2] */
   rebarYieldStrength_NPerMm2: number;
   /** コンクリート設計基準強度 [N/mm2] */

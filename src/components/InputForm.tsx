@@ -14,6 +14,7 @@ import {
   RebarStrengthFieldRow,
 } from "@/components/InputFormFields";
 import { SectionCard } from "@/components/SectionCard";
+import { usePersistedMaterialParamsEditable } from "../hooks/usePersistedMaterialParamsEditable";
 
 const CONCRETE_DESIGN_STRENGTH_OPTIONS = CONCRETE_DESIGN_STRENGTHS_N_PER_MM2.map((strength) => ({
   value: String(strength),
@@ -50,6 +51,14 @@ export function AnnularSectionInputFormPanel({
   sectionForceMode,
   onChangeSectionForceMode,
 }: AnnularSectionInputFormProps) {
+  const {
+    youngRatioEditable: canEditYoungRatio,
+    concreteStrengthFactorEditable: canEditConcreteStrengthFactor,
+    setYoungRatioEditable,
+    setConcreteStrengthFactorEditable,
+  } = usePersistedMaterialParamsEditable();
+
+  /** 断面力のオプションメニュー */
   const sectionForceMenuGroups = [
     {
       key: "section-force-type",
@@ -71,6 +80,7 @@ export function AnnularSectionInputFormPanel({
     },
   ];
 
+  /** 寸法・鉄筋のオプションメニュー */
   const geometryMenuGroups = [
     {
       key: "rebar-kind",
@@ -96,6 +106,10 @@ export function AnnularSectionInputFormPanel({
         },
       ],
     },
+  ];
+
+  /** 諸係数のオプションメニュー */
+  const materialParamsMenuGroups = [
     {
       key: "rebar-strength-mode",
       label: "鉄筋降伏強度",
@@ -111,12 +125,30 @@ export function AnnularSectionInputFormPanel({
         },
         {
           key: "strength-direct",
-          label: "直接入力",
-          selected: form.rebarStrengthMode === "direct",
+          label: "数値入力",
+          selected: form.rebarStrengthMode === "numeric",
           onClick: () => {
-            onChangeField("rebarStrengthMode")("direct");
-            onCommitField("rebarStrengthMode")("direct");
+            onChangeField("rebarStrengthMode")("numeric");
+            onCommitField("rebarStrengthMode")("numeric");
           },
+        },
+      ],
+    },
+    {
+      key: "change-enable",
+      label: "編集を有効化",
+      items: [
+        {
+          key: "young-ratio",
+          label: "ヤング係数比",
+          selected: canEditYoungRatio,
+          onClick: () => setYoungRatioEditable((current) => !current),
+        },
+        {
+          key: "concrete-strength-factor",
+          label: "コンクリート強度補正係数",
+          selected: canEditConcreteStrengthFactor,
+          onClick: () => setConcreteStrengthFactorEditable((current) => !current),
         },
       ],
     },
@@ -246,6 +278,16 @@ export function AnnularSectionInputFormPanel({
                 inputMode="decimal"
               />
             </FieldRow>
+          </div>
+        </div>
+
+        <div className="mt-4 flex items-center justify-between">
+          <h3 className="text-sm text-slate-700">諸係数</h3>
+          <MoreActionsMenu groups={materialParamsMenuGroups} />
+        </div>
+        <div className="overflow-hidden border border-slate-400 bg-slate-50/80 text-sm">
+          <FieldGridHeader />
+          <div>
             <RebarStrengthFieldRow
               label="鉄筋降伏強度"
               form={form}
@@ -267,6 +309,15 @@ export function AnnularSectionInputFormPanel({
                 value={form.youngRatio}
                 onChange={onChangeField("youngRatio")}
                 onBlur={onCommitField("youngRatio")}
+                readOnly={!canEditYoungRatio}
+              />
+            </FieldRow>
+            <FieldRow label="コンクリート強度補正係数" symbol="kc" unit="-">
+              <FieldInput
+                value={form.concreteStrengthFactor}
+                onChange={onChangeField("concreteStrengthFactor")}
+                onBlur={onCommitField("concreteStrengthFactor")}
+                readOnly={!canEditConcreteStrengthFactor}
               />
             </FieldRow>
           </div>

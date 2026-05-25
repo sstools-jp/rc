@@ -35,7 +35,7 @@ export const PrintPreviewContent = forwardRef<HTMLDivElement, PrintPreviewConten
         <PrintPreviewTable
           title="計算結果"
           sections={resultSections}
-          valueHeader="計算値"
+          valueHeader="算出値"
           includeSectionLabel={false}
         />
       </div>

@@ -1,0 +1,45 @@
+import type { ReactNode } from "react";
+import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react";
+import { FiChevronRight } from "react-icons/fi";
+import { usePersistedSectionCollapse } from "@/hooks/usePersistedSectionCollapse";
+import { cn } from "@/utils/cn";
+
+type AccordionSectionProps = {
+  title: string;
+  defaultOpen?: boolean;
+  children: ReactNode;
+};
+
+/** アコーディオン (開閉可能) コンポーネント */
+export function AccordionSection({ title, defaultOpen = false, children }: AccordionSectionProps) {
+  const { isOpen, toggleOpen } = usePersistedSectionCollapse(title, defaultOpen);
+
+  return (
+    <Disclosure defaultOpen={isOpen}>
+      {({ open }) => (
+        <section className="space-y-1">
+          <h3>
+            <DisclosureButton
+              as="button"
+              onClick={toggleOpen}
+              aria-expanded={open}
+              className="flex items-center rounded py-0.5 pr-1 text-left text-sm text-slate-800 outline-none hover:bg-slate-100 hover:text-black"
+            >
+              <FiChevronRight
+                aria-hidden="true"
+                className={cn("h-4 w-4 shrink-0", open ? "rotate-90" : "rotate-0")}
+              />
+              <span>{title}</span>
+            </DisclosureButton>
+          </h3>
+
+          <DisclosurePanel className="mb-2 overflow-hidden border border-slate-400 bg-slate-50/80">
+            {children}
+          </DisclosurePanel>
+        </section>
+      )}
+    </Disclosure>
+  );
+}
+
+export default AccordionSection;
