@@ -49,6 +49,8 @@ export type MaterialParamsFormState = {
   concreteDesignStrength_NPerMm2: string;
   /** ヤング係数比 */
   youngRatio: string;
+  /** コンクリート強度補正係数 */
+  concreteStrengthFactor: string;
 };
 
 /** フォームの状態を表す型定義 */

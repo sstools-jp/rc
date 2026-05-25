@@ -269,6 +269,13 @@ export function AnnularSectionInputFormPanel({
                 onBlur={onCommitField("youngRatio")}
               />
             </FieldRow>
+            <FieldRow label="コンクリート強度補正係数" symbol="kc" unit="-">
+              <FieldInput
+                value={form.concreteStrengthFactor}
+                onChange={onChangeField("concreteStrengthFactor")}
+                onBlur={onCommitField("concreteStrengthFactor")}
+              />
+            </FieldRow>
           </div>
         </div>
 

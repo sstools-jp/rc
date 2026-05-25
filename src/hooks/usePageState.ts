@@ -52,6 +52,7 @@ const DEFAULT_MATERIAL_PARAMS_FORM_STATE: MaterialParamsFormState = {
   youngRatio: "15",
   rebarYieldStrength_NPerMm2: "345",
   concreteDesignStrength_NPerMm2: "30",
+  concreteStrengthFactor: "0.85",
 };
 
 /** フォームのデフォルト入力値 */
@@ -100,6 +101,8 @@ function isFormState(value: unknown): value is FormState {
     (candidate.rebarStrengthMode === undefined || typeof candidate.rebarStrengthMode === "string") &&
     (candidate.rebarMaterialName === undefined || typeof candidate.rebarMaterialName === "string") &&
     typeof candidate.youngRatio === "string" &&
+    (candidate.concreteStrengthFactor === undefined ||
+      typeof candidate.concreteStrengthFactor === "string") &&
     typeof candidate.rebarYieldStrength_NPerMm2 === "string" &&
     typeof candidate.concreteDesignStrength_NPerMm2 === "string"
   );
@@ -237,6 +240,7 @@ function buildInput(form: FormState, sectionForceMode: SectionForceMode): Annula
       concreteDesignStrength_NPerMm2: parseNumber(
         form.concreteDesignStrength_NPerMm2,
       ) as ConcreteDesignStrength_NPerMm2,
+      concreteStrengthFactor: parseNumber(form.concreteStrengthFactor),
     },
   };
 }

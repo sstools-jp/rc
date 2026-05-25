@@ -17,6 +17,7 @@ const defaultMaterialParams: MaterialParams = {
   youngRatio: 15, // ヤング係数比
   rebarYieldStrength_NPerMm2: 345, // 鉄筋降伏強度 [N/mm2]
   concreteDesignStrength_NPerMm2: 30, // コンクリート設計基準強度 [N/mm2]
+  concreteStrengthFactor: 0.85, // コンクリート強度補正係数
 };
 
 const myForce: SectionForce = {
@@ -119,8 +120,7 @@ describe("AnnularSectionCalculator", () => {
         barCount: 16, // 鉄筋本数
       },
       materialParams: {
-        youngRatio: 15, // ヤング係数比
-        rebarYieldStrength_NPerMm2: 345, // 鉄筋降伏強度 [N/mm2]
+        ...defaultMaterialParams,
         concreteDesignStrength_NPerMm2: 24, // コンクリート設計基準強度 [N/mm2]
       },
     });
@@ -295,7 +295,9 @@ describe("AnnularSectionCalculator", () => {
     const updatedStress1 = updatedResult1.stress;
 
     // 3. 計算結果を検証（コンクリート圧縮応力度）
-    const sigmaC_NPerMm2 = 0.85 * defaultMaterialParams.concreteDesignStrength_NPerMm2;
+    const kc = defaultMaterialParams.concreteStrengthFactor;
+    const sigmaCk_NPerMm2 = defaultMaterialParams.concreteDesignStrength_NPerMm2;
+    const sigmaC_NPerMm2 = kc * sigmaCk_NPerMm2;
     expect(updatedStress1.concreteCompressionStress_NPerMm2).toBeCloseTo(sigmaC_NPerMm2, 2); // コンクリート圧縮応力度 [N/mm2]
 
     // 4. 計算結果（鉄筋終局曲げモーメント）を基に断面力を更新して再計算
