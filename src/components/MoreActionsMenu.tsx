@@ -11,20 +11,16 @@ export type MoreActionItem = {
   onClick: () => void;
   disabled?: boolean;
   selected?: boolean;
-  /** セパレータを指定する場合 true */
-  separator?: boolean;
 };
-
-export type SeparatorItem = { separator: true };
 
 export type MoreActionGroup = {
   key: string;
   label: React.ReactNode;
-  items: (MoreActionItem | SeparatorItem)[];
+  items: MoreActionItem[];
 };
 
 type MoreActionsMenuProps = {
-  items?: (MoreActionItem | SeparatorItem)[];
+  items?: MoreActionItem[];
   groups?: MoreActionGroup[];
   ariaLabel?: string;
   className?: string;
@@ -43,53 +39,36 @@ export function MoreActionsMenu({
       ? { to: "bottom end" as const, gap: 2, padding: 8 }
       : { to: "bottom start" as const, gap: 6, padding: 8 };
 
-  /** entry がセパレータ項目の場合 true を返す */
-  const isSeparatorItem = (entry: unknown): entry is SeparatorItem =>
-    typeof entry === "object" &&
-    entry !== null &&
-    "separator" in (entry as Record<string, unknown>) &&
-    (entry as Record<string, unknown>)["separator"] === true;
-
-  /** アイテム（通常項目またはセパレータ）をレンダリングするヘルパー */
-  const renderItem = (
-    entry: MoreActionItem | SeparatorItem,
-    keyBase: string,
-    idx: number,
-    isGroup = false,
-  ) => {
-    const isSep = isSeparatorItem(entry);
-    const item = entry as MoreActionItem;
-    const key = isSep ? `${keyBase}-sep-${idx}` : (item.key ?? `${keyBase}-${idx}`);
+  /** アイテムをレンダリングするヘルパー */
+  const renderItem = (entry: MoreActionItem, keyBase: string, idx: number, isGroup = false) => {
+    const item = entry;
+    const key = item.key ?? `${keyBase}-${idx}`;
     const buttonClass = isGroup
       ? "flex w-full items-center gap-1.5 rounded-sm px-2 py-1.5 text-left text-sm"
       : "flex w-full items-center gap-2 rounded-sm px-3 py-1.5 text-left text-sm";
     return (
-      <MenuItem key={key} disabled={Boolean(item?.disabled) || isSep}>
-        {({ active, disabled }) =>
-          isSep ? (
-            <div className="my-1 border-t border-slate-100" aria-hidden="true" />
-          ) : (
-            <button
-              type="button"
-              onClick={item.onClick}
-              disabled={disabled}
-              className={cn(
-                buttonClass,
-                item.selected && "bg-sky-50 text-sky-800",
-                active && "bg-slate-50",
-                !item.selected && !active && "text-slate-800",
-                disabled && "text-slate-300",
-              )}
-            >
-              {item.selected ? (
-                <LuCheck className="h-4 w-4 shrink-0 text-sky-700" aria-hidden="true" />
-              ) : (
-                <span className="h-4 w-4 shrink-0" aria-hidden="true" />
-              )}
-              <span className="whitespace-nowrap">{item.label}</span>
-            </button>
-          )
-        }
+      <MenuItem key={key} disabled={Boolean(item?.disabled)}>
+        {({ active, disabled }) => (
+          <button
+            type="button"
+            onClick={item.onClick}
+            disabled={disabled}
+            className={cn(
+              buttonClass,
+              item.selected && "bg-sky-50 text-sky-800",
+              active && "bg-slate-50",
+              !item.selected && !active && "text-slate-800",
+              disabled && "text-slate-300",
+            )}
+          >
+            {item.selected ? (
+              <LuCheck className="h-4 w-4 shrink-0 text-sky-700" aria-hidden="true" />
+            ) : (
+              <span className="h-4 w-4 shrink-0" aria-hidden="true" />
+            )}
+            <span className="whitespace-nowrap">{item.label}</span>
+          </button>
+        )}
       </MenuItem>
     );
   };
@@ -106,10 +85,16 @@ export function MoreActionsMenu({
       >
         {groups
           ? groups.map((group, groupIndex) => (
-              <div key={group.key} className={groupIndex > 0 ? "mt-1 border-t border-slate-100 pt-1" : ""}>
-                <div className="px-3 py-1.5 text-sm font-normal text-slate-700">{group.label}</div>
+              <React.Fragment key={group.key}>
+                {/* セパレータは2番目以降のグループの前にのみ表示 */}
+                {groupIndex > 0 && (
+                  <hr role="separator" aria-hidden="true" className="my-1 border-t border-slate-200" />
+                )}
+                {/* グループラベルを表示 */}
+                <div className="px-2 py-1.5 text-sm font-normal text-slate-800">{group.label}</div>
+                {/* グループ内のアイテムを表示 */}
                 {group.items.map((entry, idx) => renderItem(entry, group.key, idx, true))}
-              </div>
+              </React.Fragment>
             ))
           : items?.map((entry, idx) => renderItem(entry, "items", idx, false))}
       </MenuItems>
