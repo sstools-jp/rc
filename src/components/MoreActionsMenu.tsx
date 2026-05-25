@@ -96,10 +96,7 @@ export function MoreActionsMenu({
 
   return (
     <Menu as="div" className={`relative inline-flex ${className}`}>
-      <MenuButton
-        aria-label={ariaLabel}
-        className="rounded-sm p-0.5 hover:bg-slate-100 focus:ring-2 focus:ring-sky-300 focus:outline-none"
-      >
+      <MenuButton aria-label={ariaLabel} className="rounded-sm p-0.5 hover:bg-slate-100 focus:outline-none">
         <FiMoreHorizontal className="h-4.5 w-4.5 text-slate-700" aria-hidden="true" />
       </MenuButton>
 
