@@ -4,6 +4,12 @@ import type { FormState } from "@/forms/form-state";
 import { REBAR_DIAMETERS_MM, REBAR_MATERIALS, getRebarYieldStrengthMm2 } from "@/models/rebar";
 import { cn } from "@/utils/cn";
 
+const GRID_ROW_CLASS = cn(
+  "grid grid-cols-[minmax(0,1fr)_2.5rem_3rem_4.5rem]",
+  "divide-x divide-slate-300",
+  "border-b border-slate-300 last:border-b-0",
+);
+
 type FieldRowProps = {
   label: string;
   symbol: string;
@@ -13,7 +19,7 @@ type FieldRowProps = {
 
 export function FieldRow({ label, symbol, unit, children }: FieldRowProps) {
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_2.5rem_3rem_4rem] divide-x divide-slate-400 border-b border-slate-400 last:border-b-0">
+    <div className={GRID_ROW_CLASS}>
       <div className="px-2 py-1">{label}</div>
       <div className="px-1 py-1 text-center font-mono">
         <SymbolText value={symbol} />
@@ -26,7 +32,9 @@ export function FieldRow({ label, symbol, unit, children }: FieldRowProps) {
 
 export function FieldGridHeader() {
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_2.5rem_3rem_4rem] divide-x divide-slate-400 border-b border-slate-400 bg-slate-200/50 text-xs font-semibold tracking-wider text-slate-600">
+    <div
+      className={cn(GRID_ROW_CLASS, "bg-slate-200/50 text-xs font-semibold tracking-wider text-slate-600")}
+    >
       <div className="px-2 py-1 text-center">項目名</div>
       <div className="px-1 py-1 text-center">記号</div>
       <div className="px-1 py-1 text-center">単位</div>
@@ -44,8 +52,8 @@ type FieldInputProps = {
 
 export function FieldInput({ value, onChange, onBlur, inputMode = "decimal" }: FieldInputProps) {
   const className = cn(
-    "block h-full w-full border border-transparent [appearance:textfield] px-1 py-0.5 text-right font-mono outline-none box-border placeholder:text-slate-400",
-    "focus:border-amber-500 focus:ring-2 focus:ring-inset focus:ring-amber-500/15",
+    "box-border block h-full w-full [appearance:textfield] border border-transparent px-1 py-0.5 text-right font-mono outline-none placeholder:text-slate-400",
+    "focus:border-amber-500 focus:ring-2 focus:ring-amber-500/15 focus:ring-inset",
     "[&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
   );
 
@@ -84,8 +92,8 @@ type FieldSelectProps = {
 
 export function FieldSelect({ value, onChange, options }: FieldSelectProps) {
   const className = cn(
-    "block h-full w-full border border-transparent px-1 py-0.5 text-right font-mono outline-none box-border placeholder:text-slate-400",
-    "focus:border-amber-500 focus:ring-2 focus:ring-inset focus:ring-amber-500/15",
+    "box-border block h-full w-full border border-transparent px-1 py-0.5 text-right font-mono outline-none placeholder:text-slate-400",
+    "focus:border-amber-500 focus:ring-2 focus:ring-amber-500/15 focus:ring-inset",
   );
 
   return (
@@ -112,7 +120,7 @@ export function RebarFieldRow({ label, form, onChangeField, onCommitField }: Reb
   const unit = isRound ? "mm" : "-";
 
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_2.5rem_3rem_4rem] divide-x divide-slate-400 border-b border-slate-400 last:border-b-0">
+    <div className={GRID_ROW_CLASS}>
       <div className="px-2 py-1 align-top">
         <div className="flex flex-col gap-1">
           <span>{label}</span>
@@ -163,7 +171,7 @@ export function RebarStrengthFieldRow({
   const isMaterialMode = form.rebarStrengthMode === "material";
 
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_2.5rem_3rem_4rem] divide-x divide-slate-400 border-b border-slate-400 last:border-b-0">
+    <div className={GRID_ROW_CLASS}>
       <div className="px-2 py-1 align-top">
         <div className="flex flex-col gap-1">
           <span>{label}</span>
