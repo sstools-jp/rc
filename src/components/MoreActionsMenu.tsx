@@ -39,15 +39,14 @@ export function MoreActionsMenu({
       ? { to: "bottom end" as const, gap: 2, padding: 8 }
       : { to: "bottom start" as const, gap: 6, padding: 8 };
 
-  /** アイテムをレンダリングするヘルパー */
-  const renderItem = (entry: MoreActionItem, keyBase: string, idx: number, isGroup = false) => {
-    const item = entry;
-    const key = item.key ?? `${keyBase}-${idx}`;
+  /** アクション項目コンポーネント */
+  function ActionItem({ item, isGroup = false }: { item: MoreActionItem; isGroup?: boolean }) {
     const buttonClass = isGroup
       ? "flex w-full items-center gap-1.5 rounded-sm px-2 py-1.5 text-left text-sm"
       : "flex w-full items-center gap-2 rounded-sm px-3 py-1.5 text-left text-sm";
+
     return (
-      <MenuItem key={key} disabled={Boolean(item?.disabled)}>
+      <MenuItem disabled={Boolean(item?.disabled)}>
         {({ active, disabled }) => (
           <button
             type="button"
@@ -71,7 +70,7 @@ export function MoreActionsMenu({
         )}
       </MenuItem>
     );
-  };
+  }
 
   return (
     <Menu as="div" className={`relative inline-flex ${className}`}>
@@ -85,6 +84,7 @@ export function MoreActionsMenu({
       >
         {groups
           ? groups.map((group, groupIndex) => (
+              // グループがある場合はグループごとにアイテムを表示
               <React.Fragment key={group.key}>
                 {/* セパレータは2番目以降のグループの前にのみ表示 */}
                 {groupIndex > 0 && (
@@ -93,10 +93,15 @@ export function MoreActionsMenu({
                 {/* グループラベルを表示 */}
                 <div className="px-2 py-1.5 text-sm font-normal text-slate-800">{group.label}</div>
                 {/* グループ内のアイテムを表示 */}
-                {group.items.map((entry, idx) => renderItem(entry, group.key, idx, true))}
+                {group.items.map((entry, idx) => (
+                  <ActionItem key={entry.key ?? `${group.key}-${idx}`} item={entry} isGroup />
+                ))}
               </React.Fragment>
             ))
-          : items?.map((entry, idx) => renderItem(entry, "items", idx, false))}
+          : items?.map((entry, idx) => (
+              // グループがない場合は単一アイテムを表示
+              <ActionItem key={entry.key ?? `items-${idx}`} item={entry} />
+            ))}
       </MenuItems>
     </Menu>
   );
