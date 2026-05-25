@@ -122,8 +122,12 @@ export function calculateRebarYieldMoment_KNm(input: StrengthMomentSolverInput):
 
 /** コンクリート終局曲げモーメントを算出 */
 export function calculateConcreteUltimateMoment_KNm(input: StrengthMomentSolverInput): number {
-  // コンクリート終局圧縮応力度は、コンクリート設計基準強度の 0.85 倍とする
-  const sigmaC_NPerMm2 = 0.85 * input.materialParams.concreteDesignStrength_NPerMm2;
+  /** コンクリート強度補正係数 */
+  const kc = input.materialParams.concreteStrengthFactor;
+  /** コンクリート設計基準強度 [N/mm2] */
+  const sigmaCk_NPerMm2 = input.materialParams.concreteDesignStrength_NPerMm2;
+  /** コンクリート終局圧縮応力度 */
+  const sigmaC_NPerMm2 = kc * sigmaCk_NPerMm2;
 
   // 目標応力度に到達する曲げモーメントを求める
   return solveMomentForTargetStress_KNm(

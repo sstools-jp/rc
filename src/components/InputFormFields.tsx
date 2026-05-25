@@ -17,6 +17,7 @@ type FieldRowProps = {
   children: ReactNode;
 };
 
+/** フォームの入力行 */
 export function FieldRow({ label, symbol, unit, children }: FieldRowProps) {
   return (
     <div className={GRID_ROW_CLASS}>
@@ -30,6 +31,7 @@ export function FieldRow({ label, symbol, unit, children }: FieldRowProps) {
   );
 }
 
+/** フォームのヘッダー行 */
 export function FieldGridHeader() {
   return (
     <div
@@ -48,12 +50,21 @@ type FieldInputProps = {
   onChange: (value: string) => void;
   onBlur: (value: string) => void;
   inputMode?: "decimal" | "numeric";
+  readOnly?: boolean;
 };
 
-export function FieldInput({ value, onChange, onBlur, inputMode = "decimal" }: FieldInputProps) {
+/** テキスト入力フィールド */
+export function FieldInput({
+  value,
+  onChange,
+  onBlur,
+  inputMode = "decimal",
+  readOnly = false,
+}: FieldInputProps) {
   const className = cn(
     "box-border block h-full w-full [appearance:textfield] border border-transparent px-1 py-0.5 text-right font-mono outline-none placeholder:text-slate-400",
     "focus:border-amber-500 focus:ring-2 focus:ring-amber-500/15 focus:ring-inset",
+    "read-only:bg-slate-50 read-only:text-slate-600 read-only:caret-transparent read-only:focus:border-transparent read-only:focus:ring-0",
     "[&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
   );
 
@@ -64,6 +75,8 @@ export function FieldInput({ value, onChange, onBlur, inputMode = "decimal" }: F
       step="any"
       className={className}
       value={value}
+      readOnly={readOnly}
+      aria-readonly={readOnly}
       onFocus={(event) => {
         event.currentTarget.select();
       }}
@@ -90,6 +103,7 @@ type FieldSelectProps = {
   options: Array<FieldSelectOption>;
 };
 
+/** セレクトボックス入力フィールド */
 export function FieldSelect({ value, onChange, options }: FieldSelectProps) {
   const className = cn(
     "box-border block h-full w-full border border-transparent px-1 py-0.5 text-right font-mono outline-none placeholder:text-slate-400",
@@ -114,44 +128,33 @@ type RebarFieldRowProps = {
   onCommitField: (field: keyof FormState) => (value: string) => void;
 };
 
+/** 鉄筋径の入力行 */
 export function RebarFieldRow({ label, form, onChangeField, onCommitField }: RebarFieldRowProps) {
   const isRound = form.rebarKind === "round";
   const symbol = isRound ? "φ" : "D";
   const unit = isRound ? "mm" : "-";
-
   return (
-    <div className={GRID_ROW_CLASS}>
-      <div className="px-2 py-1 align-top">
-        <div className="flex flex-col gap-1">
-          <span>{label}</span>
-        </div>
-      </div>
-      <div className="flex items-center justify-center px-1 py-1 text-center font-mono">
-        <SymbolText value={symbol} />
-      </div>
-      <div className="flex items-center justify-center px-1 py-1 text-center font-mono">{unit}</div>
-      <div className="bg-white">
-        {isRound ? (
-          <FieldInput
-            value={form.roundRebarDiameter_Mm}
-            onChange={onChangeField("roundRebarDiameter_Mm")}
-            onBlur={onCommitField("roundRebarDiameter_Mm")}
-          />
-        ) : (
-          <FieldSelect
-            value={form.rebarDiameter_Mm}
-            onChange={(value) => {
-              onChangeField("rebarDiameter_Mm")(value);
-              onCommitField("rebarDiameter_Mm")(value);
-            }}
-            options={REBAR_DIAMETERS_MM.map((diameter) => ({
-              value: String(diameter),
-              label: `D${diameter}`,
-            }))}
-          />
-        )}
-      </div>
-    </div>
+    <FieldRow label={label} symbol={symbol} unit={unit}>
+      {isRound ? (
+        <FieldInput
+          value={form.roundRebarDiameter_Mm}
+          onChange={onChangeField("roundRebarDiameter_Mm")}
+          onBlur={onCommitField("roundRebarDiameter_Mm")}
+        />
+      ) : (
+        <FieldSelect
+          value={form.rebarDiameter_Mm}
+          onChange={(value) => {
+            onChangeField("rebarDiameter_Mm")(value);
+            onCommitField("rebarDiameter_Mm")(value);
+          }}
+          options={REBAR_DIAMETERS_MM.map((diameter) => ({
+            value: String(diameter),
+            label: `D${diameter}`,
+          }))}
+        />
+      )}
+    </FieldRow>
   );
 }
 
@@ -162,6 +165,7 @@ type RebarStrengthFieldRowProps = {
   onCommitField: (field: keyof FormState) => (value: string) => void;
 };
 
+/** 鉄筋強度の入力行 */
 export function RebarStrengthFieldRow({
   label,
   form,
@@ -171,42 +175,29 @@ export function RebarStrengthFieldRow({
   const isMaterialMode = form.rebarStrengthMode === "material";
 
   return (
-    <div className={GRID_ROW_CLASS}>
-      <div className="px-2 py-1 align-top">
-        <div className="flex flex-col gap-1">
-          <span>{label}</span>
-        </div>
-      </div>
-      <div className="flex items-center justify-center px-1 py-1 text-center font-mono">
-        <SymbolText value="σsy" />
-      </div>
-      <div className="flex items-center justify-center px-1 py-1 text-center font-mono">N/mm²</div>
-      <div className="bg-white">
-        {isMaterialMode ? (
-          <FieldSelect
-            value={form.rebarMaterialName}
-            onChange={(value) => {
-              onChangeField("rebarMaterialName")(value);
-              onCommitField("rebarMaterialName")(value);
-              const nextStrength = getRebarYieldStrengthMm2(
-                value as (typeof REBAR_MATERIALS)[number]["name"],
-              );
-              onChangeField("rebarYieldStrength_NPerMm2")(String(nextStrength));
-              onCommitField("rebarYieldStrength_NPerMm2")(String(nextStrength));
-            }}
-            options={REBAR_MATERIALS.map((material) => ({
-              value: material.name,
-              label: `${material.name}`,
-            }))}
-          />
-        ) : (
-          <FieldInput
-            value={form.rebarYieldStrength_NPerMm2}
-            onChange={onChangeField("rebarYieldStrength_NPerMm2")}
-            onBlur={onCommitField("rebarYieldStrength_NPerMm2")}
-          />
-        )}
-      </div>
-    </div>
+    <FieldRow label={label} symbol="σsy" unit="N/mm²">
+      {isMaterialMode ? (
+        <FieldSelect
+          value={form.rebarMaterialName}
+          onChange={(value) => {
+            onChangeField("rebarMaterialName")(value);
+            onCommitField("rebarMaterialName")(value);
+            const nextStrength = getRebarYieldStrengthMm2(value as (typeof REBAR_MATERIALS)[number]["name"]);
+            onChangeField("rebarYieldStrength_NPerMm2")(String(nextStrength));
+            onCommitField("rebarYieldStrength_NPerMm2")(String(nextStrength));
+          }}
+          options={REBAR_MATERIALS.map((material) => ({
+            value: material.name,
+            label: `${material.name}`,
+          }))}
+        />
+      ) : (
+        <FieldInput
+          value={form.rebarYieldStrength_NPerMm2}
+          onChange={onChangeField("rebarYieldStrength_NPerMm2")}
+          onBlur={onCommitField("rebarYieldStrength_NPerMm2")}
+        />
+      )}
+    </FieldRow>
   );
 }

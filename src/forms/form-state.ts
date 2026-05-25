@@ -17,7 +17,7 @@ export type SectionForceFormState = {
 };
 
 /** 鉄筋降伏強度の入力モード */
-export type RebarStrengthMode = "material" | "direct";
+export type RebarStrengthMode = "material" | "numeric";
 
 /** 断面形状のフォーム状態の型定義 */
 export type GeometryFormState = {
@@ -49,6 +49,8 @@ export type MaterialParamsFormState = {
   concreteDesignStrength_NPerMm2: string;
   /** ヤング係数比 */
   youngRatio: string;
+  /** コンクリート強度補正係数 */
+  concreteStrengthFactor: string;
 };
 
 /** フォームの状態を表す型定義 */

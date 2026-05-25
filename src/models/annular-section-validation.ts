@@ -83,10 +83,17 @@ function validateMaterialParams(
   materialParams: MaterialParams,
   issues: AnnularSectionValidationIssue[],
 ): void {
-  const { youngRatio, rebarYieldStrength_NPerMm2, concreteDesignStrength_NPerMm2 } = materialParams;
+  const { youngRatio, concreteStrengthFactor, rebarYieldStrength_NPerMm2, concreteDesignStrength_NPerMm2 } =
+    materialParams;
 
   if (!Number.isFinite(youngRatio) || youngRatio <= 0) {
     issues.push({ field: "materialParams", message: "ヤング係数比は正の数で指定してください。" });
+  }
+  if (!Number.isFinite(concreteStrengthFactor) || concreteStrengthFactor <= 0) {
+    issues.push({
+      field: "materialParams",
+      message: "コンクリート強度補正係数は正の数で指定してください。",
+    });
   }
   if (!Number.isFinite(rebarYieldStrength_NPerMm2) || rebarYieldStrength_NPerMm2 <= 0) {
     issues.push({ field: "materialParams", message: "鉄筋降伏強度は正の数で指定してください。" });
