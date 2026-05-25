@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react";
+import { FiChevronRight } from "react-icons/fi";
 import { usePersistedSectionCollapse } from "@/hooks/usePersistedSectionCollapse";
 import { cn } from "@/utils/cn";
 
@@ -22,14 +23,11 @@ export function AccordionSection({ title, defaultOpen = false, children }: Accor
               as="button"
               onClick={toggleOpen}
               aria-expanded={open}
-              className="flex items-center gap-1.5 rounded-sm text-left text-sm text-slate-700 outline-none hover:text-blue-700"
+              className="flex items-center rounded py-0.5 pr-1 text-left text-sm text-slate-800 outline-none hover:bg-slate-100 hover:text-black"
             >
-              <span
+              <FiChevronRight
                 aria-hidden="true"
-                className={cn(
-                  "inline-block h-0 w-0 shrink-0 border-y-[5px] border-l-[7px] border-y-transparent border-l-slate-500",
-                  open ? "rotate-90" : "rotate-0",
-                )}
+                className={cn("h-4 w-4 shrink-0", open ? "rotate-90" : "rotate-0")}
               />
               <span>{title}</span>
             </DisclosureButton>
