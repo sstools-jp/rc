@@ -50,6 +50,7 @@ export function AnnularSectionInputFormPanel({
   sectionForceMode,
   onChangeSectionForceMode,
 }: AnnularSectionInputFormProps) {
+  /** 断面力のオプションメニュー */
   const sectionForceMenuGroups = [
     {
       key: "section-force-type",
@@ -71,6 +72,7 @@ export function AnnularSectionInputFormPanel({
     },
   ];
 
+  /** 寸法・鉄筋のオプションメニュー */
   const geometryMenuGroups = [
     {
       key: "rebar-kind",
@@ -96,6 +98,10 @@ export function AnnularSectionInputFormPanel({
         },
       ],
     },
+  ];
+
+  /** 諸係数のオプションメニュー */
+  const materialParamsMenuGroups = [
     {
       key: "rebar-strength-mode",
       label: "鉄筋降伏強度",
@@ -246,6 +252,16 @@ export function AnnularSectionInputFormPanel({
                 inputMode="decimal"
               />
             </FieldRow>
+          </div>
+        </div>
+
+        <div className="mt-4 flex items-center justify-between">
+          <h3 className="text-sm text-slate-700">諸係数</h3>
+          <MoreActionsMenu groups={materialParamsMenuGroups} />
+        </div>
+        <div className="overflow-hidden border border-slate-400 bg-slate-50/80 text-sm">
+          <FieldGridHeader />
+          <div>
             <RebarStrengthFieldRow
               label="鉄筋降伏強度"
               form={form}
