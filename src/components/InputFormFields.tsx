@@ -48,12 +48,20 @@ type FieldInputProps = {
   onChange: (value: string) => void;
   onBlur: (value: string) => void;
   inputMode?: "decimal" | "numeric";
+  readOnly?: boolean;
 };
 
-export function FieldInput({ value, onChange, onBlur, inputMode = "decimal" }: FieldInputProps) {
+export function FieldInput({
+  value,
+  onChange,
+  onBlur,
+  inputMode = "decimal",
+  readOnly = false,
+}: FieldInputProps) {
   const className = cn(
     "box-border block h-full w-full [appearance:textfield] border border-transparent px-1 py-0.5 text-right font-mono outline-none placeholder:text-slate-400",
     "focus:border-amber-500 focus:ring-2 focus:ring-amber-500/15 focus:ring-inset",
+    "read-only:bg-slate-50 read-only:text-slate-600 read-only:caret-transparent read-only:focus:border-transparent read-only:focus:ring-0",
     "[&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
   );
 
@@ -64,6 +72,8 @@ export function FieldInput({ value, onChange, onBlur, inputMode = "decimal" }: F
       step="any"
       className={className}
       value={value}
+      readOnly={readOnly}
+      aria-readonly={readOnly}
       onFocus={(event) => {
         event.currentTarget.select();
       }}

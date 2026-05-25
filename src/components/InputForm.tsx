@@ -14,6 +14,7 @@ import {
   RebarStrengthFieldRow,
 } from "@/components/InputFormFields";
 import { SectionCard } from "@/components/SectionCard";
+import { usePersistedMaterialParamsEditable } from "../hooks/usePersistedMaterialParamsEditable";
 
 const CONCRETE_DESIGN_STRENGTH_OPTIONS = CONCRETE_DESIGN_STRENGTHS_N_PER_MM2.map((strength) => ({
   value: String(strength),
@@ -50,6 +51,13 @@ export function AnnularSectionInputFormPanel({
   sectionForceMode,
   onChangeSectionForceMode,
 }: AnnularSectionInputFormProps) {
+  const {
+    youngRatioEditable: canEditYoungRatio,
+    concreteStrengthFactorEditable: canEditConcreteStrengthFactor,
+    setYoungRatioEditable,
+    setConcreteStrengthFactorEditable,
+  } = usePersistedMaterialParamsEditable();
+
   /** 断面力のオプションメニュー */
   const sectionForceMenuGroups = [
     {
@@ -123,6 +131,24 @@ export function AnnularSectionInputFormPanel({
             onChangeField("rebarStrengthMode")("numeric");
             onCommitField("rebarStrengthMode")("numeric");
           },
+        },
+      ],
+    },
+    {
+      key: "change-enable",
+      label: "編集を有効化",
+      items: [
+        {
+          key: "young-ratio",
+          label: "ヤング係数比",
+          selected: canEditYoungRatio,
+          onClick: () => setYoungRatioEditable((current) => !current),
+        },
+        {
+          key: "concrete-strength-factor",
+          label: "コンクリート強度補正係数",
+          selected: canEditConcreteStrengthFactor,
+          onClick: () => setConcreteStrengthFactorEditable((current) => !current),
         },
       ],
     },
@@ -283,6 +309,7 @@ export function AnnularSectionInputFormPanel({
                 value={form.youngRatio}
                 onChange={onChangeField("youngRatio")}
                 onBlur={onCommitField("youngRatio")}
+                readOnly={!canEditYoungRatio}
               />
             </FieldRow>
             <FieldRow label="コンクリート強度補正係数" symbol="kc" unit="-">
@@ -290,6 +317,7 @@ export function AnnularSectionInputFormPanel({
                 value={form.concreteStrengthFactor}
                 onChange={onChangeField("concreteStrengthFactor")}
                 onBlur={onCommitField("concreteStrengthFactor")}
+                readOnly={!canEditConcreteStrengthFactor}
               />
             </FieldRow>
           </div>
