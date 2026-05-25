@@ -101,7 +101,7 @@ function ResultCell({ label, value, unit }: ResultCellProps) {
       <span className="flex-1">{label}</span>
       <div className="space-x-2 text-right font-mono">
         <SelectableText>{value}</SelectableText>
-        {unit ? <span className="inline-block w-10 text-left select-none">{unit}</span> : null}
+        {unit ? <span className="inline-block w-8 text-left text-slate-700 select-none">{unit}</span> : null}
       </div>
     </article>
   );
