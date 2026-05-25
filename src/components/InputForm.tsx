@@ -117,11 +117,11 @@ export function AnnularSectionInputFormPanel({
         },
         {
           key: "strength-direct",
-          label: "直接入力",
-          selected: form.rebarStrengthMode === "direct",
+          label: "数値入力",
+          selected: form.rebarStrengthMode === "numeric",
           onClick: () => {
-            onChangeField("rebarStrengthMode")("direct");
-            onCommitField("rebarStrengthMode")("direct");
+            onChangeField("rebarStrengthMode")("numeric");
+            onCommitField("rebarStrengthMode")("numeric");
           },
         },
       ],

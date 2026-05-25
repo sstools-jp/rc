@@ -17,7 +17,7 @@ export type SectionForceFormState = {
 };
 
 /** 鉄筋降伏強度の入力モード */
-export type RebarStrengthMode = "material" | "direct";
+export type RebarStrengthMode = "material" | "numeric";
 
 /** 断面形状のフォーム状態の型定義 */
 export type GeometryFormState = {

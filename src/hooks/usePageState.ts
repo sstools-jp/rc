@@ -74,7 +74,7 @@ type PageCalculationState = {
 };
 
 function isRebarStrengthMode(value: unknown): value is RebarStrengthMode {
-  return value === "material" || value === "direct";
+  return value === "material" || value === "numeric";
 }
 
 /** フォームの状態が有効であるかを判定する */
