@@ -80,7 +80,7 @@ export function buildInputPreviewSections(
   return [
     { title: "断面力", rows: forceRows },
     {
-      title: "寸法",
+      title: "寸法・鉄筋",
       rows: [
         {
           label: "半径（外径）",
@@ -100,11 +100,6 @@ export function buildInputPreviewSections(
           unit: "mm",
           value: formatNumber(parseNumber(form.rebarRadius_Mm), 0),
         },
-      ],
-    },
-    {
-      title: "鉄筋",
-      rows: [
         form.rebarKind === "round"
           ? {
               label: "丸鋼径",
@@ -118,7 +113,43 @@ export function buildInputPreviewSections(
               unit: "-",
               value: `D${form.rebarDiameter_Mm}`,
             },
-        { label: "本数", symbol: "H", unit: "本", value: formatNumber(parseNumber(form.barCount), 3) },
+        { label: "鉄筋本数", symbol: "H", unit: "本", value: formatNumber(parseNumber(form.barCount), 0) },
+      ],
+    },
+    {
+      title: "諸係数",
+      rows: [
+        form.rebarStrengthMode === "material"
+          ? {
+              label: "鉄筋降伏強度(材質)",
+              symbol: "fy",
+              unit: "N/mm²",
+              value: String(form.rebarMaterialName),
+            }
+          : {
+              label: "鉄筋降伏強度",
+              symbol: "fy",
+              unit: "N/mm²",
+              value: formatNumber(parseNumber(form.rebarYieldStrength_NPerMm2), 0),
+            },
+        {
+          label: "コンクリート設計基準強度",
+          symbol: "σck",
+          unit: "N/mm²",
+          value: formatNumber(parseNumber(form.concreteDesignStrength_NPerMm2), 0),
+        },
+        {
+          label: "ヤング係数比",
+          symbol: "n",
+          unit: "-",
+          value: formatNumber(parseNumber(form.youngRatio), 0),
+        },
+        {
+          label: "コンクリート強度補正係数",
+          symbol: "kc",
+          unit: "-",
+          value: formatNumber(parseNumber(form.concreteStrengthFactor), 2),
+        },
       ],
     },
   ];
@@ -138,7 +169,30 @@ export function buildResultPreviewSections(result: AnnularSectionResult | null):
 
   return [
     {
-      title: "応力度",
+      title: "中立軸・換算曲げ",
+      rows: [
+        {
+          label: "中立軸角度",
+          symbol: "θ",
+          unit: "deg",
+          value: formatNumber(neutralAxis?.neutralAxisAngleDeg, 4),
+        },
+        {
+          label: "中立軸位置",
+          symbol: "x",
+          unit: "mm",
+          value: formatNumber(neutralAxis?.neutralAxisPosition_Mm, 1),
+        },
+        {
+          label: "換算曲げモーメント",
+          symbol: "Me",
+          unit: "kN.m",
+          value: formatNumber(loading?.combinedMoment_KNm, 1),
+        },
+      ],
+    },
+    {
+      title: "発生応力度",
       rows: [
         {
           label: "コンクリート圧縮応力度",
@@ -184,22 +238,10 @@ export function buildResultPreviewSections(result: AnnularSectionResult | null):
       ],
     },
     {
-      title: "計算結果",
+      title: "断面情報",
       rows: [
         {
-          label: "中立軸の位置(圧縮端からの距離)",
-          symbol: "x",
-          unit: "mm",
-          value: formatNumber(neutralAxis?.neutralAxisPosition_Mm, 0),
-        },
-        {
-          label: "換算曲げモーメント",
-          symbol: "Me",
-          unit: "kN.m",
-          value: formatNumber(loading?.combinedMoment_KNm, 1),
-        },
-        {
-          label: "鉄筋断面積",
+          label: "鉄筋総断面積",
           symbol: "As",
           unit: "mm²",
           value: formatNumber(section?.totalRebarArea_Mm2, 0),
