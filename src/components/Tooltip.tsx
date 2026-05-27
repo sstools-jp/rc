@@ -1,13 +1,20 @@
 import React, { useEffect, useRef, useState } from "react";
 import { cn } from "@/utils/cn";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 
 export type TooltipPosition = "top" | "bottom" | "left" | "right";
 
 export interface TooltipProps {
-  content: React.ReactNode;
+  /** ツールチップの内容 (Markdownでレンダリング) */
+  content: string;
   children: React.ReactNode;
+  /** 表示位置 */
   position?: TooltipPosition;
-  delay?: number; // ms
+  /** 遅延時間 [ms] */
+  delay?: number;
   className?: string;
 }
 
@@ -123,7 +130,9 @@ export function Tooltip({ content, children, position = "top", delay = 200, clas
           className="pointer-events-none absolute z-50 transition-opacity duration-150"
         >
           <div className="rounded-sm bg-black/65 p-2 text-xs text-white shadow-lg backdrop-blur-sm sm:max-w-120">
-            {content}
+            <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeKatex]}>
+              {content}
+            </ReactMarkdown>
           </div>
         </div>
       )}
