@@ -1,9 +1,11 @@
+import { BsQuestionCircle } from "react-icons/bs";
+
 import type { AnnularSectionResult } from "@/models/annular-section";
 import { formatNumber } from "@/utils/number-format";
 import AccordionSection from "@/components/AccordionSection";
 import { SelectableText } from "@/components/SelectableText";
-
 import { SectionCard } from "@/components/SectionCard";
+import { Tooltip } from "@/components/Tooltip";
 
 /** 計算結果表示パネル */
 export function AnnularSectionResultPanel({ result }: { result: AnnularSectionResult | null }) {
@@ -90,13 +92,21 @@ type ResultCellProps = {
   label: string;
   value: string;
   unit?: string;
+  tooltip?: string;
 };
 
 /** 結果表示用セルコンポーネント */
-function ResultCell({ label, value, unit }: ResultCellProps) {
+function ResultCell({ label, value, unit, tooltip }: ResultCellProps) {
   return (
     <article className="flex border-b border-slate-400 px-3 py-1 text-sm last:border-b-0">
-      <span className="flex-1">{label}</span>
+      <span className="flex flex-1 items-center gap-1">
+        {label}
+        {tooltip && (
+          <Tooltip content={tooltip}>
+            <BsQuestionCircle className="h-4 w-4 text-slate-400 hover:text-slate-800" />
+          </Tooltip>
+        )}
+      </span>
       <div className="space-x-2 text-right font-mono">
         <SelectableText>{value}</SelectableText>
         {unit ? <span className="inline-block w-8 text-left text-slate-700 select-none">{unit}</span> : null}
