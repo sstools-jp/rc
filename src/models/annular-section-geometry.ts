@@ -24,29 +24,29 @@ export class AnnularSectionGeometry {
     return new AnnularSectionGeometry(input);
   }
 
-  /** 全断面積 [mm2] */
-  get fullSectionArea_Mm2(): number {
+  /** コンクリート外径による断面積 [mm2] */
+  get concreteOuterSectionArea_Mm2(): number {
     return Math.PI * this.outerRadius_Mm * this.outerRadius_Mm;
   }
 
-  /** 内部断面積 [mm2] */
-  get innerSectionArea_Mm2(): number {
+  /** コンクリート内径による断面積 [mm2] */
+  get concreteInnerSectionArea_Mm2(): number {
     return Math.PI * this.innerRadius_Mm * this.innerRadius_Mm;
   }
 
-  /** 断面積 [mm2] */
-  get sectionArea_Mm2(): number {
-    return this.fullSectionArea_Mm2 - this.innerSectionArea_Mm2;
+  /** コンクリート総断面積 [mm2] */
+  get concreteSectionArea_Mm2(): number {
+    return this.concreteOuterSectionArea_Mm2 - this.concreteInnerSectionArea_Mm2;
   }
 
   /** 1本あたりの鉄筋断面積 [mm2] */
-  get rebarAreaPerBar_Mm2(): number {
+  get rebarSingleArea_Mm2(): number {
     return getRebarAreaMm2ByKind(this.rebarKind, this.rebarDiameter_Mm);
   }
 
   /** 鉄筋総断面積 [mm2] */
-  get totalRebarArea_Mm2(): number {
-    return this.rebarAreaPerBar_Mm2 * this.barCount;
+  get rebarTotalArea_Mm2(): number {
+    return this.rebarSingleArea_Mm2 * this.barCount;
   }
 
   /** 極断面係数 [mm3] */
@@ -56,7 +56,7 @@ export class AnnularSectionGeometry {
 
   /** 鉄筋比 [%] */
   get rebarRatioPercent(): number {
-    return (this.totalRebarArea_Mm2 / this.fullSectionArea_Mm2) * 100;
+    return (this.rebarTotalArea_Mm2 / this.concreteSectionArea_Mm2) * 100;
   }
 
   /** 中立軸位置の係数 */

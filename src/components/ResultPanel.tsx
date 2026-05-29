@@ -73,7 +73,12 @@ export function AnnularSectionResultPanel({ result }: { result: AnnularSectionRe
         </AccordionSection>
 
         <AccordionSection title="断面積" defaultOpen>
-          <ResultCell label="鉄筋総断面積" value={formatNumber(section?.totalRebarArea_Mm2, 0)} unit="mm²" />
+          <ResultCell label="鉄筋総断面積" value={formatNumber(section?.rebarTotalArea_Mm2, 0)} unit="mm²" />
+          <ResultCell
+            label="コンクリート総断面積"
+            value={formatNumber(section?.concreteSectionArea_Mm2, 0)}
+            unit="mm²"
+          />
           <ResultCell label="鉄筋比" value={formatNumber(section?.rebarRatioPercent, 2)} unit="%" />
         </AccordionSection>
 
