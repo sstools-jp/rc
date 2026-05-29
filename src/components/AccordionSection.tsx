@@ -18,7 +18,7 @@ export function AccordionSection({ title, defaultOpen = false, children, tooltip
   const { isOpen, toggleOpen } = usePersistedSectionCollapse(title, defaultOpen);
 
   // ツールチップの内容を string に変換
-  const tooltipLines = Array.isArray(tooltip) ? tooltip.join("\n") : tooltip;
+  const tooltipLines = Array.isArray(tooltip) ? tooltip.join("\n\n") : tooltip;
 
   return (
     <Disclosure defaultOpen={isOpen}>
