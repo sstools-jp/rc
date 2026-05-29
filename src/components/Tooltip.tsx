@@ -53,14 +53,14 @@ export function Tooltip({ content, children, position = "top", delay = 200, clas
       const wrapRect = wrap.getBoundingClientRect();
       const tipRect = tip.getBoundingClientRect();
       const padding = 8;
-      const scrollX = window.scrollX || window.pageXOffset;
-      const scrollY = window.scrollY || window.pageYOffset;
+      const scrollX = 0;
+      const scrollY = 0;
       let top = 0;
       let left = 0;
       switch (position) {
         case "top":
           top = wrapRect.top + scrollY - tipRect.height - padding;
-          left = wrapRect.left + scrollX + (wrapRect.width - tipRect.width) / 2;
+          left = wrapRect.right + scrollX - tipRect.width;
           break;
         case "bottom":
           top = wrapRect.bottom + scrollY + padding;
@@ -77,15 +77,13 @@ export function Tooltip({ content, children, position = "top", delay = 200, clas
       }
 
       // 横方向は画面外に出ないように調整
-      const minLeft = scrollX + padding;
-      const maxLeft =
-        scrollX + (window.innerWidth || document.documentElement.clientWidth) - tipRect.width - padding;
+      const minLeft = padding;
+      const maxLeft = (window.innerWidth || document.documentElement.clientWidth) - tipRect.width - padding;
       left = Math.min(Math.max(left, minLeft), maxLeft);
 
       // 縦方向は画面外に出ないように調整
-      const minTop = scrollY + padding;
-      const maxTop =
-        scrollY + (window.innerHeight || document.documentElement.clientHeight) - tipRect.height - padding;
+      const minTop = padding;
+      const maxTop = (window.innerHeight || document.documentElement.clientHeight) - tipRect.height - padding;
       top = Math.min(Math.max(top, minTop), maxTop);
 
       // 座標を丸めて保存
@@ -126,10 +124,14 @@ export function Tooltip({ content, children, position = "top", delay = 200, clas
           ref={tipRef}
           role="tooltip"
           aria-hidden={!visible}
-          style={{ top: coords ? coords.top : 0, left: coords ? coords.left : 0 }}
-          className="pointer-events-none absolute z-50 transition-opacity duration-150"
+          style={{
+            top: coords ? coords.top : 0,
+            left: coords ? coords.left : 0,
+            visibility: coords ? "visible" : "hidden",
+          }}
+          className="pointer-events-none fixed z-50 transition-opacity duration-150"
         >
-          <div className="rounded-sm bg-black/75 p-2 text-sm text-white shadow-lg backdrop-blur-sm sm:max-w-120 md:text-base">
+          <div className="rounded-sm bg-black/70 p-2 text-sm text-white shadow-lg backdrop-blur-sm sm:max-w-120 md:text-base">
             <div className="tooltip-markdown prose prose-invert">
               <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
                 {content}
