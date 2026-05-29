@@ -114,7 +114,6 @@ export function Tooltip({ content, children, position = "top", delay = 200, clas
         onMouseLeave={hide}
         onFocus={show}
         onBlur={hide}
-        tabIndex={0}
       >
         {children}
       </span>
