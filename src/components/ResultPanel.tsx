@@ -1,11 +1,9 @@
-import { BsQuestionCircle } from "react-icons/bs";
-
 import type { AnnularSectionResult } from "@/models/annular-section";
 import { formatNumber } from "@/utils/number-format";
 import AccordionSection from "@/components/AccordionSection";
+import resultTooltips from "@/data/resultTooltips";
 import { SelectableText } from "@/components/SelectableText";
 import { SectionCard } from "@/components/SectionCard";
-import { Tooltip } from "@/components/Tooltip";
 
 /** 計算結果表示パネル */
 export function AnnularSectionResultPanel({ result }: { result: AnnularSectionResult | null }) {
@@ -18,7 +16,11 @@ export function AnnularSectionResultPanel({ result }: { result: AnnularSectionRe
   return (
     <SectionCard title="計算結果">
       <div className="flex w-full flex-col gap-2">
-        <AccordionSection title="中立軸および換算曲げモーメント" defaultOpen>
+        <AccordionSection
+          title="中立軸および換算曲げモーメント"
+          tooltip={resultTooltips.neutral.lines}
+          defaultOpen
+        >
           <ResultCell
             label="中立軸角度"
             value={formatNumber(neutralAxis?.neutralAxisAngleDeg, 4)}
@@ -36,7 +38,7 @@ export function AnnularSectionResultPanel({ result }: { result: AnnularSectionRe
           />
         </AccordionSection>
 
-        <AccordionSection title="発生応力度" defaultOpen>
+        <AccordionSection title="発生応力度" tooltip={resultTooltips.stress.lines} defaultOpen>
           <ResultCell
             label="コンクリート圧縮応力度"
             value={formatNumber(stress?.concreteCompressionStress_NPerMm2, 2)}
@@ -59,7 +61,7 @@ export function AnnularSectionResultPanel({ result }: { result: AnnularSectionRe
           />
         </AccordionSection>
 
-        <AccordionSection title="終局耐力" defaultOpen>
+        <AccordionSection title="終局耐力" tooltip={resultTooltips.ultimate.lines} defaultOpen>
           <ResultCell
             label="コンクリート終局曲げモーメント"
             value={formatNumber(strength?.concreteUltimateMoment_KNm, 0)}
@@ -72,7 +74,7 @@ export function AnnularSectionResultPanel({ result }: { result: AnnularSectionRe
           />
         </AccordionSection>
 
-        <AccordionSection title="断面積" defaultOpen>
+        <AccordionSection title="断面積" tooltip={resultTooltips.area.lines} defaultOpen>
           <ResultCell label="鉄筋総断面積" value={formatNumber(section?.rebarTotalArea_Mm2, 0)} unit="mm²" />
           <ResultCell
             label="コンクリート総断面積"
@@ -101,21 +103,13 @@ type ResultCellProps = {
   label: string;
   value: string;
   unit?: string;
-  tooltip?: string;
 };
 
 /** 結果表示用セルコンポーネント */
-function ResultCell({ label, value, unit, tooltip }: ResultCellProps) {
+function ResultCell({ label, value, unit }: ResultCellProps) {
   return (
     <article className="flex border-b border-slate-400 px-3 py-1 text-sm last:border-b-0">
-      <span className="flex flex-1 items-center gap-1">
-        {label}
-        {tooltip && (
-          <Tooltip content={tooltip}>
-            <BsQuestionCircle className="h-4 w-4 text-slate-400 hover:text-slate-800" />
-          </Tooltip>
-        )}
-      </span>
+      <span className="flex flex-1 items-center gap-1">{label}</span>
       <div className="space-x-2 text-right font-mono">
         <SelectableText>{value}</SelectableText>
         {unit ? <span className="inline-block w-8 text-left text-slate-700 select-none">{unit}</span> : null}
