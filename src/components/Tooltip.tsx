@@ -130,9 +130,11 @@ export function Tooltip({ content, children, position = "top", delay = 200, clas
           className="pointer-events-none absolute z-50 transition-opacity duration-150"
         >
           <div className="rounded-sm bg-black/75 p-2 text-sm text-white shadow-lg backdrop-blur-sm sm:max-w-120 md:text-base">
-            <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeKatex]}>
-              {content}
-            </ReactMarkdown>
+            <div className="tooltip-markdown prose prose-invert">
+              <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
+                {content}
+              </ReactMarkdown>
+            </div>
           </div>
         </div>
       )}
