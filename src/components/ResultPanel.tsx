@@ -42,7 +42,11 @@ export function AnnularSectionResultPanel({ result }: { result: AnnularSectionRe
             value={formatNumber(stress?.concreteCompressionStress_NPerMm2, 2)}
             unit="N/mm²"
           />
-          <ResultCell label="鉄筋応力度" value={formatNumber(stress?.rebarStress_NPerMm2, 2)} unit="N/mm²" />
+          <ResultCell
+            label="鉄筋引張応力度"
+            value={formatNumber(stress?.rebarStress_NPerMm2, 2)}
+            unit="N/mm²"
+          />
           <ResultCell
             label="コンクリートせん断応力度"
             value={formatNumber(stress?.concreteShearStress_NPerMm2, 2)}
@@ -68,7 +72,7 @@ export function AnnularSectionResultPanel({ result }: { result: AnnularSectionRe
           />
         </AccordionSection>
 
-        <AccordionSection title="断面情報" defaultOpen>
+        <AccordionSection title="断面積" defaultOpen>
           <ResultCell label="鉄筋総断面積" value={formatNumber(section?.totalRebarArea_Mm2, 0)} unit="mm²" />
           <ResultCell label="鉄筋比" value={formatNumber(section?.rebarRatioPercent, 2)} unit="%" />
         </AccordionSection>
