@@ -68,12 +68,12 @@ export function CrossSectionPreview({ form, result }: CrossSectionPreviewProps) 
       : null;
 
   // 描画用パラメータ
-  const strokeWidth = 2;
-  const dashDotLine = `${strokeWidth * 14} ${strokeWidth * 4} ${strokeWidth * 2} ${strokeWidth * 4}`;
-  const strokeColor = "#0f172a";
-  const fillColor = "#e2e8f0";
-  const rebarColor = "#b91c1c";
-  const neutralAxisColor = "#cf172a";
+  const strokeWidth = 1.5;
+  const dashDotLine = `${strokeWidth * 24} ${strokeWidth * 3} ${strokeWidth * 6} ${strokeWidth * 3}`;
+  const strokeClassName = cn("stroke-slate-800");
+  const concreteClassName = cn("bg-slate-200 fill-slate-200");
+  const rebarClassName = cn("bg-blue-700 fill-blue-700");
+  const neutralAxisClassName = cn("border-red-600 stroke-red-600");
 
   return (
     <div className="w-full space-y-3 p-3">
@@ -87,9 +87,8 @@ export function CrossSectionPreview({ form, result }: CrossSectionPreviewProps) 
           {/* 外径および内径 */}
           <path
             d={buildAnnulusPath(displayOuterRadius, displayInnerRadius)}
-            fill={fillColor}
+            className={concreteClassName}
             fillRule="evenodd"
-            stroke={strokeColor}
             strokeWidth={strokeWidth}
           />
 
@@ -117,53 +116,39 @@ export function CrossSectionPreview({ form, result }: CrossSectionPreviewProps) 
                     cx={point.x}
                     cy={point.y}
                     r={barRadius}
-                    fill={rebarColor}
+                    className={rebarClassName}
                   />
                 );
               })
             : null}
 
           {/* 外径の中心線 */}
-          <line
-            x1={-viewBoxRadius * 0.98}
-            y1="0"
-            x2={viewBoxRadius * 0.98}
-            y2="0"
-            stroke={strokeColor}
+          <CenterMark
+            x={0}
+            y={0}
+            size={displayOuterRadius * 1.2}
             strokeWidth={strokeWidth}
             strokeDasharray={dashDotLine}
-            strokeLinecap="round"
-          />
-          <line
-            x1="0"
-            y1={-viewBoxRadius * 0.98}
-            x2="0"
-            y2={viewBoxRadius * 0.98}
-            stroke={strokeColor}
-            strokeWidth={strokeWidth}
-            strokeDasharray={dashDotLine}
-            strokeLinecap="round"
+            className={strokeClassName}
           />
 
           {/* 中立軸 */}
           {neutralAxisLine !== null ? (
-            <line
-              x1={neutralAxisLine}
-              y1={-viewBoxRadius * 0.98}
-              x2={neutralAxisLine}
-              y2={viewBoxRadius * 0.98}
-              stroke={neutralAxisColor}
-              strokeDasharray={dashDotLine}
+            <VerticalCenterLine
+              x={neutralAxisLine}
+              size={viewBoxRadius * 1.2}
               strokeWidth={strokeWidth}
+              strokeDasharray={dashDotLine}
+              className={neutralAxisClassName}
             />
           ) : null}
         </svg>
       </div>
 
       <div className="flex gap-3 text-xs text-slate-600">
-        <PreviewLegend label="コンクリート" className="bg-slate-400" />
-        <PreviewLegend label="鉄筋" className="bg-red-700" />
-        <PreviewLegend label="中立軸" className="border-red-600" kind="stroke" dashed />
+        <PreviewLegend label="コンクリート" className={concreteClassName} />
+        <PreviewLegend label="鉄筋" className={rebarClassName} />
+        <PreviewLegend label="中立軸" className={neutralAxisClassName} kind="stroke" dashed />
       </div>
     </div>
   );
@@ -232,5 +217,76 @@ function PreviewLegend({ label, className, dashed = false, kind = "fill" }: Prev
       <span aria-hidden="true" className={swatchClassName} />
       <span>{label}</span>
     </div>
+  );
+}
+
+type CenterMarkProps = {
+  x: number;
+  y: number;
+  size: number;
+  strokeWidth: number;
+  strokeDasharray: string;
+  className?: string;
+};
+
+/** 円の中心線 */
+function CenterMark({ x, y, size, strokeWidth, strokeDasharray, className }: CenterMarkProps) {
+  // [X方向の倍率, Y方向の倍率] を定義 (右、下、左、上)
+  const directions = [
+    [1, 0], // 右方向 (x + size, y)
+    [0, 1], // 下方向 (x, y + size)
+    [-1, 0], // 左方向 (x - size, y)
+    [0, -1], // 上方向 (x, y - size)
+  ];
+
+  return (
+    <g className={className} aria-hidden="true">
+      {directions.map(([dx, dy], index) => (
+        <line
+          key={index}
+          x1={x}
+          y1={y}
+          x2={x + dx * size}
+          y2={y + dy * size}
+          strokeWidth={strokeWidth}
+          strokeDasharray={strokeDasharray}
+          strokeLinecap="round"
+        />
+      ))}
+    </g>
+  );
+}
+
+type VerticalCenterLineProps = {
+  x: number;
+  size: number;
+  strokeWidth: number;
+  strokeDasharray: string;
+  className?: string;
+};
+
+/** 縦中心線 */
+function VerticalCenterLine({ x, size, strokeWidth, strokeDasharray, className }: VerticalCenterLineProps) {
+  // [X方向の倍率, Y方向の倍率] を定義 (上、下)
+  const directions = [
+    [0, -1], // 上方向 (x, y - size)
+    [0, 1], // 下方向 (x, y + size)
+  ];
+
+  return (
+    <g className={className} aria-hidden="true">
+      {directions.map(([dx, dy], index) => (
+        <line
+          key={index}
+          x1={x}
+          y1={0}
+          x2={x + dx * size}
+          y2={dy * size}
+          strokeWidth={strokeWidth}
+          strokeDasharray={strokeDasharray}
+          strokeLinecap="round"
+        />
+      ))}
+    </g>
   );
 }
