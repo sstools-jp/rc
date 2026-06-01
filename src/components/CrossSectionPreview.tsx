@@ -60,7 +60,7 @@ export function CrossSectionPreview({ form, result }: CrossSectionPreviewProps) 
       : 12 * displayScale;
 
   // SVGのviewBoxの半径を計算（断面が見切れないようにmarginを追加）
-  const margin = Math.max(displayOuterRadius * 0.18, 14);
+  const margin = Math.max(displayOuterRadius * 0.18, 50);
   const viewBoxRadius = displayOuterRadius + margin;
   const neutralAxisLine =
     result && Number.isFinite(result.neutralAxis.neutralAxisPosition_Mm)
@@ -79,8 +79,8 @@ export function CrossSectionPreview({ form, result }: CrossSectionPreviewProps) 
     <div className="w-full space-y-3 p-3">
       <div className="flex justify-center rounded-xs border border-slate-200 bg-white p-2">
         <svg
-          viewBox={`${-viewBoxRadius} ${-viewBoxRadius} ${viewBoxRadius * 2} ${viewBoxRadius * 2}`}
-          className="h-64 w-full"
+          viewBox={`${-viewBoxRadius} ${-viewBoxRadius} ${viewBoxRadius * 2} ${viewBoxRadius * 2 + 60}`}
+          className="h-full w-full"
           role="img"
           aria-label="円環断面のプレビュー"
         >
@@ -129,17 +129,31 @@ export function CrossSectionPreview({ form, result }: CrossSectionPreviewProps) 
           <CenterMark
             x={0}
             y={0}
-            size={displayOuterRadius * 1.2}
+            size={displayOuterRadius * 1.15}
             strokeWidth={strokeWidth}
             strokeDasharray={dashDotLine}
             className={strokeClassName}
           />
 
+          {/* 中立軸の水平寸法 */}
+          {geometryIsValid ? (
+            <HorizontalDimension
+              x1={neutralAxisLine ?? 0}
+              y1={displayOuterRadius * 1.15 + 10}
+              x2={0}
+              y2={displayOuterRadius * 1.15 + 10}
+              height={displayOuterRadius * 1.15 + 40}
+              label="x"
+              strokeWidth={strokeWidth}
+              className={strokeClassName}
+            />
+          ) : null}
+
           {/* 中立軸 */}
           {neutralAxisLine !== null ? (
             <VerticalCenterLine
               x={neutralAxisLine}
-              size={viewBoxRadius * 1.2}
+              size={displayOuterRadius * 1.15}
               strokeWidth={strokeWidth}
               strokeDasharray={dashDotLine}
               className={neutralAxisClassName}
@@ -329,6 +343,61 @@ function VerticalCenterLine({ x, size, strokeWidth, strokeDasharray, className }
           strokeLinecap="round"
         />
       ))}
+    </g>
+  );
+}
+
+type HorizontalDimensionProps = {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  /** 寸法の高さ */
+  height: number;
+  /** 表示文字列 */
+  label: string;
+  strokeWidth: number;
+  className?: string;
+};
+
+/** 水平寸法 */
+function HorizontalDimension({
+  x1,
+  y1,
+  x2,
+  y2,
+  height,
+  label,
+  strokeWidth,
+  className,
+}: HorizontalDimensionProps) {
+  const labelY = height;
+  const labelX = (x1 + x2) / 2;
+
+  return (
+    <g className={className} aria-hidden="true">
+      <line x1={x1} y1={y1} x2={x1} y2={labelY} strokeWidth={strokeWidth} stroke="currentColor" />
+      <line x1={x2} y1={y2} x2={x2} y2={labelY} strokeWidth={strokeWidth} stroke="currentColor" />
+      <line
+        x1={x1}
+        y1={labelY}
+        x2={x2}
+        y2={labelY}
+        strokeWidth={strokeWidth}
+        stroke="currentColor"
+        markerStart="url(#dimension-arrow)"
+        markerEnd="url(#dimension-arrow)"
+      />
+      <text
+        x={labelX}
+        y={labelY - 6}
+        textAnchor="middle"
+        fontSize={28}
+        fill="currentColor"
+        className="font-mono"
+      >
+        {label}
+      </text>
     </g>
   );
 }
