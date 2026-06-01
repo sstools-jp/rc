@@ -19,12 +19,6 @@ export function AnnularSectionResultPanel({ result }: { result: AnnularSectionRe
       <div className="flex w-full flex-col gap-2">
         <AccordionSection title="中立軸および合成断面力" tooltip={resultTooltips.neutral.lines} defaultOpen>
           <ResultCell
-            label="中立軸角度"
-            symbol="θ"
-            value={formatNumber(neutralAxis?.neutralAxisAngleDeg, 4)}
-            unit="deg"
-          />
-          <ResultCell
             label="中立軸位置"
             symbol="x"
             value={formatNumber(neutralAxis?.neutralAxisPosition_Mm, 1)}
@@ -102,6 +96,12 @@ export function AnnularSectionResultPanel({ result }: { result: AnnularSectionRe
         </AccordionSection>
 
         <AccordionSection title="係数" tooltip={resultTooltips.coefficient.lines}>
+          <ResultCell
+            label="中立軸角度"
+            symbol="θ"
+            value={formatNumber(neutralAxis?.neutralAxisAngleDeg, 4)}
+            unit="deg"
+          />
           <ResultCell label="幾何係数" symbol="α" value={formatNumber(section?.alpha, 4)} />
           <ResultCell label="幾何係数" symbol="γ" value={formatNumber(section?.gamma, 4)} />
           <ResultCell
