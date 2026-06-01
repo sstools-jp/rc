@@ -1,8 +1,8 @@
 import type { AnnularSectionResult } from "@/models/annular-section";
 import { formatNumber } from "@/utils/number-format";
 import AccordionSection from "@/components/AccordionSection";
+import resultTooltips from "@/data/resultTooltips";
 import { SelectableText } from "@/components/SelectableText";
-
 import { SectionCard } from "@/components/SectionCard";
 
 /** 計算結果表示パネル */
@@ -16,7 +16,11 @@ export function AnnularSectionResultPanel({ result }: { result: AnnularSectionRe
   return (
     <SectionCard title="計算結果">
       <div className="flex w-full flex-col gap-2">
-        <AccordionSection title="中立軸および換算曲げモーメント" defaultOpen>
+        <AccordionSection
+          title="中立軸および換算曲げモーメント"
+          tooltip={resultTooltips.neutral.lines}
+          defaultOpen
+        >
           <ResultCell
             label="中立軸角度"
             value={formatNumber(neutralAxis?.neutralAxisAngleDeg, 4)}
@@ -34,13 +38,17 @@ export function AnnularSectionResultPanel({ result }: { result: AnnularSectionRe
           />
         </AccordionSection>
 
-        <AccordionSection title="発生応力度" defaultOpen>
+        <AccordionSection title="発生応力度" tooltip={resultTooltips.stress.lines} defaultOpen>
           <ResultCell
             label="コンクリート圧縮応力度"
             value={formatNumber(stress?.concreteCompressionStress_NPerMm2, 2)}
             unit="N/mm²"
           />
-          <ResultCell label="鉄筋応力度" value={formatNumber(stress?.rebarStress_NPerMm2, 2)} unit="N/mm²" />
+          <ResultCell
+            label="鉄筋引張応力度"
+            value={formatNumber(stress?.rebarStress_NPerMm2, 2)}
+            unit="N/mm²"
+          />
           <ResultCell
             label="コンクリートせん断応力度"
             value={formatNumber(stress?.concreteShearStress_NPerMm2, 2)}
@@ -53,7 +61,7 @@ export function AnnularSectionResultPanel({ result }: { result: AnnularSectionRe
           />
         </AccordionSection>
 
-        <AccordionSection title="終局耐力" defaultOpen>
+        <AccordionSection title="終局耐力" tooltip={resultTooltips.ultimate.lines} defaultOpen>
           <ResultCell
             label="コンクリート終局曲げモーメント"
             value={formatNumber(strength?.concreteUltimateMoment_KNm, 0)}
@@ -66,8 +74,13 @@ export function AnnularSectionResultPanel({ result }: { result: AnnularSectionRe
           />
         </AccordionSection>
 
-        <AccordionSection title="断面情報" defaultOpen>
-          <ResultCell label="鉄筋総断面積" value={formatNumber(section?.totalRebarArea_Mm2, 0)} unit="mm²" />
+        <AccordionSection title="断面積" tooltip={resultTooltips.area.lines} defaultOpen>
+          <ResultCell label="鉄筋総断面積" value={formatNumber(section?.rebarTotalArea_Mm2, 0)} unit="mm²" />
+          <ResultCell
+            label="コンクリート総断面積"
+            value={formatNumber(section?.concreteSectionArea_Mm2, 0)}
+            unit="mm²"
+          />
           <ResultCell label="鉄筋比" value={formatNumber(section?.rebarRatioPercent, 2)} unit="%" />
         </AccordionSection>
 
@@ -96,7 +109,7 @@ type ResultCellProps = {
 function ResultCell({ label, value, unit }: ResultCellProps) {
   return (
     <article className="flex border-b border-slate-400 px-3 py-1 text-sm last:border-b-0">
-      <span className="flex-1">{label}</span>
+      <span className="flex flex-1 items-center gap-1">{label}</span>
       <div className="space-x-2 text-right font-mono">
         <SelectableText>{value}</SelectableText>
         {unit ? <span className="inline-block w-8 text-left text-slate-700 select-none">{unit}</span> : null}
