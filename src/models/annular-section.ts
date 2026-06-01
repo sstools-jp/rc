@@ -43,7 +43,7 @@ export interface AnnularSectionSectionResult {
 
 /** 荷重状態の結果定義 */
 export interface AnnularSectionLoadingResult {
-  /** 換算曲げモーメント [kN.m] */
+  /** 合成曲げモーメント [kN.m] */
   combinedMoment_KNm: number;
   /** 軸力の符号 */
   axialForceSign: AxialForceSign;

@@ -169,7 +169,7 @@ export function buildResultPreviewSections(result: AnnularSectionResult | null):
 
   return [
     {
-      title: "中立軸・換算曲げ",
+      title: "中立軸・合成断面力",
       rows: [
         {
           label: "中立軸角度",
@@ -184,8 +184,8 @@ export function buildResultPreviewSections(result: AnnularSectionResult | null):
           value: formatNumber(neutralAxis?.neutralAxisPosition_Mm, 1),
         },
         {
-          label: "換算曲げモーメント",
-          symbol: "Me",
+          label: "合成曲げモーメント",
+          symbol: "Mo",
           unit: "kN.m",
           value: formatNumber(loading?.combinedMoment_KNm, 1),
         },
@@ -244,7 +244,7 @@ export function buildResultPreviewSections(result: AnnularSectionResult | null):
           label: "鉄筋総断面積",
           symbol: "As",
           unit: "mm²",
-          value: formatNumber(section?.totalRebarArea_Mm2, 0),
+          value: formatNumber(section?.rebarTotalArea_Mm2, 0),
         },
         {
           label: "鉄筋比 (As/πr²)",

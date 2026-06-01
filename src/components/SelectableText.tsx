@@ -4,10 +4,11 @@ import { cn } from "@/utils/cn";
 interface Props {
   children: React.ReactNode;
   className?: string;
+  style?: React.CSSProperties;
 }
 
 /** クリックでテキスト全選択可能なコンポーネント */
-export const SelectableText: React.FC<Props> = ({ children, className }) => {
+export const SelectableText: React.FC<Props> = ({ children, className, style }) => {
   const spanRef = useRef<HTMLSpanElement>(null);
 
   const handleSelect = () => {
@@ -27,6 +28,7 @@ export const SelectableText: React.FC<Props> = ({ children, className }) => {
       onClick={handleSelect}
       // select-all を指定しておくと、トリプルクリックなど標準の挙動も補強される
       className={cn("inline-block select-all", className)}
+      style={style}
     >
       {children}
     </span>
