@@ -172,12 +172,6 @@ export function buildResultPreviewSections(result: AnnularSectionResult | null):
       title: "中立軸・合成断面力",
       rows: [
         {
-          label: "中立軸角度",
-          symbol: "θ",
-          unit: "deg",
-          value: formatNumber(neutralAxis?.neutralAxisAngleDeg, 4),
-        },
-        {
           label: "中立軸位置",
           symbol: "x",
           unit: "mm",
