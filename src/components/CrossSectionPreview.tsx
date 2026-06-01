@@ -70,8 +70,8 @@ export function CrossSectionPreview({ form, result }: CrossSectionPreviewProps) 
   // 描画用パラメータ
   const strokeWidth = 1.5;
   const dashDotLine = `${strokeWidth * 24} ${strokeWidth * 3} ${strokeWidth * 6} ${strokeWidth * 3}`;
-  const strokeClassName = cn("stroke-slate-800");
-  const concreteClassName = cn("bg-slate-200 fill-slate-200 stroke-slate-800");
+  const strokeClassName = cn("stroke-gray-800");
+  const concreteClassName = cn("bg-slate-200 fill-slate-200 stroke-gray-800");
   const rebarClassName = cn("bg-blue-700 fill-blue-700");
   const neutralAxisClassName = cn("border-red-600 stroke-red-600");
 
@@ -93,6 +93,15 @@ export function CrossSectionPreview({ form, result }: CrossSectionPreviewProps) 
             outerRadius={displayOuterRadius}
             innerRadius={displayInnerRadius}
             className={concreteClassName}
+          />
+
+          {/* 鉄筋位置の中心線 */}
+          <circle
+            cx={0}
+            cy={0}
+            r={displayRebarRadius}
+            strokeDasharray={dashDotLine}
+            className="fill-none stroke-gray-600"
           />
 
           {/* 鉄筋群 */}
