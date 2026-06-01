@@ -5,8 +5,8 @@ import { formatNumber, parseNumber } from "@/utils/number-format";
 
 export type PrintPreviewRow = {
   label: string;
-  symbol: string;
-  unit: string;
+  symbol?: string;
+  unit?: string;
   value: string;
 };
 
@@ -115,7 +115,6 @@ export function buildInputPreviewSections(
           : {
               label: "鉄筋径",
               symbol: "D",
-              unit: "-",
               value: `D${form.rebarDiameter_Mm}`,
             },
         { label: "鉄筋本数", symbol: "H", unit: "本", value: formatNumber(parseNumber(form.barCount), 0) },
@@ -126,9 +125,7 @@ export function buildInputPreviewSections(
       rows: [
         form.rebarStrengthMode === "material"
           ? {
-              label: "鉄筋降伏強度(材質)",
-              symbol: "fy",
-              unit: "N/mm²",
+              label: "鉄筋材質",
               value: String(form.rebarMaterialName),
             }
           : {
@@ -146,13 +143,11 @@ export function buildInputPreviewSections(
         {
           label: "ヤング係数比",
           symbol: "n",
-          unit: "-",
           value: formatNumber(parseNumber(form.youngRatio), 0),
         },
         {
           label: "コンクリート強度補正係数",
           symbol: "kc",
-          unit: "-",
           value: formatNumber(parseNumber(form.concreteStrengthFactor), 2),
         },
       ],
@@ -276,7 +271,7 @@ export function buildClipboardText(blocks: CopyBlock[]): string {
 
     for (const section of block.sections) {
       for (const row of section.rows) {
-        lines.push([section.title, row.label, row.symbol, row.unit, row.value].join("\t"));
+        lines.push([section.title, row.label, row.symbol ?? "-", row.unit ?? "-", row.value].join("\t"));
       }
     }
 
