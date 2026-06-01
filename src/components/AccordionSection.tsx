@@ -37,7 +37,7 @@ export function AccordionSection({ title, defaultOpen = false, children, tooltip
               />
               <span>{title}</span>
             </DisclosureButton>
-            {tooltipLines && tooltipLines.length > 0 && (
+            {open && tooltipLines && tooltipLines.length > 0 && (
               <Tooltip content={tooltipLines}>
                 <BsQuestionCircle className="mx-1 h-4 w-4 text-slate-400 hover:text-slate-800" />
               </Tooltip>
