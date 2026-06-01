@@ -190,7 +190,7 @@ export function AnnularSectionInputFormPanel({
           )}
           {sectionForceMode === "6" && (
             <>
-              <FieldRow label="軸力" symbol="Fx" unit="kN">
+              <FieldRow label="軸力（引張を正）" symbol="Fx" unit="kN">
                 <FieldInput
                   value={form.fx_KN}
                   onChange={onChangeField("fx_KN")}
@@ -257,7 +257,7 @@ export function AnnularSectionInputFormPanel({
                 onBlur={onCommitField("innerRadius_Mm")}
               />
             </FieldRow>
-            <FieldRow label="鉄筋位置（有効半径）" symbol="rs" unit="mm">
+            <FieldRow label="鉄筋位置（半径）" symbol="rs" unit="mm">
               <FieldInput
                 value={form.rebarRadius_Mm}
                 onChange={onChangeField("rebarRadius_Mm")}
