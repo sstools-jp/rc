@@ -44,7 +44,12 @@ export function buildInputPreviewSections(
           },
         ]
       : [
-          { label: "軸力", symbol: "Fx", unit: "kN", value: formatNumber(parseNumber(form.fx_KN), 2) },
+          {
+            label: "軸力（引張を正）",
+            symbol: "Fx",
+            unit: "kN",
+            value: formatNumber(parseNumber(form.fx_KN), 2),
+          },
           {
             label: "せん断力（面外）",
             symbol: "Fy",
@@ -95,7 +100,7 @@ export function buildInputPreviewSections(
           value: formatNumber(parseNumber(form.innerRadius_Mm), 0),
         },
         {
-          label: "鉄筋位置（有効半径）",
+          label: "鉄筋位置（半径）",
           symbol: "rs",
           unit: "mm",
           value: formatNumber(parseNumber(form.rebarRadius_Mm), 0),
@@ -247,8 +252,8 @@ export function buildResultPreviewSections(result: AnnularSectionResult | null):
           value: formatNumber(section?.rebarTotalArea_Mm2, 0),
         },
         {
-          label: "鉄筋比 (As/πr²)",
-          symbol: "P",
+          label: "鉄筋比",
+          symbol: "p",
           unit: "%",
           value: formatNumber(section?.rebarRatioPercent, 2),
         },
