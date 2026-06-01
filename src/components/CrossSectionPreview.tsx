@@ -154,11 +154,6 @@ export function CrossSectionPreview({ form, result }: CrossSectionPreviewProps) 
   );
 }
 
-// /** 角度を度からラジアンに変換する */
-// function degToRad(deg: number): number {
-//   return (deg * Math.PI) / 180;
-// }
-
 /** 極座標をデカルト座標に変換する */
 function polarToCartesian(radius: number, angleRad: number): Point {
   return {
@@ -183,15 +178,6 @@ function buildCirclePath(radius: number): string {
     "Z",
   ].join(" ");
 }
-
-// /** 中心を通る線分の両端の座標を計算する */
-// function buildLineThroughCenter(halfLength: number, angleRad: number): { start: Point; end: Point } {
-//   const direction = polarToCartesian(1, angleRad);
-//   return {
-//     start: { x: -direction.x * halfLength, y: -direction.y * halfLength },
-//     end: { x: direction.x * halfLength, y: direction.y * halfLength },
-//   };
-// }
 
 type PreviewLegendProps = {
   label: string;
