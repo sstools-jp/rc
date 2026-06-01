@@ -17,7 +17,7 @@ export function AnnularSectionResultPanel({ result }: { result: AnnularSectionRe
   return (
     <SectionCard title="計算結果">
       <div className="flex w-full flex-col gap-2">
-        <AccordionSection title="中立軸および換算断面力" tooltip={resultTooltips.neutral.lines} defaultOpen>
+        <AccordionSection title="中立軸および合成断面力" tooltip={resultTooltips.neutral.lines} defaultOpen>
           <ResultCell
             label="中立軸角度"
             symbol="θ"
@@ -31,7 +31,7 @@ export function AnnularSectionResultPanel({ result }: { result: AnnularSectionRe
             unit="mm"
           />
           <ResultCell
-            label="換算曲げモーメント"
+            label="合成曲げモーメント"
             symbol="Mo"
             value={formatNumber(loading?.combinedMoment_KNm, 1)}
             unit="kN.m"

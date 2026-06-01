@@ -184,8 +184,8 @@ export function buildResultPreviewSections(result: AnnularSectionResult | null):
           value: formatNumber(neutralAxis?.neutralAxisPosition_Mm, 1),
         },
         {
-          label: "換算曲げモーメント",
-          symbol: "Me",
+          label: "合成曲げモーメント",
+          symbol: "Mo",
           unit: "kN.m",
           value: formatNumber(loading?.combinedMoment_KNm, 1),
         },

@@ -11,8 +11,8 @@ const math = (strings: TemplateStringsArray, ...values: Array<string | number>) 
 export const resultTooltips: Record<string, TooltipDoc> = {
   neutral: {
     key: "neutral",
-    title: "中立軸および換算曲げモーメント",
-    lines: ["換算曲げモーメント", math`M' = M + N \times r`],
+    title: "中立軸および合成断面力",
+    lines: ["合成曲げモーメント", math`M' = M + N \times r`],
   },
   stress: {
     key: "stress",
