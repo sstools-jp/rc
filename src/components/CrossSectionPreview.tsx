@@ -56,7 +56,7 @@ export function CrossSectionPreview({ form, result }: CrossSectionPreviewProps) 
     Number.isFinite(rebarRadius_Mm) && rebarRadius_Mm >= 0 ? rebarRadius_Mm * displayScale : 0;
   const displayRebarDiameter_Mm =
     Number.isFinite(rebarDiameter_Mm) && rebarDiameter_Mm > 0
-      ? rebarDiameter_Mm * displayScale * 2
+      ? rebarDiameter_Mm * displayScale
       : 12 * displayScale;
 
   // SVGのviewBoxの半径を計算（断面が見切れないようにmarginを追加）
@@ -104,7 +104,12 @@ export function CrossSectionPreview({ form, result }: CrossSectionPreviewProps) 
                   // 鉄筋径がコンクリート幅の半分となる半径
                   (displayOuterRadius - displayInnerRadius) / 2 / 2,
                 );
-                const barRadius = Math.min(displayRebarDiameter_Mm / 2, maxBarRadius);
+
+                // 外径の 1/50 を最小半径とする（視認性のため）
+                const minBarRadius = displayOuterRadius / 50;
+
+                // minBarRadius <= barRadius <= maxBarRadius
+                const barRadius = Math.max(minBarRadius, Math.min(displayRebarDiameter_Mm / 2, maxBarRadius));
 
                 return (
                   <circle
