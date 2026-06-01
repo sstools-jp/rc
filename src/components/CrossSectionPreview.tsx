@@ -84,6 +84,8 @@ export function CrossSectionPreview({ form, result }: CrossSectionPreviewProps) 
           role="img"
           aria-label="円環断面のプレビュー"
         >
+          <DimensionArrowDefs />
+
           {/* コンクリート円環 */}
           <Donut
             x={0}
@@ -350,46 +352,53 @@ function RadiusDimension({ x, y, radius, label, rotate, className }: RadiusDimen
   const fontSize = 28;
 
   return (
-    <>
-      <defs>
-        {/* 開矢印用のマーカー定義 */}
-        <marker
-          id="end-arrow"
-          viewBox="0 0 10 10"
-          refX="10"
-          refY="5"
-          markerWidth="12"
-          markerHeight="12"
-          orient="auto-start-reverse"
-        >
-          <path
-            d="M 2 1 L 10 5 L 2 9"
-            className="stroke-linecap-round stroke-linejoin-round fill-none stroke-black"
-          />
-        </marker>
-      </defs>
-      <g className={className} transform={`translate(${x} ${y}) rotate(${rotate ?? 0})`} aria-hidden="true">
-        <line
-          x1={0}
-          y1={0}
-          x2={radius}
-          y2={0}
-          strokeWidth={1.5}
-          stroke="currentColor"
-          markerEnd="url(#end-arrow)"
+    <g className={className} transform={`translate(${x} ${y}) rotate(${rotate ?? 0})`} aria-hidden="true">
+      <line
+        x1={0}
+        y1={0}
+        x2={radius}
+        y2={0}
+        strokeWidth={1.5}
+        stroke="currentColor"
+        markerEnd="url(#dimension-arrow)"
+      />
+      <line x1={radius} y1={0} x2={radius + fontSize * 2} y2={0} strokeWidth={1.5} stroke="currentColor" />
+      <text
+        x={radius + fontSize}
+        y={-6}
+        textAnchor="middle"
+        fontSize={fontSize}
+        fill="currentColor"
+        className="font-mono"
+      >
+        {label}
+      </text>
+    </g>
+  );
+}
+
+type DimensionArrowDefsProps = {
+  className?: string;
+};
+
+/** 寸法線共通の矢印定義 */
+function DimensionArrowDefs({ className }: DimensionArrowDefsProps) {
+  return (
+    <defs className={className}>
+      <marker
+        id="dimension-arrow"
+        viewBox="0 0 10 10"
+        refX="10"
+        refY="5"
+        markerWidth="12"
+        markerHeight="12"
+        orient="auto-start-reverse"
+      >
+        <path
+          d="M 2 1 L 10 5 L 2 9"
+          className="stroke-linecap-round stroke-linejoin-round fill-none stroke-black"
         />
-        <line x1={radius} y1={0} x2={radius + fontSize * 2} y2={0} strokeWidth={1.5} stroke="currentColor" />
-        <text
-          x={radius + fontSize}
-          y={-6}
-          textAnchor="middle"
-          fontSize={fontSize}
-          fill="currentColor"
-          className="font-mono"
-        >
-          {label}
-        </text>
-      </g>
-    </>
+      </marker>
+    </defs>
   );
 }
