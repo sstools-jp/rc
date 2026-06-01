@@ -5,8 +5,8 @@ import { formatNumber, parseNumber } from "@/utils/number-format";
 
 export type PrintPreviewRow = {
   label: string;
-  symbol: string;
-  unit: string;
+  symbol?: string;
+  unit?: string;
   value: string;
 };
 
@@ -44,7 +44,12 @@ export function buildInputPreviewSections(
           },
         ]
       : [
-          { label: "軸力", symbol: "Fx", unit: "kN", value: formatNumber(parseNumber(form.fx_KN), 2) },
+          {
+            label: "軸力（引張を正）",
+            symbol: "Fx",
+            unit: "kN",
+            value: formatNumber(parseNumber(form.fx_KN), 2),
+          },
           {
             label: "せん断力（面外）",
             symbol: "Fy",
@@ -95,7 +100,7 @@ export function buildInputPreviewSections(
           value: formatNumber(parseNumber(form.innerRadius_Mm), 0),
         },
         {
-          label: "鉄筋位置（有効半径）",
+          label: "鉄筋位置（半径）",
           symbol: "rs",
           unit: "mm",
           value: formatNumber(parseNumber(form.rebarRadius_Mm), 0),
@@ -110,7 +115,6 @@ export function buildInputPreviewSections(
           : {
               label: "鉄筋径",
               symbol: "D",
-              unit: "-",
               value: `D${form.rebarDiameter_Mm}`,
             },
         { label: "鉄筋本数", symbol: "H", unit: "本", value: formatNumber(parseNumber(form.barCount), 0) },
@@ -121,9 +125,7 @@ export function buildInputPreviewSections(
       rows: [
         form.rebarStrengthMode === "material"
           ? {
-              label: "鉄筋降伏強度(材質)",
-              symbol: "fy",
-              unit: "N/mm²",
+              label: "鉄筋材質",
               value: String(form.rebarMaterialName),
             }
           : {
@@ -141,13 +143,11 @@ export function buildInputPreviewSections(
         {
           label: "ヤング係数比",
           symbol: "n",
-          unit: "-",
           value: formatNumber(parseNumber(form.youngRatio), 0),
         },
         {
           label: "コンクリート強度補正係数",
           symbol: "kc",
-          unit: "-",
           value: formatNumber(parseNumber(form.concreteStrengthFactor), 2),
         },
       ],
@@ -171,12 +171,6 @@ export function buildResultPreviewSections(result: AnnularSectionResult | null):
     {
       title: "中立軸・合成断面力",
       rows: [
-        {
-          label: "中立軸角度",
-          symbol: "θ",
-          unit: "deg",
-          value: formatNumber(neutralAxis?.neutralAxisAngleDeg, 4),
-        },
         {
           label: "中立軸位置",
           symbol: "x",
@@ -247,8 +241,14 @@ export function buildResultPreviewSections(result: AnnularSectionResult | null):
           value: formatNumber(section?.rebarTotalArea_Mm2, 0),
         },
         {
-          label: "鉄筋比 (As/πr²)",
-          symbol: "P",
+          label: "コンクリート総断面積",
+          symbol: "Ac",
+          unit: "mm²",
+          value: formatNumber(section?.concreteSectionArea_Mm2, 0),
+        },
+        {
+          label: "鉄筋比",
+          symbol: "p",
           unit: "%",
           value: formatNumber(section?.rebarRatioPercent, 2),
         },
@@ -271,7 +271,7 @@ export function buildClipboardText(blocks: CopyBlock[]): string {
 
     for (const section of block.sections) {
       for (const row of section.rows) {
-        lines.push([section.title, row.label, row.symbol, row.unit, row.value].join("\t"));
+        lines.push([section.title, row.label, row.symbol ?? "-", row.unit ?? "-", row.value].join("\t"));
       }
     }
 
