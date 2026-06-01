@@ -56,11 +56,11 @@ export function CrossSectionPreview({ form, result }: CrossSectionPreviewProps) 
     Number.isFinite(rebarRadius_Mm) && rebarRadius_Mm >= 0 ? rebarRadius_Mm * displayScale : 0;
   const displayRebarDiameter_Mm =
     Number.isFinite(rebarDiameter_Mm) && rebarDiameter_Mm > 0
-      ? rebarDiameter_Mm * displayScale * 2
+      ? rebarDiameter_Mm * displayScale
       : 12 * displayScale;
 
   // SVGのviewBoxの半径を計算（断面が見切れないようにmarginを追加）
-  const margin = Math.max(displayOuterRadius * 0.18, 14);
+  const margin = Math.max(displayOuterRadius * 0.18, 60);
   const viewBoxRadius = displayOuterRadius + margin;
   const neutralAxisLine =
     result && Number.isFinite(result.neutralAxis.neutralAxisPosition_Mm)
@@ -68,32 +68,43 @@ export function CrossSectionPreview({ form, result }: CrossSectionPreviewProps) 
       : null;
 
   // 描画用パラメータ
-  const strokeWidth = 2;
-  const dashDotLine = `${strokeWidth * 14} ${strokeWidth * 4} ${strokeWidth * 2} ${strokeWidth * 4}`;
-  const strokeColor = "#0f172a";
-  const fillColor = "#e2e8f0";
-  const rebarColor = "#b91c1c";
-  const neutralAxisColor = "#cf172a";
+  const strokeWidth = 1.5;
+  const dashDotLine = `${strokeWidth * 24} ${strokeWidth * 3} ${strokeWidth * 6} ${strokeWidth * 3}`;
+  const strokeClassName = cn("stroke-gray-800");
+  const concreteClassName = cn("bg-slate-200 fill-slate-200 stroke-gray-800");
+  const rebarClassName = cn("bg-blue-700 fill-blue-700");
+  const neutralAxisClassName = cn("border-red-600 stroke-red-600");
 
   return (
     <div className="w-full space-y-3 p-3">
       <div className="flex justify-center rounded-xs border border-slate-200 bg-white p-2">
         <svg
-          viewBox={`${-viewBoxRadius} ${-viewBoxRadius} ${viewBoxRadius * 2} ${viewBoxRadius * 2}`}
-          className="h-64 w-full"
+          viewBox={`${-viewBoxRadius} ${-viewBoxRadius + 20} ${viewBoxRadius * 2} ${viewBoxRadius * 2}`}
+          className="h-full w-full"
           role="img"
           aria-label="円環断面のプレビュー"
         >
-          {/* 外径および内径 */}
-          <path
-            d={buildAnnulusPath(displayOuterRadius, displayInnerRadius)}
-            fill={fillColor}
-            fillRule="evenodd"
-            stroke={strokeColor}
-            strokeWidth={strokeWidth}
+          <DimensionArrowDefs />
+
+          {/* コンクリート円環 */}
+          <Donut
+            x={0}
+            y={0}
+            outerRadius={displayOuterRadius}
+            innerRadius={displayInnerRadius}
+            className={concreteClassName}
           />
 
-          {/* 鉄筋 */}
+          {/* 鉄筋位置の中心線 */}
+          <circle
+            cx={0}
+            cy={0}
+            r={displayRebarRadius}
+            strokeDasharray={dashDotLine}
+            className="fill-none stroke-gray-600"
+          />
+
+          {/* 鉄筋群 */}
           {geometryIsValid && barCount > 0
             ? Array.from({ length: barCount }, (_, index) => {
                 const angle = (index / barCount) * Math.PI * 2 - Math.PI / 2;
@@ -104,7 +115,12 @@ export function CrossSectionPreview({ form, result }: CrossSectionPreviewProps) 
                   // 鉄筋径がコンクリート幅の半分となる半径
                   (displayOuterRadius - displayInnerRadius) / 2 / 2,
                 );
-                const barRadius = Math.min(displayRebarDiameter_Mm / 2, maxBarRadius);
+
+                // 外径の 1/50 を最小半径とする（視認性のため）
+                const minBarRadius = displayOuterRadius / 50;
+
+                // minBarRadius <= barRadius <= maxBarRadius
+                const barRadius = Math.max(minBarRadius, Math.min(displayRebarDiameter_Mm / 2, maxBarRadius));
 
                 return (
                   <circle
@@ -112,62 +128,92 @@ export function CrossSectionPreview({ form, result }: CrossSectionPreviewProps) 
                     cx={point.x}
                     cy={point.y}
                     r={barRadius}
-                    fill={rebarColor}
+                    className={rebarClassName}
                   />
                 );
               })
             : null}
 
           {/* 外径の中心線 */}
-          <line
-            x1={-viewBoxRadius * 0.98}
-            y1="0"
-            x2={viewBoxRadius * 0.98}
-            y2="0"
-            stroke={strokeColor}
+          <CenterMark
+            x={0}
+            y={0}
+            size={displayOuterRadius * 1.15}
             strokeWidth={strokeWidth}
             strokeDasharray={dashDotLine}
-            strokeLinecap="round"
+            className={strokeClassName}
           />
-          <line
-            x1="0"
-            y1={-viewBoxRadius * 0.98}
-            x2="0"
-            y2={viewBoxRadius * 0.98}
-            stroke={strokeColor}
-            strokeWidth={strokeWidth}
-            strokeDasharray={dashDotLine}
-            strokeLinecap="round"
-          />
+
+          {/* 中立軸の水平寸法 */}
+          {geometryIsValid ? (
+            <HorizontalDimension
+              x1={neutralAxisLine ?? 0}
+              y1={displayOuterRadius * 1.15 + 10}
+              x2={0}
+              y2={displayOuterRadius * 1.15 + 10}
+              height={displayOuterRadius * 1.15 + 40}
+              label="x"
+              className={strokeClassName}
+            />
+          ) : null}
 
           {/* 中立軸 */}
           {neutralAxisLine !== null ? (
-            <line
-              x1={neutralAxisLine}
-              y1={-viewBoxRadius * 0.98}
-              x2={neutralAxisLine}
-              y2={viewBoxRadius * 0.98}
-              stroke={neutralAxisColor}
-              strokeDasharray={dashDotLine}
+            <VerticalCenterLine
+              x={neutralAxisLine}
+              size={displayOuterRadius * 1.15}
               strokeWidth={strokeWidth}
+              strokeDasharray={dashDotLine}
+              className={neutralAxisClassName}
+            />
+          ) : null}
+
+          {/* 寸法線（外径半径） */}
+          {geometryIsValid ? (
+            <RadiusDimension
+              x={0}
+              y={0}
+              radius={displayOuterRadius}
+              label="r"
+              rotate={-15}
+              className={strokeClassName}
+            />
+          ) : null}
+
+          {/* 寸法線（鉄筋位置） */}
+          {geometryIsValid ? (
+            <RadiusDimension
+              x={0}
+              y={0}
+              radius={displayRebarRadius}
+              label="rs"
+              rotate={-35}
+              className={strokeClassName}
+            />
+          ) : null}
+
+          {/* 寸法線（内径半径） */}
+          {geometryIsValid ? (
+            <RadiusDimension
+              x={0}
+              y={0}
+              radius={displayInnerRadius}
+              label="r0"
+              rotate={-55}
+              className={strokeClassName}
             />
           ) : null}
         </svg>
       </div>
 
       <div className="flex gap-3 text-xs text-slate-600">
-        <PreviewLegend label="コンクリート" className="bg-slate-400" />
-        <PreviewLegend label="鉄筋" className="bg-red-700" />
-        <PreviewLegend label="中立軸" className="border-red-600" kind="stroke" dashed />
+        <PreviewLegend label="コンクリート" className={concreteClassName} />
+        <PreviewLegend label="鉄筋" className={rebarClassName} />
+        <PreviewLegend label="中立軸" className={neutralAxisClassName} kind="stroke" dashed />
       </div>
     </div>
   );
 }
-
-// /** 角度を度からラジアンに変換する */
-// function degToRad(deg: number): number {
-//   return (deg * Math.PI) / 180;
-// }
 
 /** 極座標をデカルト座標に変換する */
 function polarToCartesian(radius: number, angleRad: number): Point {
@@ -175,13 +221,6 @@ function polarToCartesian(radius: number, angleRad: number): Point {
     x: radius * Math.cos(angleRad),
     y: -radius * Math.sin(angleRad),
   };
-}
-
-/** 円環を1つのパスとして描画するための d 属性を生成する */
-function buildAnnulusPath(outerRadius: number, innerRadius: number): string {
-  return innerRadius > 0
-    ? `${buildCirclePath(outerRadius)} ${buildCirclePath(innerRadius)}`
-    : buildCirclePath(outerRadius);
 }
 
 /** 円のパスを生成する */
@@ -193,15 +232,6 @@ function buildCirclePath(radius: number): string {
     "Z",
   ].join(" ");
 }
-
-// /** 中心を通る線分の両端の座標を計算する */
-// function buildLineThroughCenter(halfLength: number, angleRad: number): { start: Point; end: Point } {
-//   const direction = polarToCartesian(1, angleRad);
-//   return {
-//     start: { x: -direction.x * halfLength, y: -direction.y * halfLength },
-//     end: { x: direction.x * halfLength, y: direction.y * halfLength },
-//   };
-// }
 
 type PreviewLegendProps = {
   label: string;
@@ -227,5 +257,215 @@ function PreviewLegend({ label, className, dashed = false, kind = "fill" }: Prev
       <span aria-hidden="true" className={swatchClassName} />
       <span>{label}</span>
     </div>
+  );
+}
+
+type DonutProps = {
+  x: number;
+  y: number;
+  outerRadius: number;
+  innerRadius: number;
+  className?: string;
+};
+
+/** ドーナツ形状 */
+function Donut({ x, y, outerRadius, innerRadius, className }: DonutProps) {
+  const outerPath = buildCirclePath(outerRadius);
+  const innerPath = innerRadius > 0 ? buildCirclePath(innerRadius) : "";
+
+  return (
+    <path
+      d={innerPath ? `${outerPath} ${innerPath}` : outerPath}
+      transform={`translate(${x} ${y})`}
+      fillRule="evenodd"
+      clipRule="evenodd"
+      className={className}
+    />
+  );
+}
+
+type CenterMarkProps = {
+  x: number;
+  y: number;
+  size: number;
+  strokeWidth: number;
+  strokeDasharray: string;
+  className?: string;
+};
+
+/** 円の中心線 */
+function CenterMark({ x, y, size, strokeWidth, strokeDasharray, className }: CenterMarkProps) {
+  // [X方向の倍率, Y方向の倍率] を定義 (右、下、左、上)
+  const directions = [
+    [1, 0], // 右方向 (x + size, y)
+    [0, 1], // 下方向 (x, y + size)
+    [-1, 0], // 左方向 (x - size, y)
+    [0, -1], // 上方向 (x, y - size)
+  ];
+
+  return (
+    <g className={className} aria-hidden="true">
+      {directions.map(([dx, dy], index) => (
+        <line
+          key={index}
+          x1={x}
+          y1={y}
+          x2={x + dx * size}
+          y2={y + dy * size}
+          strokeWidth={strokeWidth}
+          strokeDasharray={strokeDasharray}
+          strokeLinecap="round"
+        />
+      ))}
+    </g>
+  );
+}
+
+type VerticalCenterLineProps = {
+  x: number;
+  size: number;
+  strokeWidth: number;
+  strokeDasharray: string;
+  className?: string;
+};
+
+/** 縦中心線 */
+function VerticalCenterLine({ x, size, strokeWidth, strokeDasharray, className }: VerticalCenterLineProps) {
+  // [X方向の倍率, Y方向の倍率] を定義 (上、下)
+  const directions = [
+    [0, -1], // 上方向 (x, y - size)
+    [0, 1], // 下方向 (x, y + size)
+  ];
+
+  return (
+    <g className={className} aria-hidden="true">
+      {directions.map(([dx, dy], index) => (
+        <line
+          key={index}
+          x1={x}
+          y1={0}
+          x2={x + dx * size}
+          y2={dy * size}
+          strokeWidth={strokeWidth}
+          strokeDasharray={strokeDasharray}
+          strokeLinecap="round"
+        />
+      ))}
+    </g>
+  );
+}
+
+type HorizontalDimensionProps = {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  /** 寸法の高さ */
+  height: number;
+  /** 表示文字列 */
+  label: string;
+  className?: string;
+};
+
+/** 水平寸法 */
+function HorizontalDimension({ x1, y1, x2, y2, height, label, className }: HorizontalDimensionProps) {
+  const labelY = height;
+  const labelX = (x1 + x2) / 2;
+
+  return (
+    <g className={className} aria-hidden="true">
+      <line x1={x1} y1={y1} x2={x1} y2={labelY} strokeWidth={1} stroke="currentColor" />
+      <line x1={x2} y1={y2} x2={x2} y2={labelY} strokeWidth={1} stroke="currentColor" />
+      <line
+        x1={x1}
+        y1={labelY}
+        x2={x2}
+        y2={labelY}
+        strokeWidth={1}
+        stroke="currentColor"
+        markerStart="url(#dimension-arrow)"
+        markerEnd="url(#dimension-arrow)"
+      />
+      <text
+        x={labelX}
+        y={labelY - 6}
+        textAnchor="middle"
+        fontSize={24}
+        fill="currentColor"
+        className="font-mono"
+      >
+        {label}
+      </text>
+    </g>
+  );
+}
+
+type RadiusDimensionProps = {
+  /** 中心のX座標 */
+  x: number;
+  /** 中心のY座標 */
+  y: number;
+  /** 半径 */
+  radius: number;
+  /** 表示文字列 */
+  label: string;
+  /** 回転角度 [deg] */
+  rotate?: number;
+  className?: string;
+};
+
+/** 半径寸法 */
+function RadiusDimension({ x, y, radius, label, rotate, className }: RadiusDimensionProps) {
+  const fontSize = 24;
+
+  return (
+    <g className={className} transform={`translate(${x} ${y}) rotate(${rotate ?? 0})`} aria-hidden="true">
+      <line
+        x1={0}
+        y1={0}
+        x2={radius}
+        y2={0}
+        strokeWidth={1}
+        stroke="currentColor"
+        markerEnd="url(#dimension-arrow)"
+      />
+      <line x1={radius} y1={0} x2={radius + fontSize * 2} y2={0} strokeWidth={1} stroke="currentColor" />
+      <text
+        x={radius + fontSize}
+        y={-6}
+        textAnchor="middle"
+        fontSize={fontSize}
+        fill="currentColor"
+        className="font-mono"
+      >
+        {label}
+      </text>
+    </g>
+  );
+}
+
+type DimensionArrowDefsProps = {
+  className?: string;
+};
+
+/** 寸法線共通の矢印定義 */
+function DimensionArrowDefs({ className }: DimensionArrowDefsProps) {
+  return (
+    <defs className={className}>
+      <marker
+        id="dimension-arrow"
+        viewBox="0 0 10 10"
+        refX="10"
+        refY="5"
+        markerWidth="12"
+        markerHeight="12"
+        orient="auto-start-reverse"
+      >
+        <path
+          d="M 2 1 L 10 5 L 2 9"
+          className="stroke-linecap-round stroke-linejoin-round fill-none stroke-black"
+        />
+      </marker>
+    </defs>
   );
 }
