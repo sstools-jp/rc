@@ -241,6 +241,12 @@ export function buildResultPreviewSections(result: AnnularSectionResult | null):
           value: formatNumber(section?.rebarTotalArea_Mm2, 0),
         },
         {
+          label: "コンクリート総断面積",
+          symbol: "Ac",
+          unit: "mm²",
+          value: formatNumber(section?.concreteSectionArea_Mm2, 0),
+        },
+        {
           label: "鉄筋比",
           symbol: "p",
           unit: "%",
