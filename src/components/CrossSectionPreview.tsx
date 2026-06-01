@@ -60,7 +60,7 @@ export function CrossSectionPreview({ form, result }: CrossSectionPreviewProps) 
       : 12 * displayScale;
 
   // SVGのviewBoxの半径を計算（断面が見切れないようにmarginを追加）
-  const margin = Math.max(displayOuterRadius * 0.18, 50);
+  const margin = Math.max(displayOuterRadius * 0.18, 60);
   const viewBoxRadius = displayOuterRadius + margin;
   const neutralAxisLine =
     result && Number.isFinite(result.neutralAxis.neutralAxisPosition_Mm)
@@ -79,7 +79,7 @@ export function CrossSectionPreview({ form, result }: CrossSectionPreviewProps) 
     <div className="w-full space-y-3 p-3">
       <div className="flex justify-center rounded-xs border border-slate-200 bg-white p-2">
         <svg
-          viewBox={`${-viewBoxRadius} ${-viewBoxRadius} ${viewBoxRadius * 2} ${viewBoxRadius * 2 + 60}`}
+          viewBox={`${-viewBoxRadius} ${-viewBoxRadius + 20} ${viewBoxRadius * 2} ${viewBoxRadius * 2}`}
           className="h-full w-full"
           role="img"
           aria-label="円環断面のプレビュー"
@@ -153,7 +153,6 @@ export function CrossSectionPreview({ form, result }: CrossSectionPreviewProps) 
               y2={displayOuterRadius * 1.15 + 10}
               height={displayOuterRadius * 1.15 + 40}
               label="x"
-              strokeWidth={strokeWidth}
               className={strokeClassName}
             />
           ) : null}
@@ -365,34 +364,24 @@ type HorizontalDimensionProps = {
   height: number;
   /** 表示文字列 */
   label: string;
-  strokeWidth: number;
   className?: string;
 };
 
 /** 水平寸法 */
-function HorizontalDimension({
-  x1,
-  y1,
-  x2,
-  y2,
-  height,
-  label,
-  strokeWidth,
-  className,
-}: HorizontalDimensionProps) {
+function HorizontalDimension({ x1, y1, x2, y2, height, label, className }: HorizontalDimensionProps) {
   const labelY = height;
   const labelX = (x1 + x2) / 2;
 
   return (
     <g className={className} aria-hidden="true">
-      <line x1={x1} y1={y1} x2={x1} y2={labelY} strokeWidth={strokeWidth} stroke="currentColor" />
-      <line x1={x2} y1={y2} x2={x2} y2={labelY} strokeWidth={strokeWidth} stroke="currentColor" />
+      <line x1={x1} y1={y1} x2={x1} y2={labelY} strokeWidth={1} stroke="currentColor" />
+      <line x1={x2} y1={y2} x2={x2} y2={labelY} strokeWidth={1} stroke="currentColor" />
       <line
         x1={x1}
         y1={labelY}
         x2={x2}
         y2={labelY}
-        strokeWidth={strokeWidth}
+        strokeWidth={1}
         stroke="currentColor"
         markerStart="url(#dimension-arrow)"
         markerEnd="url(#dimension-arrow)"
@@ -401,7 +390,7 @@ function HorizontalDimension({
         x={labelX}
         y={labelY - 6}
         textAnchor="middle"
-        fontSize={28}
+        fontSize={24}
         fill="currentColor"
         className="font-mono"
       >
@@ -427,7 +416,7 @@ type RadiusDimensionProps = {
 
 /** 半径寸法 */
 function RadiusDimension({ x, y, radius, label, rotate, className }: RadiusDimensionProps) {
-  const fontSize = 28;
+  const fontSize = 24;
 
   return (
     <g className={className} transform={`translate(${x} ${y}) rotate(${rotate ?? 0})`} aria-hidden="true">
@@ -436,11 +425,11 @@ function RadiusDimension({ x, y, radius, label, rotate, className }: RadiusDimen
         y1={0}
         x2={radius}
         y2={0}
-        strokeWidth={1.5}
+        strokeWidth={1}
         stroke="currentColor"
         markerEnd="url(#dimension-arrow)"
       />
-      <line x1={radius} y1={0} x2={radius + fontSize * 2} y2={0} strokeWidth={1.5} stroke="currentColor" />
+      <line x1={radius} y1={0} x2={radius + fontSize * 2} y2={0} strokeWidth={1} stroke="currentColor" />
       <text
         x={radius + fontSize}
         y={-6}
