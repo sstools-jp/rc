@@ -71,7 +71,7 @@ export function CrossSectionPreview({ form, result }: CrossSectionPreviewProps) 
   const strokeWidth = 1.5;
   const dashDotLine = `${strokeWidth * 24} ${strokeWidth * 3} ${strokeWidth * 6} ${strokeWidth * 3}`;
   const strokeClassName = cn("stroke-slate-800");
-  const concreteClassName = cn("bg-slate-200 fill-slate-200");
+  const concreteClassName = cn("bg-slate-200 fill-slate-200 stroke-slate-800");
   const rebarClassName = cn("bg-blue-700 fill-blue-700");
   const neutralAxisClassName = cn("border-red-600 stroke-red-600");
 
@@ -84,15 +84,16 @@ export function CrossSectionPreview({ form, result }: CrossSectionPreviewProps) 
           role="img"
           aria-label="円環断面のプレビュー"
         >
-          {/* 外径および内径 */}
-          <path
-            d={buildAnnulusPath(displayOuterRadius, displayInnerRadius)}
+          {/* コンクリート円環 */}
+          <Donut
+            x={0}
+            y={0}
+            outerRadius={displayOuterRadius}
+            innerRadius={displayInnerRadius}
             className={concreteClassName}
-            fillRule="evenodd"
-            strokeWidth={strokeWidth}
           />
 
-          {/* 鉄筋 */}
+          {/* 鉄筋群 */}
           {geometryIsValid && barCount > 0
             ? Array.from({ length: barCount }, (_, index) => {
                 const angle = (index / barCount) * Math.PI * 2 - Math.PI / 2;
@@ -162,13 +163,6 @@ function polarToCartesian(radius: number, angleRad: number): Point {
   };
 }
 
-/** 円環を1つのパスとして描画するための d 属性を生成する */
-function buildAnnulusPath(outerRadius: number, innerRadius: number): string {
-  return innerRadius > 0
-    ? `${buildCirclePath(outerRadius)} ${buildCirclePath(innerRadius)}`
-    : buildCirclePath(outerRadius);
-}
-
 /** 円のパスを生成する */
 function buildCirclePath(radius: number): string {
   return [
@@ -203,6 +197,30 @@ function PreviewLegend({ label, className, dashed = false, kind = "fill" }: Prev
       <span aria-hidden="true" className={swatchClassName} />
       <span>{label}</span>
     </div>
+  );
+}
+
+type DonutProps = {
+  x: number;
+  y: number;
+  outerRadius: number;
+  innerRadius: number;
+  className?: string;
+};
+
+/** ドーナツ形状 */
+function Donut({ x, y, outerRadius, innerRadius, className }: DonutProps) {
+  const outerPath = buildCirclePath(outerRadius);
+  const innerPath = innerRadius > 0 ? buildCirclePath(innerRadius) : "";
+
+  return (
+    <path
+      d={innerPath ? `${outerPath} ${innerPath}` : outerPath}
+      transform={`translate(${x} ${y})`}
+      fillRule="evenodd"
+      clipRule="evenodd"
+      className={className}
+    />
   );
 }
 
