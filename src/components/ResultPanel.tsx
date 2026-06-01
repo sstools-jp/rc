@@ -4,6 +4,7 @@ import AccordionSection from "@/components/AccordionSection";
 import resultTooltips from "@/data/resultTooltips";
 import { SelectableText } from "@/components/SelectableText";
 import { SectionCard } from "@/components/SectionCard";
+import { SymbolText } from "@/components/SymbolText";
 
 /** 計算結果表示パネル */
 export function AnnularSectionResultPanel({ result }: { result: AnnularSectionResult | null }) {
@@ -101,18 +102,27 @@ export function AnnularSectionResultPanel({ result }: { result: AnnularSectionRe
 
 type ResultCellProps = {
   label: string;
+  symbol?: string;
   value: string;
   unit?: string;
 };
 
 /** 結果表示用セルコンポーネント */
-function ResultCell({ label, value, unit }: ResultCellProps) {
+function ResultCell({ label, symbol, value, unit }: ResultCellProps) {
   return (
-    <article className="flex border-b border-slate-400 px-3 py-1 text-sm last:border-b-0">
+    <article className="flex border-b border-slate-400 px-2 py-1 text-sm last:border-b-0">
       <span className="flex flex-1 items-center gap-1">{label}</span>
       <div className="space-x-2 text-right font-mono">
+        {symbol && (
+          <>
+            <span className="inline-block w-2.5 text-left text-slate-700">
+              <SymbolText value={symbol} />
+            </span>
+            <span className="inline-block w-2 text-left text-slate-700">=</span>
+          </>
+        )}
         <SelectableText>{value}</SelectableText>
-        {unit ? <span className="inline-block w-8 text-left text-slate-700 select-none">{unit}</span> : null}
+        {unit ? <span className="inline-block w-9 text-left text-slate-700 select-none">{unit}</span> : null}
       </div>
     </article>
   );
