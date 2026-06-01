@@ -143,6 +143,42 @@ export function CrossSectionPreview({ form, result }: CrossSectionPreviewProps) 
               className={neutralAxisClassName}
             />
           ) : null}
+
+          {/* 寸法線（外径半径） */}
+          {geometryIsValid ? (
+            <RadiusDimension
+              x={0}
+              y={0}
+              radius={displayOuterRadius}
+              label="r"
+              rotate={-15}
+              className={strokeClassName}
+            />
+          ) : null}
+
+          {/* 寸法線（鉄筋位置） */}
+          {geometryIsValid ? (
+            <RadiusDimension
+              x={0}
+              y={0}
+              radius={displayRebarRadius}
+              label="rs"
+              rotate={-35}
+              className={strokeClassName}
+            />
+          ) : null}
+
+          {/* 寸法線（内径半径） */}
+          {geometryIsValid ? (
+            <RadiusDimension
+              x={0}
+              y={0}
+              radius={displayInnerRadius}
+              label="r0"
+              rotate={-55}
+              className={strokeClassName}
+            />
+          ) : null}
         </svg>
       </div>
 
@@ -292,5 +328,68 @@ function VerticalCenterLine({ x, size, strokeWidth, strokeDasharray, className }
         />
       ))}
     </g>
+  );
+}
+
+type RadiusDimensionProps = {
+  /** 中心のX座標 */
+  x: number;
+  /** 中心のY座標 */
+  y: number;
+  /** 半径 */
+  radius: number;
+  /** 表示文字列 */
+  label: string;
+  /** 回転角度 [deg] */
+  rotate?: number;
+  className?: string;
+};
+
+/** 半径寸法 */
+function RadiusDimension({ x, y, radius, label, rotate, className }: RadiusDimensionProps) {
+  const fontSize = 28;
+
+  return (
+    <>
+      <defs>
+        {/* 開矢印用のマーカー定義 */}
+        <marker
+          id="end-arrow"
+          viewBox="0 0 10 10"
+          refX="10"
+          refY="5"
+          markerWidth="12"
+          markerHeight="12"
+          orient="auto-start-reverse"
+        >
+          <path
+            d="M 2 1 L 10 5 L 2 9"
+            className="stroke-linecap-round stroke-linejoin-round fill-none stroke-black"
+          />
+        </marker>
+      </defs>
+      <g className={className} transform={`translate(${x} ${y}) rotate(${rotate ?? 0})`} aria-hidden="true">
+        <line
+          x1={0}
+          y1={0}
+          x2={radius}
+          y2={0}
+          strokeWidth={1.5}
+          stroke="currentColor"
+          markerEnd="url(#end-arrow)"
+        />
+        <line x1={radius} y1={0} x2={radius + fontSize * 2} y2={0} strokeWidth={1.5} stroke="currentColor" />
+        <text
+          x={radius + fontSize}
+          y={-6}
+          textAnchor="middle"
+          fontSize={fontSize}
+          fill="currentColor"
+          className="font-mono"
+        >
+          {label}
+        </text>
+      </g>
+    </>
   );
 }
