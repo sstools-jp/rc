@@ -25,6 +25,7 @@ export function Tooltip({ content, children, position = "top", delay = 200, clas
   const wrapperRef = useRef<HTMLSpanElement | null>(null);
   const tipRef = useRef<HTMLDivElement | null>(null);
   const timerRef = useRef<number | null>(null);
+  const closeTimerRef = useRef<number | null>(null);
 
   const clearTimer = () => {
     if (timerRef.current) {
@@ -33,13 +34,22 @@ export function Tooltip({ content, children, position = "top", delay = 200, clas
     }
   };
 
+  const clearCloseTimer = () => {
+    if (closeTimerRef.current) {
+      window.clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+  };
+
   const show = () => {
     clearTimer();
+    clearCloseTimer();
     timerRef.current = window.setTimeout(() => setVisible(true), delay);
   };
   const hide = () => {
     clearTimer();
-    setVisible(false);
+    clearCloseTimer();
+    closeTimerRef.current = window.setTimeout(() => setVisible(false), 120);
   };
 
   useEffect(() => {
@@ -102,7 +112,10 @@ export function Tooltip({ content, children, position = "top", delay = 200, clas
   }, [visible, position, content]);
 
   useEffect(() => {
-    return () => clearTimer();
+    return () => {
+      clearTimer();
+      clearCloseTimer();
+    };
   }, []);
 
   return (
@@ -128,7 +141,9 @@ export function Tooltip({ content, children, position = "top", delay = 200, clas
             left: coords ? coords.left : 0,
             visibility: coords ? "visible" : "hidden",
           }}
-          className="pointer-events-none fixed z-50 transition-opacity duration-150"
+          className="pointer-events-auto fixed z-50 transition-opacity duration-150"
+          onMouseEnter={clearCloseTimer}
+          onMouseLeave={hide}
         >
           <div className="rounded-sm bg-black/70 p-2 text-white shadow-lg backdrop-blur-sm sm:max-w-120">
             <div className="tooltip-markdown prose prose-invert">
