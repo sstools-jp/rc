@@ -9,7 +9,12 @@ type PrintPreviewTableProps = {
 };
 
 /** 印刷用テーブル表示コンポーネント */
-export function PrintPreviewTable({ title, sections, valueHeader, includeSectionLabel }: PrintPreviewTableProps) {
+export function PrintPreviewTable({
+  title,
+  sections,
+  valueHeader,
+  includeSectionLabel,
+}: PrintPreviewTableProps) {
   return (
     <section>
       <h5 className="mb-2">{title}</h5>
@@ -53,7 +58,9 @@ export function PrintPreviewTable({ title, sections, valueHeader, includeSection
                   <td className="border border-slate-600 px-1 py-0.5 text-center font-mono">
                     <SymbolText value={row.symbol ?? "-"} />
                   </td>
-                  <td className="border border-slate-600 px-1 py-0.5 text-center font-mono">{row.unit ?? "-"}</td>
+                  <td className="border border-slate-600 px-1 py-0.5 text-center font-mono">
+                    {row.unit ?? "-"}
+                  </td>
                   <td className="border border-slate-600 px-1 py-0.5 text-right font-mono">{row.value}</td>
                 </tr>
               )),
