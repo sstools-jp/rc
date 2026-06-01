@@ -23,16 +23,16 @@ export interface AnnularSectionValidationIssue {
 
 /** 計算結果の型定義 */
 export interface AnnularSectionSectionResult {
-  /** 断面積 [mm2] */
-  sectionArea_Mm2: number;
-  /** 全断面積 [mm2] */
-  fullSectionArea_Mm2: number;
-  /** 内部断面積 [mm2] */
-  innerSectionArea_Mm2: number;
+  /** コンクリート外径による断面積 [mm2] */
+  concreteOuterSectionArea_Mm2: number;
+  /** コンクリート内径による断面積 [mm2] */
+  concreteInnerSectionArea_Mm2: number;
+  /** コンクリート総断面積 [mm2] */
+  concreteSectionArea_Mm2: number;
   /** 1本あたりの鉄筋断面積 [mm2] */
-  rebarAreaPerBar_Mm2: number;
+  rebarSingleArea_Mm2: number;
   /** 鉄筋総断面積 [mm2] */
-  totalRebarArea_Mm2: number;
+  rebarTotalArea_Mm2: number;
   /** 鉄筋比 [%] */
   rebarRatioPercent: number;
   /** 中立軸位置の係数 */
@@ -43,7 +43,7 @@ export interface AnnularSectionSectionResult {
 
 /** 荷重状態の結果定義 */
 export interface AnnularSectionLoadingResult {
-  /** 換算曲げモーメント [kN.m] */
+  /** 合成曲げモーメント [kN.m] */
   combinedMoment_KNm: number;
   /** 軸力の符号 */
   axialForceSign: AxialForceSign;
@@ -117,11 +117,11 @@ export class AnnularSectionCalculator {
 
     return {
       section: {
-        sectionArea_Mm2: context.geometry.sectionArea_Mm2,
-        fullSectionArea_Mm2: context.geometry.fullSectionArea_Mm2,
-        innerSectionArea_Mm2: context.geometry.innerSectionArea_Mm2,
-        rebarAreaPerBar_Mm2: context.geometry.rebarAreaPerBar_Mm2,
-        totalRebarArea_Mm2: context.geometry.totalRebarArea_Mm2,
+        concreteOuterSectionArea_Mm2: context.geometry.concreteOuterSectionArea_Mm2,
+        concreteInnerSectionArea_Mm2: context.geometry.concreteInnerSectionArea_Mm2,
+        concreteSectionArea_Mm2: context.geometry.concreteSectionArea_Mm2,
+        rebarSingleArea_Mm2: context.geometry.rebarSingleArea_Mm2,
+        rebarTotalArea_Mm2: context.geometry.rebarTotalArea_Mm2,
         rebarRatioPercent: context.geometry.rebarRatioPercent,
         alpha: context.geometry.alpha,
         gamma: context.geometry.gamma,

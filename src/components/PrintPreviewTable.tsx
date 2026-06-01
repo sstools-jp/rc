@@ -9,7 +9,12 @@ type PrintPreviewTableProps = {
 };
 
 /** 印刷用テーブル表示コンポーネント */
-export function PrintPreviewTable({ title, sections, valueHeader, includeSectionLabel }: PrintPreviewTableProps) {
+export function PrintPreviewTable({
+  title,
+  sections,
+  valueHeader,
+  includeSectionLabel,
+}: PrintPreviewTableProps) {
   return (
     <section>
       <h5 className="mb-2">{title}</h5>
@@ -39,7 +44,7 @@ export function PrintPreviewTable({ title, sections, valueHeader, includeSection
           <tbody>
             {sections.map((section) =>
               section.rows.map((row, rowIndex) => (
-                <tr key={`${section.title}-${row.symbol}`} className="border border-slate-600">
+                <tr key={`${section.title}-${row.symbol ?? row.label}`} className="border border-slate-600">
                   {includeSectionLabel && rowIndex === 0 ? (
                     <td
                       rowSpan={section.rows.length}
@@ -51,9 +56,11 @@ export function PrintPreviewTable({ title, sections, valueHeader, includeSection
                   ) : null}
                   <td className="border border-slate-600 px-1 py-0.5 font-mono">{row.label}</td>
                   <td className="border border-slate-600 px-1 py-0.5 text-center font-mono">
-                    <SymbolText value={row.symbol} />
+                    <SymbolText value={row.symbol ?? "-"} />
                   </td>
-                  <td className="border border-slate-600 px-1 py-0.5 text-center font-mono">{row.unit}</td>
+                  <td className="border border-slate-600 px-1 py-0.5 text-center font-mono">
+                    {row.unit ?? "-"}
+                  </td>
                   <td className="border border-slate-600 px-1 py-0.5 text-right font-mono">{row.value}</td>
                 </tr>
               )),

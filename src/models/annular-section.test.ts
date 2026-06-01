@@ -50,7 +50,7 @@ describe("AnnularSectionCalculator", () => {
     const stress = result.stress;
 
     // 計算結果を検証
-    expect(section.totalRebarArea_Mm2).toBeCloseTo(6194, 0); // 鉄筋断面積 [mm2]
+    expect(section.rebarTotalArea_Mm2).toBeCloseTo(6194, 0); // 鉄筋断面積 [mm2]
     expect(section.rebarRatioPercent).toBeCloseTo(0.31, 2); // 鉄筋比 [%]
     expect(neutralAxis.neutralAxisPosition_Mm).toBeCloseTo(420, 0); // 中立軸位置 [mm]
     expect(neutralAxis.concreteCompressionCoefficient).toBeCloseTo(2.6455, 4); // コンクリート曲げ圧縮応力度の係数
@@ -89,7 +89,7 @@ describe("AnnularSectionCalculator", () => {
     const stress = result.stress;
 
     // 計算結果を検証
-    expect(section.totalRebarArea_Mm2).toBeCloseTo(9290, 0); // 鉄筋断面積 [mm2]
+    expect(section.rebarTotalArea_Mm2).toBeCloseTo(9290, 0); // 鉄筋断面積 [mm2]
     expect(section.rebarRatioPercent).toBeCloseTo(0.21, 2); // 鉄筋比 [%]
     expect(neutralAxis.neutralAxisPosition_Mm).toBeCloseTo(2224, 0); // 中立軸位置 [mm]
     expect(neutralAxis.concreteCompressionCoefficient).toBeCloseTo(0.9211, 4); // コンクリート曲げ圧縮応力度の係数
@@ -160,7 +160,7 @@ describe("AnnularSectionCalculator", () => {
     const stress = result.stress;
 
     // 計算結果を検証
-    expect(section.totalRebarArea_Mm2).toBeCloseTo(32432, 0); // 鉄筋断面積 [mm2]
+    expect(section.rebarTotalArea_Mm2).toBeCloseTo(32432, 0); // 鉄筋断面積 [mm2]
     expect(section.rebarRatioPercent).toBeCloseTo(0.72, 2); // 鉄筋比 [%]
     expect(neutralAxis.neutralAxisPosition_Mm).toBeCloseTo(668, 0); // 中立軸位置 [mm]
     expect(neutralAxis.concreteCompressionCoefficient).toBeCloseTo(2.3142, 4); // コンクリート曲げ圧縮応力度の係数
@@ -205,7 +205,7 @@ describe("AnnularSectionCalculator", () => {
 
     const result = calculator.calculate();
 
-    expect(result.section.totalRebarArea_Mm2).toBeCloseTo(606.3, 1);
+    expect(result.section.rebarTotalArea_Mm2).toBeCloseTo(606.3, 1);
     expect(result.section.rebarRatioPercent).toBeGreaterThan(0);
   });
 
@@ -234,7 +234,7 @@ describe("AnnularSectionCalculator", () => {
 
     const result = calculator.calculate();
 
-    expect(result.section.totalRebarArea_Mm2).toBeCloseTo(totalRebarArea_Mm2, 0); // 鉄筋断面積 [mm2]
+    expect(result.section.rebarTotalArea_Mm2).toBeCloseTo(totalRebarArea_Mm2, 0); // 鉄筋断面積 [mm2]
   });
 
   it("鉄筋径に丸鋼を指定した場合の鉄筋総断面積の照合", () => {
@@ -262,7 +262,7 @@ describe("AnnularSectionCalculator", () => {
 
     const result = calculator.calculate();
 
-    expect(result.section.totalRebarArea_Mm2).toBeCloseTo(totalRebarArea_Mm2, 0); // 鉄筋断面積 [mm2]
+    expect(result.section.rebarTotalArea_Mm2).toBeCloseTo(totalRebarArea_Mm2, 0); // 鉄筋断面積 [mm2]
   });
 
   it("終局耐力の照合", () => {

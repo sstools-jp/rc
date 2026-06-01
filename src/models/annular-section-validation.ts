@@ -47,7 +47,7 @@ function validateGeometry(
     issues.push({ field: "geometry", message: "半径（内）は 0 以上で指定してください。" });
   }
   if (!Number.isFinite(rebarRadius_Mm) || rebarRadius_Mm < 0) {
-    issues.push({ field: "geometry", message: "鉄筋の位置（有効半径）は 0 以上で指定してください。" });
+    issues.push({ field: "geometry", message: "鉄筋位置（半径）は 0 以上で指定してください。" });
   }
   if (!Number.isFinite(barCount) || barCount <= 0) {
     issues.push({ field: "geometry", message: "本数は正の数で指定してください。" });
@@ -71,10 +71,10 @@ function validateGeometry(
     issues.push({ field: "geometry", message: "半径（内）は半径（外）以下で指定してください。" });
   }
   if (Number.isFinite(outerRadius_Mm) && Number.isFinite(rebarRadius_Mm) && rebarRadius_Mm > outerRadius_Mm) {
-    issues.push({ field: "geometry", message: "鉄筋の位置（有効半径）は半径（外）以下で指定してください。" });
+    issues.push({ field: "geometry", message: "鉄筋位置（半径）は半径（外）以下で指定してください。" });
   }
   if (Number.isFinite(innerRadius_Mm) && Number.isFinite(rebarRadius_Mm) && rebarRadius_Mm < innerRadius_Mm) {
-    issues.push({ field: "geometry", message: "鉄筋の位置（有効半径）は半径（内）以上で指定してください。" });
+    issues.push({ field: "geometry", message: "鉄筋位置（半径）は半径（内）以上で指定してください。" });
   }
 }
 
