@@ -154,7 +154,7 @@ function evaluateMomentStress(input: StrengthMomentSolverInput, moment_KNm: numb
   const combinedMoment_Nmm = combinedMoment_KNmm * 1000;
 
   // 応力度を計算
-  const scale = combinedMoment_Nmm / Math.pow(geometry.outerRadius_Mm, 3);
+  const scale = combinedMoment_Nmm / geometry.outerRadius_Mm ** 3;
 
   return {
     moment_KNm,
@@ -191,10 +191,7 @@ function solveMomentForTargetStress_KNm(
   }
 
   // 上限を増加しながら、目標応力度に到達する曲げモーメントを探索
-  let upperMoment_KNm = Math.max(
-    1,
-    (targetStress_NPerMm2 * Math.pow(input.geometry.outerRadius_Mm, 3)) / 1000,
-  );
+  let upperMoment_KNm = Math.max(1, (targetStress_NPerMm2 * input.geometry.outerRadius_Mm ** 3) / 1000);
   let upperEvaluation = evaluate(upperMoment_KNm);
   let upperStress = stressSelector({
     concreteCompressionStress_NPerMm2: upperEvaluation.concreteCompressionStress_NPerMm2,
@@ -276,7 +273,7 @@ function searchBestNeutralAxisAngleDeg(input: NeutralAxisSolverInput): number {
   let bestObjective = Number.POSITIVE_INFINITY;
 
   for (let iteration = 0; iteration < 14; iteration++) {
-    const step = Math.pow(10, -iteration);
+    const step = 10 ** -iteration;
     for (let angle = start; angle < end; angle += step) {
       const objective = evaluateObjective({
         angleDeg: angle,
@@ -332,10 +329,10 @@ function evaluateZeroAxialObjective(input: {
 }): number {
   const { angleRad, innerAngleRad, gamma, rebarRatio, youngRatio } = input;
   const objective =
-    (Math.sin(angleRad) / 3) * (2 + Math.pow(Math.cos(angleRad), 2)) -
+    (Math.sin(angleRad) / 3) * (2 + Math.cos(angleRad) ** 2) -
     angleRad * Math.cos(angleRad) -
-    Math.pow(gamma, 3) *
-      ((Math.sin(innerAngleRad) / 3) * (2 + Math.pow(Math.cos(innerAngleRad), 2)) -
+    gamma ** 3 *
+      ((Math.sin(innerAngleRad) / 3) * (2 + Math.cos(innerAngleRad) ** 2) -
         innerAngleRad * Math.cos(innerAngleRad)) -
     Math.PI * youngRatio * rebarRatio * Math.cos(angleRad);
   return Math.abs(objective);
@@ -354,19 +351,19 @@ function evaluateNonZeroAxialObjective(input: {
   const { angleRad, innerAngleRad, alpha, gamma, rebarRatio, beta, youngRatio } = input;
   const numerator =
     angleRad / 4 -
-    Math.sin(angleRad) * Math.cos(angleRad) * (5 / 12 - (1 / 6) * Math.pow(Math.cos(angleRad), 2)) -
-    Math.pow(gamma, 4) *
+    Math.sin(angleRad) * Math.cos(angleRad) * (5 / 12 - (1 / 6) * Math.cos(angleRad) ** 2) -
+    gamma ** 4 *
       (innerAngleRad / 4 -
         Math.sin(innerAngleRad) *
           Math.cos(innerAngleRad) *
-          (5 / 12 - (1 / 6) * Math.pow(Math.cos(innerAngleRad), 2))) +
-    ((Math.PI * youngRatio * rebarRatio) / 2) * Math.pow(alpha, 2);
+          (5 / 12 - (1 / 6) * Math.cos(innerAngleRad) ** 2)) +
+    ((Math.PI * youngRatio * rebarRatio) / 2) * alpha ** 2;
 
   const denominator =
-    (Math.sin(angleRad) / 3) * (2 + Math.pow(Math.cos(angleRad), 2)) -
+    (Math.sin(angleRad) / 3) * (2 + Math.cos(angleRad) ** 2) -
     angleRad * Math.cos(angleRad) -
-    Math.pow(gamma, 3) *
-      ((Math.sin(innerAngleRad) / 3) * (2 + Math.pow(Math.cos(innerAngleRad), 2)) -
+    gamma ** 3 *
+      ((Math.sin(innerAngleRad) / 3) * (2 + Math.cos(innerAngleRad) ** 2) -
         innerAngleRad * Math.cos(innerAngleRad)) -
     Math.PI * youngRatio * rebarRatio * Math.cos(angleRad);
 
@@ -423,21 +420,21 @@ function computeConcreteCompressionCoefficient(input: {
 
   const numerator = 1 - Math.cos(angleRad);
   const denominator =
-    (2 / 3) * Math.pow(Math.sin(angleRad), 3) -
+    (2 / 3) * Math.sin(angleRad) ** 3 -
     angleRad * Math.cos(angleRad) +
-    Math.sin(angleRad) * Math.pow(Math.cos(angleRad), 2) +
+    Math.sin(angleRad) * Math.cos(angleRad) ** 2 +
     angleRad / 4 -
     (1 / 4) * Math.sin(angleRad) * Math.cos(angleRad) -
-    (1 / 6) * Math.pow(Math.sin(angleRad), 3) * Math.cos(angleRad) -
-    Math.pow(gamma, 3) *
-      ((2 / 3) * Math.pow(Math.sin(innerAngleRad), 3) -
+    (1 / 6) * Math.sin(angleRad) ** 3 * Math.cos(angleRad) -
+    gamma ** 3 *
+      ((2 / 3) * Math.sin(innerAngleRad) ** 3 -
         innerAngleRad * Math.cos(innerAngleRad) +
-        Math.sin(innerAngleRad) * Math.pow(Math.cos(innerAngleRad), 2) +
+        Math.sin(innerAngleRad) * Math.cos(innerAngleRad) ** 2 +
         gamma *
           (innerAngleRad / 4 -
             (1 / 4) * Math.sin(innerAngleRad) * Math.cos(innerAngleRad) -
-            (1 / 6) * Math.pow(Math.sin(innerAngleRad), 3) * Math.cos(innerAngleRad))) +
-    Math.PI * youngRatio * rebarRatio * ((1 / 2) * Math.pow(alpha, 2) - Math.cos(angleRad));
+            (1 / 6) * Math.sin(innerAngleRad) ** 3 * Math.cos(innerAngleRad))) +
+    Math.PI * youngRatio * rebarRatio * ((1 / 2) * alpha ** 2 - Math.cos(angleRad));
 
   return numerator / denominator;
 }
@@ -476,49 +473,40 @@ function computeShearCoefficient(input: {
   const z3Numerator =
     angleRad -
     Math.sin(angleRad) * Math.cos(angleRad) -
-    (2 / 3) * Math.pow(Math.sin(angleRad), 3) +
-    -Math.pow(gamma, 2) *
+    (2 / 3) * Math.sin(angleRad) ** 3 +
+    -(gamma ** 2) *
       (innerAngleRad -
         Math.sin(innerAngleRad) * Math.cos(innerAngleRad) -
-        (2 / 3) * gamma * Math.pow(Math.sin(innerAngleRad), 3)) +
+        (2 / 3) * gamma * Math.sin(innerAngleRad) ** 3) +
     Math.PI * youngRatio * rebarRatio;
   const z3Denominator =
     angleRad -
     Math.sin(angleRad) * Math.cos(angleRad) -
-    Math.pow(gamma, 2) * (innerAngleRad - Math.sin(innerAngleRad) * Math.cos(innerAngleRad)) +
+    gamma ** 2 * (innerAngleRad - Math.sin(innerAngleRad) * Math.cos(innerAngleRad)) +
     Math.PI * youngRatio * rebarRatio;
   const z3 = z3Numerator / z3Denominator;
 
   // z2 はせん断剛性に関連する無次元量
   let z2 = 0;
-  z2 += Math.pow(z3, 2) * (angleRad - Math.sin(angleRad) * Math.cos(angleRad));
-  z2 +=
-    2 *
-    z3 *
-    (-angleRad + Math.sin(angleRad) * Math.cos(angleRad) + (2 / 3) * Math.pow(Math.sin(angleRad), 3));
+  z2 += z3 ** 2 * (angleRad - Math.sin(angleRad) * Math.cos(angleRad));
+  z2 += 2 * z3 * (-angleRad + Math.sin(angleRad) * Math.cos(angleRad) + (2 / 3) * Math.sin(angleRad) ** 3);
   z2 += (5 / 4) * (angleRad - Math.sin(angleRad) * Math.cos(angleRad));
-  z2 += Math.pow(Math.sin(angleRad), 3) * (Math.cos(angleRad) / 2 - 4 / 3);
+  z2 += Math.sin(angleRad) ** 3 * (Math.cos(angleRad) / 2 - 4 / 3);
+  z2 += -(gamma ** 2) * z3 ** 2 * (innerAngleRad - Math.sin(innerAngleRad) * Math.cos(innerAngleRad));
   z2 +=
-    -Math.pow(gamma, 2) *
-    Math.pow(z3, 2) *
-    (innerAngleRad - Math.sin(innerAngleRad) * Math.cos(innerAngleRad));
-  z2 +=
-    -Math.pow(gamma, 2) *
+    -(gamma ** 2) *
     2 *
     z3 *
     (-innerAngleRad +
       Math.sin(innerAngleRad) * Math.cos(innerAngleRad) +
-      (2 / 3) * gamma * Math.pow(Math.sin(innerAngleRad), 3));
+      (2 / 3) * gamma * Math.sin(innerAngleRad) ** 3);
   z2 +=
-    -Math.pow(gamma, 2) *
-    (1 + Math.pow(gamma, 2) / 4) *
+    -(gamma ** 2) *
+    (1 + gamma ** 2 / 4) *
     (innerAngleRad - Math.sin(innerAngleRad) * Math.cos(innerAngleRad));
   z2 +=
-    -Math.pow(gamma, 2) *
-    gamma *
-    Math.pow(Math.sin(innerAngleRad), 3) *
-    ((gamma * Math.cos(innerAngleRad)) / 2 - 4 / 3);
-  z2 += Math.PI * youngRatio * rebarRatio * (Math.pow(alpha, 2) / 2 + Math.pow(1 - z3, 2));
+    -(gamma ** 2) * gamma * Math.sin(innerAngleRad) ** 3 * ((gamma * Math.cos(innerAngleRad)) / 2 - 4 / 3);
+  z2 += Math.PI * youngRatio * rebarRatio * (alpha ** 2 / 2 + (1 - z3) ** 2);
 
   const numerator = youngRatio * rebarRatio * (alpha * Math.sin(xs) - (Math.PI - xs) * (z3 - 1));
   const denominator = 2 * (Math.sin(angleRad) - gamma * Math.sin(innerAngleRad)) * z2;
