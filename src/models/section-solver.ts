@@ -319,7 +319,7 @@ function computeInnerAngle(angleRad: number, gamma: number, alpha: number): numb
   return Math.PI;
 }
 
-/** 軸力が 0 のときの目的関数を評価する */
+/** 軸力が 0 の場合の目的関数を評価する */
 function evaluateZeroAxialObjective(input: {
   angleRad: number;
   innerAngleRad: number;
@@ -338,7 +338,7 @@ function evaluateZeroAxialObjective(input: {
   return Math.abs(objective);
 }
 
-/** 軸力が 0 でないときの目的関数を評価する */
+/** 軸力が 0 以外の場合の目的関数を評価する */
 function evaluateNonZeroAxialObjective(input: {
   angleRad: number;
   innerAngleRad: number;
@@ -395,7 +395,7 @@ function evaluateObjective(input: {
     });
   }
 
-  // 軸力が 0 でない場合
+  // 軸力が 0 以外の場合
   return evaluateNonZeroAxialObjective({
     angleRad,
     innerAngleRad,
@@ -466,10 +466,10 @@ function computeShearCoefficient(input: {
 }): number {
   const { angleRad, innerAngleRad, gamma, alpha, rebarRatio, youngRatio } = input;
 
-  // xs は中立軸角度に対応する内部角度を表す無次元量
+  /** 中立軸角度に対応する内部角度を表す無次元量 */
   const xs = Math.acos((1 / alpha) * Math.cos(angleRad));
 
-  // z3 は中立軸位置を表す無次元量
+  /** 中立軸位置を表す無次元量 */
   const z3Numerator =
     angleRad -
     Math.sin(angleRad) * Math.cos(angleRad) -
@@ -486,7 +486,7 @@ function computeShearCoefficient(input: {
     Math.PI * youngRatio * rebarRatio;
   const z3 = z3Numerator / z3Denominator;
 
-  // z2 はせん断剛性に関連する無次元量
+  /** せん断剛性に関連する無次元量 */
   let z2 = 0;
   z2 += z3 ** 2 * (angleRad - Math.sin(angleRad) * Math.cos(angleRad));
   z2 += 2 * z3 * (-angleRad + Math.sin(angleRad) * Math.cos(angleRad) + (2 / 3) * Math.sin(angleRad) ** 3);
