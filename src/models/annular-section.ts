@@ -33,8 +33,10 @@ export interface AnnularSectionSectionResult {
   rebarSingleArea_Mm2: number;
   /** 鉄筋総断面積 [mm2] */
   rebarTotalArea_Mm2: number;
-  /** 鉄筋比 [%] */
-  rebarRatioPercent: number;
+  /** 鉄筋比（コンクリート実断面） [%] */
+  actualRebarRatioPercent: number;
+  /** 鉄筋比（コンクリート仮想中実断面） [%] */
+  virtualSolidRebarRatioPercent: number;
   /** 中立軸位置の係数 */
   alpha: number;
   /** 軸力係数 */
@@ -122,7 +124,8 @@ export class AnnularSectionCalculator {
         concreteSectionArea_Mm2: context.geometry.concreteSectionArea_Mm2,
         rebarSingleArea_Mm2: context.geometry.rebarSingleArea_Mm2,
         rebarTotalArea_Mm2: context.geometry.rebarTotalArea_Mm2,
-        rebarRatioPercent: context.geometry.rebarRatioPercent,
+        actualRebarRatioPercent: context.geometry.actualRebarRatioPercent,
+        virtualSolidRebarRatioPercent: context.geometry.virtualSolidRebarRatioPercent,
         alpha: context.geometry.alpha,
         gamma: context.geometry.gamma,
       },

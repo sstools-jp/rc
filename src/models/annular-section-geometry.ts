@@ -54,8 +54,13 @@ export class AnnularSectionGeometry {
     return (Math.PI / (16 * this.outerRadius_Mm)) * (this.outerRadius_Mm ** 4 - this.innerRadius_Mm ** 4);
   }
 
-  /** 鉄筋比 [%] */
-  get rebarRatioPercent(): number {
+  /** 鉄筋比（コンクリート仮想中実断面） [%] */
+  get virtualSolidRebarRatioPercent(): number {
+    return (this.rebarTotalArea_Mm2 / this.concreteOuterSectionArea_Mm2) * 100;
+  }
+
+  /** 鉄筋比（コンクリート実断面） [%] */
+  get actualRebarRatioPercent(): number {
     return (this.rebarTotalArea_Mm2 / this.concreteSectionArea_Mm2) * 100;
   }
 

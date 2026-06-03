@@ -51,7 +51,7 @@ describe("AnnularSectionCalculator", () => {
 
     // 計算結果を検証
     expect(section.rebarTotalArea_Mm2).toBeCloseTo(6194, 0); // 鉄筋断面積 [mm2]
-    expect(section.rebarRatioPercent).toBeCloseTo(0.31, 2); // 鉄筋比 [%]
+    expect(section.virtualSolidRebarRatioPercent).toBeCloseTo(0.31, 2); // 鉄筋比（コンクリート仮想中実断面） [%]
     expect(neutralAxis.neutralAxisPosition_Mm).toBeCloseTo(420, 0); // 中立軸位置 [mm]
     expect(neutralAxis.concreteCompressionCoefficient).toBeCloseTo(2.6455, 4); // コンクリート曲げ圧縮応力度の係数
     expect(neutralAxis.steelStressCoefficient).toBeCloseTo(6.7991, 4); // 鉄筋曲げ引張応力度の係数
@@ -90,7 +90,7 @@ describe("AnnularSectionCalculator", () => {
 
     // 計算結果を検証
     expect(section.rebarTotalArea_Mm2).toBeCloseTo(9290, 0); // 鉄筋断面積 [mm2]
-    expect(section.rebarRatioPercent).toBeCloseTo(0.21, 2); // 鉄筋比 [%]
+    expect(section.virtualSolidRebarRatioPercent).toBeCloseTo(0.21, 2); // 鉄筋比（コンクリート仮想中実断面） [%]
     expect(neutralAxis.neutralAxisPosition_Mm).toBeCloseTo(2224, 0); // 中立軸位置 [mm]
     expect(neutralAxis.concreteCompressionCoefficient).toBeCloseTo(0.9211, 4); // コンクリート曲げ圧縮応力度の係数
     expect(neutralAxis.steelStressCoefficient).toBeCloseTo(0.0108, 4); // 鉄筋曲げ引張応力度の係数
@@ -161,7 +161,7 @@ describe("AnnularSectionCalculator", () => {
 
     // 計算結果を検証
     expect(section.rebarTotalArea_Mm2).toBeCloseTo(32432, 0); // 鉄筋断面積 [mm2]
-    expect(section.rebarRatioPercent).toBeCloseTo(0.72, 2); // 鉄筋比 [%]
+    expect(section.virtualSolidRebarRatioPercent).toBeCloseTo(0.72, 2); // 鉄筋比（コンクリート仮想中実断面） [%]
     expect(neutralAxis.neutralAxisPosition_Mm).toBeCloseTo(668, 0); // 中立軸位置 [mm]
     expect(neutralAxis.concreteCompressionCoefficient).toBeCloseTo(2.3142, 4); // コンクリート曲げ圧縮応力度の係数
     expect(neutralAxis.steelStressCoefficient).toBeCloseTo(5.3907, 4); // 鉄筋曲げ引張応力度の係数
@@ -206,7 +206,7 @@ describe("AnnularSectionCalculator", () => {
     const result = calculator.calculate();
 
     expect(result.section.rebarTotalArea_Mm2).toBeCloseTo(606.3, 1);
-    expect(result.section.rebarRatioPercent).toBeGreaterThan(0);
+    expect(result.section.virtualSolidRebarRatioPercent).toBeGreaterThan(0);
   });
 
   it("鉄筋径に異形棒鋼を指定した場合の鉄筋総断面積の照合", () => {

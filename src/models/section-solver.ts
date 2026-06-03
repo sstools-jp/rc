@@ -60,7 +60,7 @@ const EPSILON = 1e-9;
 /** 中立軸角度を求めるソルバー関数 */
 export function solveNeutralAxisAngleDeg(input: NeutralAxisSolverInput): NeutralAxisSolverResult {
   const { geometry, materialParams } = input;
-  const { alpha, gamma, rebarRatioPercent } = geometry;
+  const { alpha, gamma, virtualSolidRebarRatioPercent } = geometry;
 
   // 中立軸角度の候補を探索
   const bestAngleDeg = searchBestNeutralAxisAngleDeg(input);
@@ -75,7 +75,7 @@ export function solveNeutralAxisAngleDeg(input: NeutralAxisSolverInput): Neutral
     innerAngleRad: innerAngle,
     gamma,
     alpha,
-    rebarRatio: rebarRatioPercent / 100,
+    rebarRatio: virtualSolidRebarRatioPercent / 100,
     youngRatio: materialParams.youngRatio,
   });
 
@@ -93,7 +93,7 @@ export function solveNeutralAxisAngleDeg(input: NeutralAxisSolverInput): Neutral
     innerAngleRad: innerAngle,
     gamma,
     alpha,
-    rebarRatio: rebarRatioPercent / 100,
+    rebarRatio: virtualSolidRebarRatioPercent / 100,
     youngRatio: materialParams.youngRatio,
     concreteCompressionCoefficient,
   });
@@ -261,10 +261,10 @@ function solveMomentForTargetStress_KNm(
 /** 中立軸角度の候補を探索する */
 function searchBestNeutralAxisAngleDeg(input: NeutralAxisSolverInput): number {
   const { geometry, axial_KN, moment_KNm } = input;
-  const { alpha, gamma, rebarRatioPercent, outerRadius_Mm } = geometry;
+  const { alpha, gamma, virtualSolidRebarRatioPercent, outerRadius_Mm } = geometry;
   const { youngRatio } = input.materialParams;
 
-  const rebarRatio = rebarRatioPercent / 100;
+  const rebarRatio = virtualSolidRebarRatioPercent / 100;
   const moment_KNmm = moment_KNm * 1000;
   const beta = axial_KN === 0 ? Number.POSITIVE_INFINITY : moment_KNmm / (axial_KN * outerRadius_Mm);
 

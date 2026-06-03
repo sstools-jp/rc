@@ -98,9 +98,9 @@ export function AnnularSectionResultPanel({ result }: { result: AnnularSectionRe
             unit="mm²"
           />
           <ResultCell
-            label="鉄筋比"
+            label="鉄筋比（コンクリート実断面）"
             symbol="p"
-            value={formatNumber(section?.rebarRatioPercent, 2)}
+            value={formatNumber(section?.actualRebarRatioPercent, 2)}
             valueWidth={14}
             unit="%"
           />
