@@ -174,12 +174,9 @@ function solveMomentForTargetStress_KNm(
   /** ソルバーの名称（エラーメッセージ用） */
   solverName: string,
 ): number {
-  /** 曲げモーメントに対する応力度を算出する関数 */
-  const evaluate = (moment_KNm: number): MomentStressEvaluation => evaluateMomentStress(input, moment_KNm);
-
   // 初期の下限と上限を設定して、二分探索で目標応力度に到達する曲げモーメントを求める
   const lowerMoment_KNm = 0;
-  const lowerEvaluation = evaluate(lowerMoment_KNm);
+  const lowerEvaluation = evaluateMomentStress(input, lowerMoment_KNm);
   const lowerStress = stressSelector({
     concreteCompressionStress_NPerMm2: lowerEvaluation.concreteCompressionStress_NPerMm2,
     rebarStress_NPerMm2: lowerEvaluation.rebarStress_NPerMm2,
@@ -192,7 +189,7 @@ function solveMomentForTargetStress_KNm(
 
   // 上限を増加しながら、目標応力度に到達する曲げモーメントを探索
   let upperMoment_KNm = Math.max(1, (targetStress_NPerMm2 * input.geometry.outerRadius_Mm ** 3) / 1000);
-  let upperEvaluation = evaluate(upperMoment_KNm);
+  let upperEvaluation = evaluateMomentStress(input, upperMoment_KNm);
   let upperStress = stressSelector({
     concreteCompressionStress_NPerMm2: upperEvaluation.concreteCompressionStress_NPerMm2,
     rebarStress_NPerMm2: upperEvaluation.rebarStress_NPerMm2,
@@ -202,7 +199,7 @@ function solveMomentForTargetStress_KNm(
   let guard = 0;
   while (upperStress < targetStress_NPerMm2 && guard < 40) {
     upperMoment_KNm *= 2;
-    upperEvaluation = evaluate(upperMoment_KNm);
+    upperEvaluation = evaluateMomentStress(input, upperMoment_KNm);
     upperStress = stressSelector({
       concreteCompressionStress_NPerMm2: upperEvaluation.concreteCompressionStress_NPerMm2,
       rebarStress_NPerMm2: upperEvaluation.rebarStress_NPerMm2,
@@ -226,7 +223,7 @@ function solveMomentForTargetStress_KNm(
   // 反復計算の回数に制限を設ける（無限ループ防止）
   for (let iteration = 0; iteration < 60; iteration++) {
     const mid = (low + high) / 2;
-    const midEvaluation = evaluate(mid);
+    const midEvaluation = evaluateMomentStress(input, mid);
     const midStress = stressSelector({
       concreteCompressionStress_NPerMm2: midEvaluation.concreteCompressionStress_NPerMm2,
       rebarStress_NPerMm2: midEvaluation.rebarStress_NPerMm2,
