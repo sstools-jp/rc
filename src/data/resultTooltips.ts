@@ -57,7 +57,7 @@ export const resultTooltips: Record<string, TooltipDoc> = {
       math`A_s = n \times \dfrac{\pi d_s^2}{4}`,
       "---",
       "コンクリート総断面積",
-      math`A_c = \pi \left( \dfrac{D^2 d^2}{4} \right)`,
+      math`A_c = \dfrac{\pi}{2} (r^2 - r_0^2)`,
       "---",
       "鉄筋比（コンクリート実断面）",
       math`p = \dfrac{A_s}{A_c} \times 100\%`,
