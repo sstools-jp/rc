@@ -119,8 +119,7 @@ export function calculateStressState(
   const concreteShearStress_NPerMm2 = Math.min(shearStress_NPerMm2, tauC_NPerMm2);
 
   /** 鉄筋せん断応力度 [N/mm2] */
-  const rebarShearStress_NPerMm2 =
-    shearStress_NPerMm2 > tauC_NPerMm2 ? shearStress_NPerMm2 - tauC_NPerMm2 : 0;
+  const rebarShearStress_NPerMm2 = Math.max(0, shearStress_NPerMm2 - tauC_NPerMm2);
 
   return {
     concreteCompressionStress_NPerMm2,
