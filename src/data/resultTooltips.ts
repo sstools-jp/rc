@@ -47,6 +47,14 @@ export const resultTooltips: Record<string, TooltipContent> = {
       },
     ],
   },
+  M_c: {
+    title: "コンクリート終局曲げモーメント",
+    lines: [math`M_c = \{ M \mid \sigma_c(M) = \sigma_{cy} \}`],
+  },
+  M_b: {
+    title: "鉄筋降伏曲げモーメント",
+    lines: [math`M_b = \{ M \mid \sigma_s(M) = \sigma_{sy} \}`],
+  },
   A_s: {
     title: "鉄筋総断面積",
     lines: [math`A_s = H \times \dfrac{\pi}{2} r_s^2`],
@@ -130,19 +138,19 @@ export const resultTooltips: Record<string, TooltipContent> = {
     title: "鋼材応力度係数",
     lines: [
       math`f_s(\theta, \theta_{\text{in}})
-           = f_c(\theta, \theta_{\text{in}}) \times \frac{\alpha + \cos\theta}{1 - \cos\theta}`,
+           = f_c(\theta, \theta_{\text{in}}) \times \dfrac{\alpha + \cos\theta}{1 - \cos\theta}`,
     ],
   },
   f_v: {
     title: "せん断応力度係数",
     lines: [
       {
-        line: math`f_v(\theta, \theta_{\text{in}}) = \frac
+        line: math`f_v(\theta, \theta_{\text{in}}) = \dfrac
                    {
-                     n p \left\{ \alpha \sin x_s - (\pi - x_s)(z_3 - 1) \right\}
+                     \alpha \sin x_s - (\pi - x_s)(z_3 - 1)
                    }{
-                     2 ( \sin\theta - \gamma \sin\theta_{\text{in}} ) z_2
-                   }`,
+                     2 z_2 ( \sin\theta - \gamma \sin\theta_{\text{in}} )
+                   } n p`,
         nestedLines: [
           math`x_s = \arccos\left( \frac{1}{\alpha} \cos\theta \right)`,
           math`\begin{array}{rcl}
