@@ -117,7 +117,7 @@ export function AnnularSectionResultPanel({ result }: { result: AnnularSectionRe
           <ResultCell label="幾何係数" symbol="α" value={formatNumber(section?.alpha, 4)} valueWidth={14} />
           <ResultCell label="幾何係数" symbol="γ" value={formatNumber(section?.gamma, 4)} valueWidth={14} />
           <ResultCell
-            label="コンクリート圧縮係数"
+            label="コンクリート圧縮応力度係数"
             symbol="κc"
             value={formatNumber(neutralAxis?.concreteCompressionCoefficient, 4)}
             valueWidth={14}
@@ -129,7 +129,7 @@ export function AnnularSectionResultPanel({ result }: { result: AnnularSectionRe
             valueWidth={14}
           />
           <ResultCell
-            label="せん断係数"
+            label="せん断応力度係数"
             symbol="κv"
             value={formatNumber(neutralAxis?.shearCoefficient, 4)}
             valueWidth={14}
