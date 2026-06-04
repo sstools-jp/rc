@@ -22,7 +22,7 @@ export interface NeutralAxisSolverResult {
   concreteCompressionCoefficient: number;
   /** 鋼材応力度係数 */
   steelStressCoefficient: number;
-  /** せん断係数 */
+  /** せん断応力度係数 */
   shearCoefficient: number;
 }
 
@@ -64,12 +64,12 @@ export function solveNeutralAxisAngleDeg(input: NeutralAxisSolverInput): Neutral
 
   // 中立軸角度の候補を探索
   const bestAngleDeg = searchBestNeutralAxisAngleDeg(input);
-
-  // 最適な中立軸角度に対応する内部角度を計算
+  /** 中立軸角度 [rad] */
   const angleRad = degToRad(bestAngleDeg);
+  /** 内部角度 [rad] */
   const innerAngle = computeInnerAngle(angleRad, gamma, alpha);
 
-  // コンクリート圧縮応力度係数を算出
+  /** コンクリート圧縮応力度係数 */
   const concreteCompressionCoefficient = computeConcreteCompressionCoefficient({
     angleRad,
     innerAngleRad: innerAngle,
@@ -79,7 +79,7 @@ export function solveNeutralAxisAngleDeg(input: NeutralAxisSolverInput): Neutral
     youngRatio: materialParams.youngRatio,
   });
 
-  // 鋼材応力度係数を算出
+  /** 鋼材応力度係数 */
   const steelStressCoefficient = computeSteelStressCoefficient({
     angleRad,
     innerAngleRad: innerAngle,
@@ -87,7 +87,7 @@ export function solveNeutralAxisAngleDeg(input: NeutralAxisSolverInput): Neutral
     concreteCompressionCoefficient,
   });
 
-  // せん断係数を算出
+  /** せん断応力度係数 */
   const shearCoefficient = computeShearCoefficient({
     angleRad,
     innerAngleRad: innerAngle,
@@ -451,7 +451,7 @@ function computeSteelStressCoefficient(input: {
   return concreteCompressionCoefficient * (numerator / denominator);
 }
 
-/** せん断係数の計算関数 */
+/** せん断応力度係数の計算関数 */
 function computeShearCoefficient(input: {
   angleRad: number;
   innerAngleRad: number;
