@@ -1,6 +1,6 @@
 import type { AnnularSectionResult } from "@/models/annular-section";
 import { formatNumber } from "@/utils/number-format";
-import AccordionSection from "@/components/AccordionSection";
+import { AccordionSection } from "@/components/AccordionSection";
 import { resultTooltips } from "@/data/resultTooltips";
 import { Tooltip } from "@/components/Tooltip";
 import type { TooltipContent } from "@/components/Tooltip";
