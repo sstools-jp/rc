@@ -5,11 +5,21 @@ import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 
+export interface TooltipContent {
+  title?: string;
+  lines: Array<string | TooltipContentLine>;
+}
+
+interface TooltipContentLine {
+  line: string;
+  nestedLines?: Array<string | TooltipContentLine>;
+}
+
 export type TooltipPosition = "top" | "bottom" | "left" | "right";
 
 export interface TooltipProps {
   /** ツールチップの内容 (Markdownでレンダリング) */
-  content: string;
+  content: string | TooltipContent;
   children: React.ReactNode;
   /** 表示位置 */
   position?: TooltipPosition;
@@ -147,9 +157,15 @@ export function Tooltip({ content, children, position = "top", delay = 200, clas
         >
           <div className="rounded-sm bg-black/70 p-2 text-white shadow-lg backdrop-blur-sm sm:max-w-120">
             <div className="tooltip-markdown prose prose-invert">
-              <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
-                {content}
-              </ReactMarkdown>
+              {typeof content === "string" ? (
+                <MarkdownLine line={content} />
+              ) : (
+                <>
+                  {content.lines.map((line, index) => {
+                    <MarkdownLine key={index} line={line} />;
+                  })}
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -157,3 +173,29 @@ export function Tooltip({ content, children, position = "top", delay = 200, clas
     </>
   );
 }
+
+const MarkdownLine: React.FC<{
+  line: string | TooltipContentLine;
+  nestedLines?: Array<string | TooltipContentLine>;
+}> = ({ line, nestedLines }) => {
+  return (
+    <div>
+      <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
+        {typeof line === "string" ? line : line.line}
+      </ReactMarkdown>
+      {nestedLines && (
+        <div className="mt-1 ml-4 space-y-1">
+          {nestedLines.map((nested, idx) =>
+            typeof nested === "string" ? (
+              <ReactMarkdown key={idx} remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
+                {nested}
+              </ReactMarkdown>
+            ) : (
+              <MarkdownLine key={idx} line={nested.line} nestedLines={nested.nestedLines} />
+            ),
+          )}
+        </div>
+      )}
+    </div>
+  );
+};

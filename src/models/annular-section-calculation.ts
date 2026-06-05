@@ -22,9 +22,13 @@ export interface SectionCalculationContext {
   forceComponents: SectionForceComponents;
   /** モーメント [kN.m] */
   moment_KNm: number;
+  /** せん断力 [kN] */
   shear_KN: number;
+  /** 軸力 [kN] */
   axial_KN: number;
+  /** 合成曲げモーメント [kN.mm] */
   combinedMoment_KNmm: number;
+  /** 合成曲げモーメント [kN.m] */
   combinedMoment_KNm: number;
 }
 
@@ -95,19 +99,27 @@ export function calculateStressState(
   const outerRadius_Mm = context.geometry.outerRadius_Mm;
   const scale = combinedMomentNmm / outerRadius_Mm ** 3;
 
+  /** コンクリート圧縮応力度 [N/mm2] */
   const concreteCompressionStress_NPerMm2 = scale * solver.concreteCompressionCoefficient;
+
+  /** 鉄筋引張応力度 [N/mm2] */
   const rebarStress_NPerMm2 = scale * solver.steelStressCoefficient * context.materialParams.youngRatio;
 
+  /** ねじりモーメント [kN.m] */
   const mx_KNm = Math.abs(context.force.mx_KNm ?? 0);
+
+  /** せん断応力度 [N/mm2] */
   const shearStress_NPerMm2 =
     ((context.shear_KN * 1000) / outerRadius_Mm ** 2) * solver.shearCoefficient +
     (mx_KNm * 1000 ** 2) / context.geometry.polarSectionModulus_Mm3;
 
   const tauC_NPerMm2 = getTauC_NPerMm2(context.materialParams.concreteDesignStrength_NPerMm2);
 
+  /** コンクリートせん断応力度 [N/mm2] */
   const concreteShearStress_NPerMm2 = Math.min(shearStress_NPerMm2, tauC_NPerMm2);
-  const rebarShearStress_NPerMm2 =
-    shearStress_NPerMm2 > tauC_NPerMm2 ? shearStress_NPerMm2 - tauC_NPerMm2 : 0;
+
+  /** 鉄筋せん断応力度 [N/mm2] */
+  const rebarShearStress_NPerMm2 = Math.max(0, shearStress_NPerMm2 - tauC_NPerMm2);
 
   return {
     concreteCompressionStress_NPerMm2,
