@@ -1,12 +1,4 @@
-interface TooltipContent {
-  title?: string;
-  lines: Array<string | TooltipContentLine>;
-}
-
-interface TooltipContentLine {
-  line: string;
-  nestedLines?: Array<string | TooltipContentLine>;
-}
+import type { TooltipContent } from "@/components/Tooltip";
 
 /** Markdown 数式 (タグ付きテンプレートリテラルとして使用) */
 const math = (strings: TemplateStringsArray, ...values: Array<string | number>) =>
