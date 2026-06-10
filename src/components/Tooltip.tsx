@@ -71,7 +71,7 @@ export function Tooltip({
   return (
     <Popover.Root open={isOpen} onOpenChange={setIsOpen}>
       <Popover.Trigger
-        className="cursor-help rounded border-0 bg-transparent px-0.5 mix-blend-multiply hover:bg-slate-100"
+        className="cursor-help rounded border-0 bg-transparent px-0.5 mix-blend-multiply hover:bg-slate-100 outline-none"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onClick={handleClick}
@@ -87,7 +87,7 @@ export function Tooltip({
           className="z-50"
         >
           <Popover.Popup
-            className="relative box-border flex max-w-full flex-col rounded-sm border border-gray-500 bg-white p-2 leading-5 shadow-lg"
+            className="relative box-border flex max-w-full flex-col rounded-sm border border-gray-500 bg-white p-2 leading-5 shadow-lg outline-none"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
           >
