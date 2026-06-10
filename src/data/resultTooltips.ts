@@ -24,12 +24,12 @@ export const resultTooltips: Record<string, TooltipContent> = {
   tau_c: {
     title: "コンクリートせん断応力度",
     line: math`\tau_c = \min(\tau, \tau_\text{ca})`,
-    nestedLine: math`\tau = \dfrac{S}{r^2} \times f_v + \dfrac{M_x}{Z_p}`,
+    nestedLines: [math`\tau = \dfrac{S}{r^2} \times f_v + \dfrac{M_x}{Z_p}`],
   },
   tau_s: {
     title: "鉄筋せん断応力度",
     line: math`\tau_s = \max(0, \tau - \tau_\text{ca})`,
-    nestedLine: math`\tau = \dfrac{S}{r^2} \times f_v + \dfrac{M_x}{Z_p}`,
+    nestedLines: [math`\tau = \dfrac{S}{r^2} \times f_v + \dfrac{M_x}{Z_p}`],
   },
   M_c: {
     title: "コンクリート終局曲げモーメント",
@@ -54,39 +54,39 @@ export const resultTooltips: Record<string, TooltipContent> = {
   theta: {
     title: "中立軸角度",
     line: math`\theta = \arg\min\nolimits_\theta \left|f(\theta)\right|`,
-    nestedLine: {
-      line: math`f(\theta) =
+    nestedLines: [
+      {
+        line: math`f(\theta) =
                \begin{cases}
-               f_{\text{zero}}   (\theta, \theta_{\text{in}}) & (\text{if } |N| <   0) \\
-               f_{\text{nonzero}}(\theta, \theta_{\text{in}}) & (\text{if } |N| \ge 0)
+               f_{\text{zero}}   (\theta, \theta_{\text{in}}) & (N = 0) \\
+               f_{\text{nonzero}}(\theta, \theta_{\text{in}}) & (N \ne 0)
                \end{cases}`,
-      nestedLine: {
-        line: math`\begin{aligned}
-               f_{\text{zero}}(\theta, \theta_{\text{in}}) =
+        nestedLines: [
+          math`\begin{aligned}
+               f_{\text{zero}}(\theta, \theta_{\text{in}}) = &
                \biggl| \frac{\sin\theta}{3} (2 + \cos^2\theta) - \theta \cos\theta \\
-               \ - \gamma^3 \left[ \frac{\sin\theta_{\text{in}}}{3} (2 + \cos^2\theta_{\text{in}})
-               \ - \theta_{\text{in}} \cos\theta_{\text{in}} \right] \\
-               & - \pi n p \cos\theta \biggr|
+               \ & - \gamma^3 \left[ \frac{\sin\theta_{\text{in}}}{3} (2 + \cos^2\theta_{\text{in}})
+               \ - \theta_{\text{in}} \cos\theta_{\text{in}} \right]
+               \ - \pi n p \cos\theta \biggr|
                \end{aligned}`,
-        nestedLine: {
-          line: math`\begin{aligned}
-               f_{\text{nonzero}}(\theta, \theta_{\text{in}}) = & \left| \beta - \frac{N}{D} \right| \\
-               N = & \frac{\theta}{4} - \sin\theta \cos\theta \left( \frac{5}{12} - \frac{1}{6} \cos^2\theta \right) \\
-                   & - \gamma^4 \left[ \frac{\theta_{\text{in}}}{4} - \sin\theta_{\text{in}} \cos\theta_{\text{in}}
-                   \left( \frac{5}{12} - \frac{1}{6} \cos^2\theta_{\text{in}} \right) \right] + \frac{\pi}{2} n p \alpha^2 \\
-               D = & \frac{\sin\theta}{3} (2 + \cos^2\theta) - \theta \cos\theta \\
-                   & - \gamma^3 \left[ \frac{\sin\theta_{\text{in}}}{3} (2 + \cos^2\theta_{\text{in}})
-                   \ - \theta_{\text{in}} \cos\theta_{\text{in}} \right] - \pi n p \cos\theta
+          math`\begin{aligned}
+               f_{\text{nonzero}}(\theta, \theta_{\text{in}}) = & \left| \beta - \frac{\text{Numerator}}{\text{Denominator}} \right| \\
+               \text{Numerator} = & \frac{\theta}{4} - \sin\theta \cos\theta \left( \frac{5}{12} - \frac{1}{6} \cos^2\theta \right) \\
+               & - \gamma^4 \left[ \frac{\theta_{\text{in}}}{4} - \sin\theta_{\text{in}} \cos\theta_{\text{in}}
+               \left( \frac{5}{12} - \frac{1}{6} \cos^2\theta_{\text{in}} \right) \right] + \frac{\pi}{2} n p \alpha^2 \\
+               \text{Denominator} = & \frac{\sin\theta}{3} (2 + \cos^2\theta) - \theta \cos\theta \\
+               & - \gamma^3 \left[ \frac{\sin\theta_{\text{in}}}{3} (2 + \cos^2\theta_{\text{in}})
+               \ - \theta_{\text{in}} \cos\theta_{\text{in}} \right] - \pi n p \cos\theta
                \end{aligned}`,
-          nestedLine: math`\theta\_{\text{in}} =
+          math`\theta_{\text{in}} =
                \begin{cases}
                0 & (\theta \le \arccos\gamma) \\
                \arccos\left(\dfrac{\cos\theta}{\gamma}\right) & (\arccos\gamma < \theta \le \arccos(-\gamma)) \\
                \pi & (\theta > \arccos(-\gamma))
                \end{cases}`,
-        },
+        ],
       },
-    },
+    ],
   },
   alpha: {
     title: "幾何係数",
@@ -129,10 +129,12 @@ export const resultTooltips: Record<string, TooltipContent> = {
                    }{
                      2 z_2 ( \sin\theta - \gamma \sin\theta_{\text{in}} )
                    } n p`,
-    nestedLine: {
-      line: math`x_s = \arccos\left( \dfrac{1}{\alpha} \cos\theta \right)`,
-      nestedLine: {
-        line: math`\begin{array}{rcl}
+    nestedLines: [
+      {
+        line: math`x_s = \arccos\left( \dfrac{1}{\alpha} \cos\theta \right)`,
+        nestedLines: [
+          {
+            line: math`\begin{array}{rcl}
                z_2 & = & z_3^2 (\theta - \sin\theta \cos\theta)
                        \ + 2 z_3 \left( -\theta + \sin\theta \cos\theta + \dfrac{2}{3} \sin^3\theta \right) \\
                    &   & + \dfrac{5}{4} ( \theta - \sin\theta \cos\theta )
@@ -144,7 +146,8 @@ export const resultTooltips: Record<string, TooltipContent> = {
                        \ - \gamma^3 \sin^3\theta_{\text{in}} \left( \dfrac{\gamma \cos\theta_{\text{in}}}{2} - \dfrac{4}{3} \right) \\
                    &   & + \pi n p \left(\dfrac{\alpha^2}{2} + (1 - z_3)^2 \right)
                \end{array}`,
-        nestedLine: math`z_3 = \dfrac
+            nestedLines: [
+              math`z_3 = \dfrac
                {
                  \theta - \sin\theta \cos\theta - \dfrac{2}{3} \sin^3\theta -
                  \gamma^2 \left( \theta_{\text{in}} - \sin\theta_{\text{in}} \cos\theta_{\text{in}} -
@@ -153,7 +156,10 @@ export const resultTooltips: Record<string, TooltipContent> = {
                  \theta - \sin\theta \cos\theta - \gamma^2 ( \theta_{\text{in}} -
                  \sin\theta_{\text{in}} \cos\theta_{\text{in}} ) + \pi n p
                }`,
+            ],
+          },
+        ],
       },
-    },
+    ],
   },
 };

@@ -1,3 +1,4 @@
+import { IoInformationCircleOutline } from "react-icons/io5";
 import type { AnnularSectionResult } from "@/models/annular-section";
 import { formatNumber } from "@/utils/number-format";
 import { AccordionSection } from "@/components/AccordionSection";
@@ -164,6 +165,10 @@ export function AnnularSectionResultPanel({ result }: { result: AnnularSectionRe
             valueWidth={14}
           />
         </AccordionSection>
+        <div className="text-xs text-slate-500">
+          <IoInformationCircleOutline className="mr-1 inline-block h-5 w-5" />
+          記号をホバーすると算出式が表示されます
+        </div>
       </div>
     </SectionCard>
   );
