@@ -1,159 +1,158 @@
-import React, { useEffect, useRef, useState } from "react";
-import { cn } from "@/utils/cn";
+import { Popover } from "@base-ui/react";
+import React, { useState, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
+import styles from "@/components/Tooltip.module.css";
 
-export type TooltipPosition = "top" | "bottom" | "left" | "right";
-
-export interface TooltipProps {
-  /** ツールチップの内容 (Markdownでレンダリング) */
-  content: string;
-  children: React.ReactNode;
-  /** 表示位置 */
-  position?: TooltipPosition;
-  /** 遅延時間 [ms] */
-  delay?: number;
-  className?: string;
+export interface TooltipContent {
+  title?: string;
+  line: string;
+  nestedLines?: Array<string | TooltipContent>;
 }
 
-/** ツールチップコンポーネント */
-export function Tooltip({ content, children, position = "top", delay = 200, className }: TooltipProps) {
-  const [visible, setVisible] = useState(false);
-  const [coords, setCoords] = useState<{ top: number; left: number } | null>(null);
-  const wrapperRef = useRef<HTMLSpanElement | null>(null);
-  const tipRef = useRef<HTMLDivElement | null>(null);
-  const timerRef = useRef<number | null>(null);
-  const closeTimerRef = useRef<number | null>(null);
+interface TooltipProps {
+  content?: string | TooltipContent | Array<string | TooltipContent>;
+  delay?: number;
+  children: React.ReactNode;
+  side?: "top" | "right" | "bottom" | "left";
+  align?: "start" | "center" | "end";
+  sideOffset?: number;
+  alignOffset?: number;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
+}
 
-  const clearTimer = () => {
-    if (timerRef.current) {
-      window.clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
+export function Tooltip({
+  content,
+  delay = 200,
+  children,
+  side = "top",
+  align = "start",
+  sideOffset = 8,
+  alignOffset = -9,
+  onMouseEnter,
+  onMouseLeave,
+}: TooltipProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const openTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // マウスが入った時の処理（表示遅延）
+  const handleMouseEnter = () => {
+    if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    onMouseEnter?.();
+
+    openTimeoutRef.current = setTimeout(() => {
+      setIsOpen(true);
+    }, delay);
   };
 
-  const clearCloseTimer = () => {
-    if (closeTimerRef.current) {
-      window.clearTimeout(closeTimerRef.current);
-      closeTimerRef.current = null;
-    }
+  // マウスが離れた時の処理（非表示遅延）
+  const handleMouseLeave = () => {
+    if (openTimeoutRef.current) clearTimeout(openTimeoutRef.current);
+    onMouseLeave?.();
+
+    closeTimeoutRef.current = setTimeout(() => {
+      setIsOpen(false);
+    }, 200);
   };
 
-  const show = () => {
-    clearTimer();
-    clearCloseTimer();
-    timerRef.current = window.setTimeout(() => setVisible(true), delay);
+  // クリック時の処理（トグル）
+  const handleClick = () => {
+    // タイマーをクリア
+    if (openTimeoutRef.current) clearTimeout(openTimeoutRef.current);
+    if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+
+    setIsOpen((prev) => !prev);
   };
-  const hide = () => {
-    clearTimer();
-    clearCloseTimer();
-    closeTimerRef.current = window.setTimeout(() => setVisible(false), 120);
-  };
-
-  useEffect(() => {
-    if (!visible) return;
-
-    // ツールチップの位置を計算して画面内に収まるように調整
-    const computePositionLocal = () => {
-      const wrap = wrapperRef.current;
-      const tip = tipRef.current;
-      if (!wrap || !tip) return;
-      const wrapRect = wrap.getBoundingClientRect();
-      const tipRect = tip.getBoundingClientRect();
-      const padding = 8;
-      const scrollX = 0;
-      const scrollY = 0;
-      let top = 0;
-      let left = 0;
-      switch (position) {
-        case "top":
-          top = wrapRect.top + scrollY - tipRect.height - padding;
-          left = wrapRect.right + scrollX - tipRect.width;
-          break;
-        case "bottom":
-          top = wrapRect.bottom + scrollY + padding;
-          left = wrapRect.left + scrollX + (wrapRect.width - tipRect.width) / 2;
-          break;
-        case "left":
-          top = wrapRect.top + scrollY + (wrapRect.height - tipRect.height) / 2;
-          left = wrapRect.left + scrollX - tipRect.width - padding;
-          break;
-        case "right":
-          top = wrapRect.top + scrollY + (wrapRect.height - tipRect.height) / 2;
-          left = wrapRect.right + scrollX + padding;
-          break;
-      }
-
-      // 横方向は画面外に出ないように調整
-      const minLeft = padding;
-      const maxLeft = (window.innerWidth || document.documentElement.clientWidth) - tipRect.width - padding;
-      left = Math.min(Math.max(left, minLeft), maxLeft);
-
-      // 縦方向は画面外に出ないように調整
-      const minTop = padding;
-      const maxTop = (window.innerHeight || document.documentElement.clientHeight) - tipRect.height - padding;
-      top = Math.min(Math.max(top, minTop), maxTop);
-
-      // 座標を丸めて保存
-      setCoords({ top: Math.round(top), left: Math.round(left) });
-    };
-
-    computePositionLocal();
-    const onResize = () => computePositionLocal();
-    const onScroll = () => computePositionLocal();
-    window.addEventListener("resize", onResize);
-    window.addEventListener("scroll", onScroll, true);
-    return () => {
-      window.removeEventListener("resize", onResize);
-      window.removeEventListener("scroll", onScroll, true);
-    };
-  }, [visible, position, content]);
-
-  useEffect(() => {
-    return () => {
-      clearTimer();
-      clearCloseTimer();
-    };
-  }, []);
 
   return (
-    <>
-      <span
-        ref={wrapperRef}
-        className={cn("inline-block", className)}
-        onMouseEnter={show}
-        onMouseLeave={hide}
-        onFocus={show}
-        onBlur={hide}
+    <Popover.Root open={isOpen} onOpenChange={setIsOpen}>
+      <Popover.Trigger
+        className="cursor-help rounded border-0 bg-transparent px-0.5 mix-blend-multiply hover:bg-slate-100 outline-none"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onClick={handleClick}
       >
         {children}
-      </span>
-
-      {visible && (
-        <div
-          ref={tipRef}
-          role="tooltip"
-          aria-hidden={!visible}
-          style={{
-            top: coords ? coords.top : 0,
-            left: coords ? coords.left : 0,
-            visibility: coords ? "visible" : "hidden",
-          }}
-          className="pointer-events-auto fixed z-50 transition-opacity duration-150"
-          onMouseEnter={clearCloseTimer}
-          onMouseLeave={hide}
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Positioner
+          side={side}
+          align={align}
+          sideOffset={sideOffset}
+          alignOffset={alignOffset}
+          className="z-50"
         >
-          <div className="rounded-sm bg-black/70 p-2 text-white shadow-lg backdrop-blur-sm sm:max-w-120">
-            <div className="tooltip-markdown prose prose-invert">
-              <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
-                {content}
-              </ReactMarkdown>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
+          <Popover.Popup
+            className="relative box-border flex max-w-full flex-col rounded-sm border border-gray-500 bg-white p-2 leading-5 shadow-lg outline-none"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
+            <Popover.Arrow className={styles.Arrow} />
+            {content && (
+              <TooltipContentRenderer
+                content={content}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+              />
+            )}
+          </Popover.Popup>
+        </Popover.Positioner>
+      </Popover.Portal>
+    </Popover.Root>
   );
 }
+
+const TooltipContentRenderer: React.FC<{
+  content: string | TooltipContent | Array<string | TooltipContent>;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
+}> = ({ content, onMouseEnter, onMouseLeave }) => {
+  if (Array.isArray(content)) {
+    return (
+      <div className="flex flex-col gap-2">
+        {content.map((item, index) => (
+          <React.Fragment key={index}>
+            {index > 0 && <hr className="my-1 border-slate-200" />}
+            <TooltipContentRenderer
+              content={item}
+              onMouseEnter={onMouseEnter}
+              onMouseLeave={onMouseLeave}
+            />
+          </React.Fragment>
+        ))}
+      </div>
+    );
+  }
+
+  if (typeof content === "string") {
+    return <MarkdownContent content={content} />;
+  }
+
+  if (content.nestedLines && content.nestedLines.length > 0) {
+    return (
+      <Tooltip
+        content={content.nestedLines}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+      >
+        <MarkdownContent content={content.line} />
+      </Tooltip>
+    );
+  }
+
+  return <MarkdownContent content={content.line} />;
+};
+
+const MarkdownContent: React.FC<{ content?: string | TooltipContent }> = ({ content }) => {
+  return (
+    <div className="text-left text-sm">
+      <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
+        {typeof content === "string" ? content : content?.line}
+      </ReactMarkdown>
+    </div>
+  );
+};
