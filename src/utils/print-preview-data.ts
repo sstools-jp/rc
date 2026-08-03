@@ -1,6 +1,6 @@
 import type { AnnularSectionResult } from "@/models/annular-section";
 import type { FormState } from "@/forms/form-state";
-import type { SectionForceMode } from "@/components/SectionForceModeSelector";
+import type { SectionForceMode } from "@/types/section-force-mode";
 import { formatNumber, parseNumber } from "@/utils/number-format";
 
 export type PrintPreviewRow = {

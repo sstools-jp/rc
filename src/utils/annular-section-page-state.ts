@@ -1,5 +1,5 @@
 import type { FormState } from "@/forms/form-state";
-import type { SectionForceMode } from "@/components/SectionForceModeSelector";
+import type { SectionForceMode } from "@/types/section-force-mode";
 
 export type AnnularSectionPageState = {
   form: FormState;

@@ -13,7 +13,7 @@ import type {
   RebarStrengthMode,
 } from "@/forms/form-state";
 import type { AnnularSectionInput } from "@/models/section-types";
-import { type SectionForceMode } from "@/components/SectionForceModeSelector";
+import type { SectionForceMode } from "@/types/section-force-mode";
 import { parseNumber } from "@/utils/number-format";
 import { getRebarYieldStrengthMm2, isRebarKind, isRebarMaterialName } from "@/models/rebar";
 import type { ConcreteDesignStrength_NPerMm2 } from "@/models/concrete";

@@ -1,5 +1,5 @@
 import type { FormState } from "@/forms/form-state";
-import type { SectionForceMode } from "@/components/SectionForceModeSelector";
+import type { SectionForceMode } from "@/types/section-force-mode";
 import { deflateRaw, inflateRaw } from "pako";
 
 const SHARE_PARAM_VALUE = "v";

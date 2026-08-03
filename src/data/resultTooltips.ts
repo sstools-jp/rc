@@ -1,4 +1,4 @@
-import type { TooltipContent } from "@/components/Tooltip";
+import type { TooltipContent } from "@/types/tooltip-content";
 
 /** Markdown 数式 (タグ付きテンプレートリテラルとして使用) */
 const math = (strings: TemplateStringsArray, ...values: Array<string | number>) =>

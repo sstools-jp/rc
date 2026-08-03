@@ -1,5 +1,5 @@
 import type { FormState } from "@/forms/form-state";
-import type { SectionForceMode } from "@/components/SectionForceModeSelector";
+import type { SectionForceMode } from "@/types/section-force-mode";
 
 /** ローカルストレージからページ状態を読み込む */
 export function loadAnnularSectionPageStateFromStorage(

@@ -1,4 +1,4 @@
-import { onUnmounted, ref, type Ref } from "vue";
+import { onUnmounted, ref } from "vue";
 
 /** 一時表示のトーストメッセージを管理するフック */
 export function useTransientToast(durationMs = 2500) {

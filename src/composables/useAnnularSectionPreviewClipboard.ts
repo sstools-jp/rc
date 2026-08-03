@@ -1,7 +1,7 @@
 import { ref } from "vue";
 import type { FormState } from "@/forms/form-state";
 import type { AnnularSectionResult } from "@/models/annular-section";
-import type { SectionForceMode } from "@/components/SectionForceModeSelector";
+import type { SectionForceMode } from "@/types/section-force-mode";
 import {
   buildClipboardText,
   buildInputPreviewSections,
