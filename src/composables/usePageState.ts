@@ -1,4 +1,4 @@
-import { useState, type SubmitEventHandler } from "react";
+import { ref, type Ref } from "vue";
 import {
   AnnularSectionCalculator,
   AnnularSectionGeometry,
@@ -274,18 +274,18 @@ function evaluatePageState(form: FormState, sectionForceMode: SectionForceMode):
 
 type UseAnnularSectionPageStateResult = {
   /** 入力中のフォームの状態 */
-  form: FormState;
+  form: Ref<FormState>;
   /** 確定済みのフォームの状態 */
-  committedForm: FormState;
+  committedForm: Ref<FormState>;
   /** 計算結果 */
-  result: AnnularSectionResult | null;
+  result: Ref<AnnularSectionResult | null>;
   /** 検証問題リスト */
-  issues: AnnularSectionValidationIssue[];
+  issues: Ref<AnnularSectionValidationIssue[]>;
   /** 印刷プレビューモーダルの開閉状態 */
-  isPrintPreviewOpen: boolean;
+  isPrintPreviewOpen: Ref<boolean>;
   /** 断面力タイプ */
-  sectionForceMode: SectionForceMode;
-  handleSubmit: SubmitEventHandler<HTMLFormElement>;
+  sectionForceMode: Ref<SectionForceMode>;
+  handleSubmit: (event: Event) => void;
   handleReset: () => void;
   updateField: (field: keyof FormState) => (value: string) => void;
   commitField: (field: keyof FormState) => (value: string) => void;
@@ -298,48 +298,46 @@ type UseAnnularSectionPageStateResult = {
 export function useAnnularSectionPageState(): UseAnnularSectionPageStateResult {
   const initialPageState = loadPageState();
   const initialEvaluation = evaluatePageState(initialPageState.form, initialPageState.sectionForceMode);
-  const [form, setForm] = useState<FormState>(initialPageState.form);
-  const [committedForm, setCommittedForm] = useState<FormState>(initialPageState.form);
-  const [result, setResult] = useState<AnnularSectionResult | null>(initialEvaluation.result);
-  const [issues, setIssues] = useState<AnnularSectionValidationIssue[]>(initialEvaluation.issues);
-  const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
-  const [sectionForceMode, setSectionForceMode] = useState<SectionForceMode>(
-    initialPageState.sectionForceMode,
-  );
+  const form = ref<FormState>(initialPageState.form);
+  const committedForm = ref<FormState>(initialPageState.form);
+  const result = ref<AnnularSectionResult | null>(initialEvaluation.result);
+  const issues = ref<AnnularSectionValidationIssue[]>(initialEvaluation.issues);
+  const isPrintPreviewOpen = ref(false);
+  const sectionForceMode = ref<SectionForceMode>(initialPageState.sectionForceMode);
 
   /** フォームの状態を確定し、計算結果を更新する共通処理 */
   const applyCommittedState = (nextForm: FormState, nextSectionForceMode: SectionForceMode) => {
-    setCommittedForm(nextForm);
+    committedForm.value = nextForm;
     savePageState(nextForm, nextSectionForceMode);
 
     const nextState = evaluatePageState(nextForm, nextSectionForceMode);
-    setResult(nextState.result);
-    setIssues(nextState.issues);
+    result.value = nextState.result;
+    issues.value = nextState.issues;
   };
 
   /** フォームの送信イベントハンドラー */
-  const handleSubmit: SubmitEventHandler<HTMLFormElement> = (event) => {
+  const handleSubmit = (event: Event) => {
     event.preventDefault();
 
-    applyCommittedState(form, sectionForceMode);
+    applyCommittedState(form.value, sectionForceMode.value);
   };
 
   /** フォームのリセットイベントハンドラー */
   const handleReset = () => {
-    setForm(DEFAULT_FORM_STATE);
+    form.value = DEFAULT_FORM_STATE;
     applyCommittedState(DEFAULT_FORM_STATE, DEFAULT_SECTION_FORCE_MODE);
-    setIsPrintPreviewOpen(false);
-    setSectionForceMode(DEFAULT_SECTION_FORCE_MODE);
+    isPrintPreviewOpen.value = false;
+    sectionForceMode.value = DEFAULT_SECTION_FORCE_MODE;
   };
 
   /** フォームの特定のフィールドを更新する関数 */
   const updateField = (field: keyof FormState) => (value: string) => {
-    setForm((current: FormState) => ({ ...current, [field]: value }));
+    form.value = { ...form.value, [field]: value };
   };
 
   /** フォームの特定のフィールドを確定する関数 */
   const commitField = (field: keyof FormState) => (value: string) => {
-    applyCommittedState({ ...committedForm, [field]: value }, sectionForceMode);
+    applyCommittedState({ ...committedForm.value, [field]: value }, sectionForceMode.value);
   };
 
   return {
@@ -354,10 +352,14 @@ export function useAnnularSectionPageState(): UseAnnularSectionPageStateResult {
     updateField,
     commitField,
     updateSectionForceMode: (value: SectionForceMode) => {
-      setSectionForceMode(value);
-      applyCommittedState(form, value);
+      sectionForceMode.value = value;
+      applyCommittedState(form.value, value);
     },
-    openPrintPreview: () => setIsPrintPreviewOpen(true),
-    closePrintPreview: () => setIsPrintPreviewOpen(false),
+    openPrintPreview: () => {
+      isPrintPreviewOpen.value = true;
+    },
+    closePrintPreview: () => {
+      isPrintPreviewOpen.value = false;
+    },
   };
 }

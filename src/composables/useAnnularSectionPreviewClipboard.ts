@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { ref } from "vue";
 import type { FormState } from "@/forms/form-state";
 import type { AnnularSectionResult } from "@/models/annular-section";
 import type { SectionForceMode } from "@/components/SectionForceModeSelector";
@@ -23,7 +23,7 @@ export function useAnnularSectionPreviewClipboard({
   result,
   onCopySuccess,
 }: UseAnnularSectionPreviewClipboardParams) {
-  const [copyError, setCopyError] = useState<string | null>(null);
+  const copyError = ref<string | null>(null);
   const canCopy = result !== null;
 
   const handleCopy = async () => {
@@ -32,7 +32,7 @@ export function useAnnularSectionPreviewClipboard({
     }
 
     try {
-      setCopyError(null);
+      copyError.value = null;
       const text = buildClipboardText([
         {
           title: "入力値",
@@ -49,7 +49,7 @@ export function useAnnularSectionPreviewClipboard({
       await copyTextToClipboard(text);
       onCopySuccess?.();
     } catch {
-      setCopyError("クリップボードへのコピーに失敗しました。");
+      copyError.value = "クリップボードへのコピーに失敗しました。";
     }
   };
 

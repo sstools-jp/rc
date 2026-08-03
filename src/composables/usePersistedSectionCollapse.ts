@@ -1,18 +1,15 @@
-import { useState } from "react";
+import { ref } from "vue";
 
 const UI_STORAGE_KEY_PREFIX = "rc:ui:";
 const RESULT_PANEL_COLLAPSIBLE_SECTION_STORAGE_KEY = `${UI_STORAGE_KEY_PREFIX}result-panel:collapsible`;
 
 /** セクションの折りたたみ状態を永続化するフック */
 export function usePersistedSectionCollapse(title: string, defaultOpen = false) {
-  const [isOpen, setIsOpen] = useState(() => loadCollapsedState(title, defaultOpen));
+  const isOpen = ref(loadCollapsedState(title, defaultOpen));
 
   function toggleOpen() {
-    setIsOpen((current) => {
-      const nextValue = !current;
-      saveCollapsedState(title, nextValue);
-      return nextValue;
-    });
+    isOpen.value = !isOpen.value;
+    saveCollapsedState(title, isOpen.value);
   }
 
   return {
