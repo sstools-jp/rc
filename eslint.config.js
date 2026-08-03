@@ -1,3 +1,6 @@
+// For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
+import storybook from "eslint-plugin-storybook";
+
 import js from "@eslint/js";
 import globals from "globals";
 import pluginVue from "eslint-plugin-vue";
@@ -34,4 +37,5 @@ export default defineConfig([
       "vue/require-default-prop": "off",
     },
   },
+  ...storybook.configs["flat/recommended"],
 ]);
