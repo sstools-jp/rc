@@ -33,6 +33,11 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
+  "vueCompilerOptions": {
+    "plugins": [
+      "@vue-macros/volar"
+    ]
+  },
   "include": [
     "src/**/*.ts",
     "src/**/*.vue"

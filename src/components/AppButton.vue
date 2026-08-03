@@ -41,9 +41,8 @@ const sizeClassNames: Record<AppButtonSize, string> = {
 };
 
 const buttonClass = cn(
-  "group inline-flex items-center justify-center gap-1.5 rounded-xs transition-colors",
-  sizeClassNames[props.size],
   variantClassNames[props.variant],
+  sizeClassNames[props.size],
   props.icon ? "px-2" : "",
   props.className,
 );
@@ -54,16 +53,27 @@ const buttonClass = cn(
     :type="type"
     :disabled="disabled"
     :aria-label="ariaLabel"
-    :class="buttonClass"
+    :class="['app-button', 'group', buttonClass]"
   >
-    <component
-      :is="icon"
-      v-if="icon"
-      class="h-5 w-5 shrink-0"
-      aria-hidden="true"
-    />
-    <span class="pt-0.5 transition-transform duration-75 group-active:translate-y-px">
+    <component :is="icon" v-if="icon" class="button-icon" aria-hidden="true" />
+    <span class="button-label">
       <slot />
     </span>
   </button>
 </template>
+
+<style scoped>
+@reference "tailwindcss";
+
+.app-button {
+  @apply inline-flex items-center justify-center gap-1.5 rounded-xs transition-colors;
+}
+
+.button-icon {
+  @apply h-5 w-5 shrink-0;
+}
+
+.button-label {
+  @apply pt-0.5 transition-transform duration-75 group-active:translate-y-px;
+}
+</style>

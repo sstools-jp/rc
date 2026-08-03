@@ -22,28 +22,50 @@ const valueWidthStyle = computed(() =>
 </script>
 
 <template>
-  <article class="flex border-b border-slate-400 px-2 py-1 text-sm last:border-b-0">
-    <span class="flex flex-1 items-center gap-1">{{ label }}</span>
-    <div class="space-x-2 text-right font-mono">
+  <article class="result-cell">
+    <span class="result-label">{{ label }}</span>
+    <div class="result-value-group">
       <template v-if="symbol">
-        <span class="inline-block w-2.5 text-left text-slate-700">
-          <Tooltip
-            v-if="symbolTooltip"
-            :content="symbolTooltip"
-          >
+        <span class="result-symbol">
+          <Tooltip v-if="symbolTooltip" :content="symbolTooltip">
             <SymbolText :value="symbol" />
           </Tooltip>
-          <SymbolText
-            v-else
-            :value="symbol"
-          />
+          <SymbolText v-else :value="symbol" />
         </span>
-        <span class="inline-block w-2 text-left text-slate-700">=</span>
+        <span class="result-equals">=</span>
       </template>
       <SelectableText :style="valueWidthStyle">
         {{ value }}
       </SelectableText>
-      <span class="inline-block w-9 text-left text-slate-700 select-none">{{ unit ?? "" }}</span>
+      <span class="result-unit">{{ unit ?? "" }}</span>
     </div>
   </article>
 </template>
+
+<style scoped>
+@reference "tailwindcss";
+
+.result-cell {
+  @apply flex border-b border-slate-400 px-2 py-1 text-sm last:border-b-0;
+}
+
+.result-label {
+  @apply flex flex-1 items-center gap-1;
+}
+
+.result-value-group {
+  @apply space-x-2 text-right font-mono;
+}
+
+.result-symbol {
+  @apply inline-block w-2.5 text-left text-slate-700;
+}
+
+.result-equals {
+  @apply inline-block w-2 text-left text-slate-700;
+}
+
+.result-unit {
+  @apply inline-block w-9 text-left text-slate-700 select-none;
+}
+</style>

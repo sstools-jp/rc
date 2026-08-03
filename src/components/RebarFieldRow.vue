@@ -34,11 +34,7 @@ function handleCommit(field: keyof FormState, value: string) {
 </script>
 
 <template>
-  <FieldRow
-    :label="label"
-    :symbol="symbol"
-    :unit="unit"
-  >
+  <FieldRow :label="label" :symbol="symbol" :unit="unit">
     <FieldInput
       v-if="isRound"
       :value="form.roundRebarDiameter_Mm"

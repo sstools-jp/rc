@@ -1,4 +1,8 @@
 <script setup lang="ts">
+/**
+ * シングルクリックで全選択状態になるテキスト
+ */
+
 import { ref } from "vue";
 import { cn } from "@/utils/cn";
 
@@ -23,12 +27,15 @@ function handleSelect() {
 </script>
 
 <template>
-  <span
-    ref="spanRef"
-    :class="cn('inline-block select-all', className)"
-    :style="style"
-    @click="handleSelect"
-  >
+  <span ref="spanRef" class="selectable-text" :class="cn(className)" :style="style" @click="handleSelect">
     <slot />
   </span>
 </template>
+
+<style scoped>
+@reference "tailwindcss";
+
+.selectable-text {
+  @apply inline-block select-all;
+}
+</style>

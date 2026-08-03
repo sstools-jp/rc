@@ -3,7 +3,6 @@ import { computed, ref } from "vue";
 import { useFloating, offset, flip, shift, arrow, autoUpdate, type Placement } from "@floating-ui/vue";
 import MarkdownIt from "markdown-it";
 import markdownItKatex from "markdown-it-katex";
-import styles from "@/components/Tooltip.module.css";
 import type { TooltipContent, TooltipContentValue } from "@/types/tooltip-content";
 
 const props = withDefaults(
@@ -100,11 +99,11 @@ function isString(value: unknown): value is string {
 </script>
 
 <template>
-  <div class="inline-flex">
+  <div class="tooltip-wrapper">
     <button
       ref="triggerRef"
       type="button"
-      class="cursor-help rounded border-0 bg-transparent px-0.5 mix-blend-multiply outline-none hover:bg-slate-100"
+      class="tooltip-button"
       @mouseenter="handleMouseEnter"
       @mouseleave="handleMouseLeave"
       @click="handleClick"
@@ -117,25 +116,23 @@ function isString(value: unknown): value is string {
         v-if="isOpen"
         ref="popupRef"
         :style="floatingStyles"
-        class="z-50"
+        class="tooltip-popup-container"
         @mouseenter="handleMouseEnter"
         @mouseleave="handleMouseLeave"
       >
-        <div
-          class="relative box-border flex max-w-full flex-col rounded-sm border border-gray-500 bg-white p-2 leading-5 shadow-lg outline-none"
-        >
-          <div ref="arrowRef" :class="styles.Arrow" :style="arrowStyle" />
+        <div class="tooltip-popup">
+          <div ref="arrowRef" class="tooltip-arrow" :style="arrowStyle" />
           <template v-if="content">
             <template v-if="Array.isArray(content)">
-              <div class="flex flex-col gap-2">
+              <div class="tooltip-content-list">
                 <template v-for="(item, index) in content" :key="index">
-                  <hr v-if="index > 0" class="my-1 border-slate-200" />
+                  <hr v-if="index > 0" class="tooltip-separator" />
                   <TooltipContentRenderer :content="item" />
                 </template>
               </div>
             </template>
             <template v-else-if="isString(content)">
-              <div class="text-left text-sm" v-html="renderMarkdown(content)" />
+              <div class="tooltip-text" v-html="renderMarkdown(content)" />
             </template>
             <template v-else-if="isTooltipContent(content)">
               <template v-if="content.nestedLines && content.nestedLines.length > 0">
@@ -147,11 +144,11 @@ function isString(value: unknown): value is string {
                   :side-offset="sideOffset"
                   :align-offset="alignOffset"
                 >
-                  <div class="text-left text-sm" v-html="renderMarkdown(content.line)" />
+                  <div class="tooltip-text" v-html="renderMarkdown(content.line)" />
                 </Tooltip>
               </template>
               <template v-else>
-                <div class="text-left text-sm" v-html="renderMarkdown(content.line)" />
+                <div class="tooltip-text" v-html="renderMarkdown(content.line)" />
               </template>
             </template>
           </template>
@@ -160,3 +157,77 @@ function isString(value: unknown): value is string {
     </Teleport>
   </div>
 </template>
+
+<style scoped>
+@reference "tailwindcss";
+
+.tooltip-wrapper {
+  @apply inline-flex;
+}
+
+.tooltip-button {
+  @apply cursor-help rounded border-0 bg-transparent px-0.5 mix-blend-multiply outline-none hover:bg-slate-100;
+}
+
+.tooltip-popup-container {
+  @apply z-50;
+}
+
+.tooltip-popup {
+  @apply relative box-border flex max-w-full flex-col rounded-sm border border-gray-500 bg-white p-2 leading-5 shadow-lg outline-none;
+}
+
+.tooltip-content-list {
+  @apply flex flex-col gap-2;
+}
+
+.tooltip-separator {
+  @apply my-1 border-slate-200;
+}
+
+.tooltip-text {
+  @apply text-left text-sm;
+}
+
+.tooltip-arrow {
+  display: block;
+  position: relative;
+  width: 12px;
+  height: 6px;
+  overflow: clip;
+}
+
+.tooltip-arrow[data-side="top"] {
+  bottom: -6px;
+  rotate: 180deg;
+}
+
+.tooltip-arrow[data-side="bottom"] {
+  top: -6px;
+  rotate: 0deg;
+}
+
+.tooltip-arrow[data-side="left"] {
+  right: -9px;
+  rotate: 90deg;
+}
+
+.tooltip-arrow[data-side="right"] {
+  left: -9px;
+  rotate: -90deg;
+}
+
+.tooltip-arrow::before {
+  content: "";
+  display: block;
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  box-sizing: border-box;
+  width: calc(6px * sqrt(2));
+  height: calc(6px * sqrt(2));
+  background-color: white;
+  border: 1px solid #6a7282;
+  transform: translate(-50%, 50%) rotate(45deg);
+}
+</style>

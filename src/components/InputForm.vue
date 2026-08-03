@@ -154,46 +154,29 @@ function handleSubmit(event: Event) {
 
 <template>
   <SectionCard title="入力値">
-    <form
-      class="flex flex-col gap-1"
-      @submit.prevent="handleSubmit"
-    >
-      <div class="flex items-start justify-between">
-        <h3 class="text-sm text-slate-700">
-          断面力
-        </h3>
+    <form class="input-form" @submit.prevent="handleSubmit">
+      <div class="form-section-header">
+        <h3 class="form-section-title">断面力</h3>
         <MoreActionsMenu :groups="sectionForceMenuGroups" />
       </div>
-      <div class="overflow-hidden border border-slate-400 bg-slate-50/80 text-sm">
+      <div class="form-field-table">
         <FieldGridHeader />
         <template v-if="sectionForceMode === '3'">
-          <FieldRow
-            label="曲げモーメント"
-            symbol="M"
-            unit="kN.m"
-          >
+          <FieldRow label="曲げモーメント" symbol="M" unit="kN.m">
             <FieldInput
               :value="form.my_KNm"
               @change="(v) => handleChangeField('my_KNm', v)"
               @blur="(v) => handleCommitField('my_KNm', v)"
             />
           </FieldRow>
-          <FieldRow
-            label="せん断力"
-            symbol="S"
-            unit="kN"
-          >
+          <FieldRow label="せん断力" symbol="S" unit="kN">
             <FieldInput
               :value="form.fz_KN"
               @change="(v) => handleChangeField('fz_KN', v)"
               @blur="(v) => handleCommitField('fz_KN', v)"
             />
           </FieldRow>
-          <FieldRow
-            label="軸力（引張を正）"
-            symbol="N"
-            unit="kN"
-          >
+          <FieldRow label="軸力（引張を正）" symbol="N" unit="kN">
             <FieldInput
               :value="form.fx_KN"
               @change="(v) => handleChangeField('fx_KN', v)"
@@ -202,66 +185,42 @@ function handleSubmit(event: Event) {
           </FieldRow>
         </template>
         <template v-else-if="sectionForceMode === '6'">
-          <FieldRow
-            label="軸力（引張を正）"
-            symbol="Fx"
-            unit="kN"
-          >
+          <FieldRow label="軸力（引張を正）" symbol="Fx" unit="kN">
             <FieldInput
               :value="form.fx_KN"
               @change="(v) => handleChangeField('fx_KN', v)"
               @blur="(v) => handleCommitField('fx_KN', v)"
             />
           </FieldRow>
-          <FieldRow
-            label="せん断力（面外）"
-            symbol="Fy"
-            unit="kN"
-          >
+          <FieldRow label="せん断力（面外）" symbol="Fy" unit="kN">
             <FieldInput
               :value="form.fy_KN"
               @change="(v) => handleChangeField('fy_KN', v)"
               @blur="(v) => handleCommitField('fy_KN', v)"
             />
           </FieldRow>
-          <FieldRow
-            label="せん断力（面内）"
-            symbol="Fz"
-            unit="kN"
-          >
+          <FieldRow label="せん断力（面内）" symbol="Fz" unit="kN">
             <FieldInput
               :value="form.fz_KN"
               @change="(v) => handleChangeField('fz_KN', v)"
               @blur="(v) => handleCommitField('fz_KN', v)"
             />
           </FieldRow>
-          <FieldRow
-            label="ねじりモーメント"
-            symbol="Mx"
-            unit="kN.m"
-          >
+          <FieldRow label="ねじりモーメント" symbol="Mx" unit="kN.m">
             <FieldInput
               :value="form.mx_KNm"
               @change="(v) => handleChangeField('mx_KNm', v)"
               @blur="(v) => handleCommitField('mx_KNm', v)"
             />
           </FieldRow>
-          <FieldRow
-            label="曲げモーメント（面内）"
-            symbol="My"
-            unit="kN.m"
-          >
+          <FieldRow label="曲げモーメント（面内）" symbol="My" unit="kN.m">
             <FieldInput
               :value="form.my_KNm"
               @change="(v) => handleChangeField('my_KNm', v)"
               @blur="(v) => handleCommitField('my_KNm', v)"
             />
           </FieldRow>
-          <FieldRow
-            label="曲げモーメント（面外）"
-            symbol="Mz"
-            unit="kN.m"
-          >
+          <FieldRow label="曲げモーメント（面外）" symbol="Mz" unit="kN.m">
             <FieldInput
               :value="form.mz_KNm"
               @change="(v) => handleChangeField('mz_KNm', v)"
@@ -271,42 +230,28 @@ function handleSubmit(event: Event) {
         </template>
       </div>
 
-      <div class="mt-4 flex items-center justify-between">
-        <h3 class="text-sm text-slate-700">
-          寸法・鉄筋
-        </h3>
+      <div class="form-section-header form-section-header--spaced">
+        <h3 class="form-section-title">寸法・鉄筋</h3>
         <MoreActionsMenu :groups="geometryMenuGroups" />
       </div>
-      <div class="overflow-hidden border border-slate-400 bg-slate-50/80 text-sm">
+      <div class="form-field-table">
         <FieldGridHeader />
         <div>
-          <FieldRow
-            label="外径半径"
-            symbol="r"
-            unit="mm"
-          >
+          <FieldRow label="外径半径" symbol="r" unit="mm">
             <FieldInput
               :value="form.outerRadius_Mm"
               @change="(v) => handleChangeField('outerRadius_Mm', v)"
               @blur="(v) => handleCommitField('outerRadius_Mm', v)"
             />
           </FieldRow>
-          <FieldRow
-            label="内径半径"
-            symbol="r0"
-            unit="mm"
-          >
+          <FieldRow label="内径半径" symbol="r0" unit="mm">
             <FieldInput
               :value="form.innerRadius_Mm"
               @change="(v) => handleChangeField('innerRadius_Mm', v)"
               @blur="(v) => handleCommitField('innerRadius_Mm', v)"
             />
           </FieldRow>
-          <FieldRow
-            label="鉄筋位置（半径）"
-            symbol="rs"
-            unit="mm"
-          >
+          <FieldRow label="鉄筋位置（半径）" symbol="rs" unit="mm">
             <FieldInput
               :value="form.rebarRadius_Mm"
               @change="(v) => handleChangeField('rebarRadius_Mm', v)"
@@ -319,11 +264,7 @@ function handleSubmit(event: Event) {
             @change-field="handleChangeField"
             @commit-field="handleCommitField"
           />
-          <FieldRow
-            label="鉄筋本数"
-            symbol="H"
-            unit="本"
-          >
+          <FieldRow label="鉄筋本数" symbol="H" unit="本">
             <FieldInput
               :value="form.barCount"
               input-mode="decimal"
@@ -334,13 +275,11 @@ function handleSubmit(event: Event) {
         </div>
       </div>
 
-      <div class="mt-4 flex items-center justify-between">
-        <h3 class="text-sm text-slate-700">
-          諸係数
-        </h3>
+      <div class="form-section-header form-section-header--spaced">
+        <h3 class="form-section-title">諸係数</h3>
         <MoreActionsMenu :groups="materialParamsMenuGroups" />
       </div>
-      <div class="overflow-hidden border border-slate-400 bg-slate-50/80 text-sm">
+      <div class="form-field-table">
         <FieldGridHeader />
         <div>
           <RebarStrengthFieldRow
@@ -349,11 +288,7 @@ function handleSubmit(event: Event) {
             @change-field="handleChangeField"
             @commit-field="handleCommitField"
           />
-          <FieldRow
-            label="コンクリート設計基準強度"
-            symbol="σck"
-            unit="N/mm²"
-          >
+          <FieldRow label="コンクリート設計基準強度" symbol="σck" unit="N/mm²">
             <FieldSelect
               :value="form.concreteDesignStrength_NPerMm2"
               :options="CONCRETE_DESIGN_STRENGTH_OPTIONS"
@@ -365,11 +300,7 @@ function handleSubmit(event: Event) {
               "
             />
           </FieldRow>
-          <FieldRow
-            label="ヤング係数比"
-            symbol="n"
-            unit="-"
-          >
+          <FieldRow label="ヤング係数比" symbol="n" unit="-">
             <FieldInput
               :value="form.youngRatio"
               :read-only="!youngRatioEditable"
@@ -377,11 +308,7 @@ function handleSubmit(event: Event) {
               @blur="(v) => handleCommitField('youngRatio', v)"
             />
           </FieldRow>
-          <FieldRow
-            label="コンクリート強度補正係数"
-            symbol="kc"
-            unit="-"
-          >
+          <FieldRow label="コンクリート強度補正係数" symbol="kc" unit="-">
             <FieldInput
               :value="form.concreteStrengthFactor"
               :read-only="!concreteStrengthFactorEditable"
@@ -392,41 +319,64 @@ function handleSubmit(event: Event) {
         </div>
       </div>
 
-      <div class="mt-2 flex flex-row gap-3">
-        <AppButton
-          type="submit"
-          variant="primary"
-        >
-          計算
-        </AppButton>
-        <AppButton @click="emit('reset')">
-          リセット
-        </AppButton>
+      <div class="form-actions">
+        <AppButton type="submit" variant="primary"> 計算 </AppButton>
+        <AppButton @click="emit('reset')"> リセット </AppButton>
       </div>
     </form>
 
-    <div
-      v-if="issues.length > 0"
-      aria-live="polite"
-      class="border border-rose-200 bg-rose-50 px-3 py-3 text-rose-900"
-    >
-      <p class="text-sm font-semibold">
-        入力エラー
-      </p>
-      <ul class="mt-2 list-disc space-y-1 ps-5 text-sm">
-        <li
-          v-for="issue in issues"
-          :key="`${String(issue.field)}-${issue.message}`"
-        >
+    <div v-if="issues.length > 0" aria-live="polite" class="form-error">
+      <p class="form-error-title">入力エラー</p>
+      <ul class="form-error-list">
+        <li v-for="issue in issues" :key="`${String(issue.field)}-${issue.message}`">
           {{ issue.message }}
         </li>
       </ul>
     </div>
-    <p
-      v-else
-      class="rounded-xs border border-sky-200 bg-sky-50 px-3 py-3 text-sm text-sky-900"
-    >
-      エラーはありません。
-    </p>
+    <p v-else class="form-no-error">エラーはありません。</p>
   </SectionCard>
 </template>
+
+<style scoped>
+@reference "tailwindcss";
+
+.input-form {
+  @apply flex flex-col gap-1;
+}
+
+.form-section-header {
+  @apply flex items-start justify-between;
+}
+
+.form-section-header--spaced {
+  @apply mt-4;
+}
+
+.form-section-title {
+  @apply text-sm text-slate-700;
+}
+
+.form-field-table {
+  @apply overflow-hidden border border-slate-400 bg-slate-50/80 text-sm;
+}
+
+.form-actions {
+  @apply mt-2 flex flex-row gap-3;
+}
+
+.form-error {
+  @apply border border-rose-200 bg-rose-50 px-3 py-3 text-rose-900;
+}
+
+.form-error-title {
+  @apply text-sm font-semibold;
+}
+
+.form-error-list {
+  @apply mt-2 list-disc space-y-1 ps-5 text-sm;
+}
+
+.form-no-error {
+  @apply rounded-xs border border-sky-200 bg-sky-50 px-3 py-3 text-sm text-sky-900;
+}
+</style>

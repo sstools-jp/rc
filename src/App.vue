@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import AnnularSectionInputFormPanel from "@/components/InputForm.vue";
+import InputForm from "@/components/InputForm.vue";
 import Header from "@/components/Header.vue";
 import MenuBar from "@/components/MenuBar.vue";
 import PrintPreviewContent from "@/components/PrintPreviewContent.vue";
-import AnnularSectionPreviewPanel from "@/components/SectionPreviewPanel.vue";
-import AnnularSectionResultPanel from "@/components/ResultPanel.vue";
+import SectionPreviewPanel from "@/components/SectionPreviewPanel.vue";
+import ResultPanel from "@/components/ResultPanel.vue";
 import PrintPreviewModal from "@/components/PrintPreviewModal.vue";
 import { useAnnularSectionPageState } from "@/composables/usePageState";
 import { useAnnularSectionPreviewClipboard } from "@/composables/useAnnularSectionPreviewClipboard";
@@ -69,7 +69,7 @@ const handlePrint = async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-100">
+  <div class="app-root">
     <Header />
     <MenuBar
       :can-copy="canCopy"
@@ -83,10 +83,7 @@ const handlePrint = async () => {
     />
 
     <!-- 印刷プレビュー -->
-    <div
-      aria-hidden="true"
-      class="fixed top-0 -left-2500 h-0 w-0 overflow-hidden"
-    >
+    <div aria-hidden="true" class="print-preview-hidden">
       <PrintPreviewContent
         ref="printPreviewContentRef"
         :form="committedForm"
@@ -95,16 +92,12 @@ const handlePrint = async () => {
       />
     </div>
 
-    <Toast
-      v-if="toastMessage"
-      :message="toastMessage"
-      :is-visible="toastIsVisible"
-    />
+    <Toast v-if="toastMessage" :message="toastMessage" :is-visible="toastIsVisible" />
 
-    <main class="flex w-full">
-      <div class="m-4 columns-1 gap-2 min-[810px]:columns-2 min-[1210px]:columns-3">
+    <main class="app-main">
+      <div class="app-columns">
         <!-- 入力フォームパネル -->
-        <AnnularSectionInputFormPanel
+        <InputForm
           :form="form"
           :issues="issues"
           :section-force-mode="sectionForceMode"
@@ -115,12 +108,9 @@ const handlePrint = async () => {
           @change-section-force-mode="updateSectionForceMode"
         />
         <!-- 結果表示パネル -->
-        <AnnularSectionResultPanel :result="result" />
+        <ResultPanel :result="result" />
         <!-- 断面図プレビュー -->
-        <AnnularSectionPreviewPanel
-          :form="committedForm"
-          :result="result"
-        />
+        <SectionPreviewPanel :form="committedForm" :result="result" />
       </div>
     </main>
 
@@ -133,3 +123,23 @@ const handlePrint = async () => {
     />
   </div>
 </template>
+
+<style scoped>
+@reference "tailwindcss";
+
+.app-root {
+  @apply min-h-screen bg-slate-100;
+}
+
+.print-preview-hidden {
+  @apply fixed top-0 -left-2500 h-0 w-0 overflow-hidden;
+}
+
+.app-main {
+  @apply flex w-full;
+}
+
+.app-columns {
+  @apply m-4 columns-1 gap-2 min-[810px]:columns-2 min-[1210px]:columns-3;
+}
+</style>

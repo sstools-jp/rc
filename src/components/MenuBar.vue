@@ -18,7 +18,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <nav class="flex flex-wrap items-center gap-1 border-b border-slate-300 bg-white px-4 py-1">
+  <nav class="menu-bar">
     <AppButton
       :icon="LuPrinter"
       :disabled="!isPrintPreviewEnabled"
@@ -35,30 +35,27 @@ const emit = defineEmits<{
     >
       印刷プレビュー
     </AppButton>
-    <AppButton
-      :icon="LuClipboardCopy"
-      :disabled="!canCopy"
-      @click="emit('copyClipboard')"
-    >
+    <AppButton :icon="LuClipboardCopy" :disabled="!canCopy" @click="emit('copyClipboard')">
       計算結果をコピー
     </AppButton>
-    <AppButton
-      :icon="LuLink"
-      @click="emit('copyShareUrl')"
-    >
-      URLをコピー
-    </AppButton>
-    <p
-      v-if="copyError"
-      class="text-sm text-rose-600"
-    >
+    <AppButton :icon="LuLink" @click="emit('copyShareUrl')"> URLをコピー </AppButton>
+    <p v-if="copyError" class="error-text">
       {{ copyError }}
     </p>
-    <p
-      v-if="shareUrlError"
-      class="text-sm text-rose-600"
-    >
+    <p v-if="shareUrlError" class="error-text">
       {{ shareUrlError }}
     </p>
   </nav>
 </template>
+
+<style scoped>
+@reference "tailwindcss";
+
+.menu-bar {
+  @apply flex flex-wrap items-center gap-1 border-b border-slate-300 bg-white px-4 py-1;
+}
+
+.error-text {
+  @apply text-sm text-rose-600;
+}
+</style>

@@ -42,38 +42,18 @@ const anchor =
 </script>
 
 <template>
-  <Menu
-    as="div"
-    :class="`relative inline-flex ${className}`"
-  >
-    <MenuButton
-      :aria-label="ariaLabel"
-      class="rounded-sm p-0.5 hover:bg-slate-100 focus:outline-none"
-    >
-      <FeMoreHorizontal
-        class="h-4.5 w-4.5 text-slate-700"
-        aria-hidden="true"
-      />
+  <Menu as="div" :class="cn('menu-container', className)">
+    <MenuButton class="menu-button" :aria-label="ariaLabel">
+      <FeMoreHorizontal class="menu-icon" aria-hidden="true" />
     </MenuButton>
 
-    <MenuItems
-      :anchor="anchor"
-      class="z-20 w-max max-w-[calc(100vw-1rem)] min-w-40 rounded-sm bg-white p-1 shadow-lg ring-1 ring-slate-200/60 focus:outline-none"
-    >
+    <MenuItems class="menu-items" :anchor="anchor">
       <template v-if="groups">
-        <template
-          v-for="(group, groupIndex) in groups"
-          :key="group.key"
-        >
+        <template v-for="(group, groupIndex) in groups" :key="group.key">
           <!-- セパレータは2番目以降のグループの前にのみ表示 -->
-          <hr
-            v-if="groupIndex > 0"
-            role="separator"
-            aria-hidden="true"
-            class="my-1 border-t border-slate-200"
-          >
+          <hr v-if="groupIndex > 0" role="separator" aria-hidden="true" class="menu-separator" />
           <!-- グループラベルを表示 -->
-          <div class="px-2 py-1.5 text-sm font-normal text-slate-800">
+          <div class="menu-group-label">
             {{ group.label }}
           </div>
           <!-- グループ内のアイテムを表示 -->
@@ -86,9 +66,9 @@ const anchor =
               <button
                 type="button"
                 :disabled="disabled"
+                class="menu-item-button"
                 :class="
                   cn(
-                    'flex w-full items-center gap-1.5 rounded-sm px-2 py-1.5 text-left text-sm',
                     entry.selected && 'bg-sky-50 text-sky-800',
                     active && 'bg-slate-50',
                     !entry.selected && !active && 'text-slate-800',
@@ -97,17 +77,9 @@ const anchor =
                 "
                 @click="entry.onClick"
               >
-                <LuCheck
-                  v-if="entry.selected"
-                  class="h-4 w-4 shrink-0 text-sky-700"
-                  aria-hidden="true"
-                />
-                <span
-                  v-else
-                  class="h-4 w-4 shrink-0"
-                  aria-hidden="true"
-                />
-                <span class="whitespace-nowrap">{{ entry.label }}</span>
+                <LuCheck v-if="entry.selected" class="menu-check-icon" aria-hidden="true" />
+                <span v-else class="menu-check-placeholder" aria-hidden="true" />
+                <span class="menu-item-label">{{ entry.label }}</span>
               </button>
             </template>
           </MenuItem>
@@ -123,9 +95,9 @@ const anchor =
             <button
               type="button"
               :disabled="disabled"
+              class="menu-item-button menu-item-button--items"
               :class="
                 cn(
-                  'flex w-full items-center gap-2 rounded-sm px-3 py-1.5 text-left text-sm',
                   entry.selected && 'bg-sky-50 text-sky-800',
                   active && 'bg-slate-50',
                   !entry.selected && !active && 'text-slate-800',
@@ -134,17 +106,9 @@ const anchor =
               "
               @click="entry.onClick"
             >
-              <LuCheck
-                v-if="entry.selected"
-                class="h-4 w-4 shrink-0 text-sky-700"
-                aria-hidden="true"
-              />
-              <span
-                v-else
-                class="h-4 w-4 shrink-0"
-                aria-hidden="true"
-              />
-              <span class="whitespace-nowrap">{{ entry.label }}</span>
+              <LuCheck v-if="entry.selected" class="menu-check-icon" aria-hidden="true" />
+              <span v-else class="menu-check-placeholder" aria-hidden="true" />
+              <span class="menu-item-label">{{ entry.label }}</span>
             </button>
           </template>
         </MenuItem>
@@ -152,3 +116,51 @@ const anchor =
     </MenuItems>
   </Menu>
 </template>
+
+<style scoped>
+@reference "tailwindcss";
+
+.menu-container {
+  @apply relative inline-flex;
+}
+
+.menu-button {
+  @apply rounded-sm p-0.5 hover:bg-slate-100 focus:outline-none;
+}
+
+.menu-icon {
+  @apply h-4.5 w-4.5 text-slate-700;
+}
+
+.menu-items {
+  @apply z-20 w-max max-w-[calc(100vw-1rem)] min-w-40 rounded-sm bg-white p-1 shadow-lg ring-1 ring-slate-200/60 focus:outline-none;
+}
+
+.menu-separator {
+  @apply my-1 border-t border-slate-200;
+}
+
+.menu-group-label {
+  @apply px-2 py-1.5 text-sm font-normal text-slate-800;
+}
+
+.menu-item-button {
+  @apply flex w-full items-center gap-1.5 rounded-sm px-2 py-1.5 text-left text-sm;
+}
+
+.menu-item-button--items {
+  @apply gap-2 px-3;
+}
+
+.menu-check-icon {
+  @apply h-4 w-4 shrink-0 text-sky-700;
+}
+
+.menu-check-placeholder {
+  @apply h-4 w-4 shrink-0;
+}
+
+.menu-item-label {
+  @apply whitespace-nowrap;
+}
+</style>

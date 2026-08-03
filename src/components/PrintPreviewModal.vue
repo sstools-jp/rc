@@ -9,7 +9,6 @@ import type { SectionForceMode } from "@/types/section-force-mode";
 import PrintPreviewContent from "@/components/PrintPreviewContent.vue";
 import { printElementContent } from "@/utils/print-preview-frame";
 import { FePrinter, FeX } from "@kalimahapps/vue-icons/fe";
-import { cn } from "@/utils/cn";
 import { useAnnularSectionPreviewClipboard } from "@/composables/useAnnularSectionPreviewClipboard";
 import { useTransientToast } from "@/composables/useTransientToast";
 import { LuClipboardCopy } from "@kalimahapps/vue-icons/lu";
@@ -55,73 +54,37 @@ const handlePrintPreview = async () => {
 </script>
 
 <template>
-  <Dialog
-    :open="open"
-    class="relative z-50 print:static print:z-auto"
-    @close="emit('close')"
-  >
-    <div
-      class="fixed inset-0 bg-slate-950/60 print:hidden"
-      aria-hidden="true"
-    />
+  <Dialog :open="open" class="modal-dialog" @close="emit('close')">
+    <div class="modal-overlay" aria-hidden="true" />
 
-    <div class="fixed inset-0 flex items-center justify-center sm:p-4 print:static print:block print:p-0">
-      <DialogPanel
-        :class="
-          cn(
-            'flex max-h-svh flex-col overflow-hidden bg-slate-100 shadow-2xl sm:max-h-[calc(100vh-2rem)] sm:max-w-5xl sm:rounded-sm',
-            'print:max-h-none print:max-w-none print:overflow-visible print:rounded-none print:bg-white print:shadow-none',
-          )
-        "
-      >
-        <div class="flex flex-col gap-3 p-4 print:hidden">
-          <div class="flex flex-row items-center gap-2">
-            <div class="flex flex-row gap-2">
-              <AppButton
-                :icon="FePrinter"
-                class="text-blue-700"
-                @click="handlePrintPreview"
-              >
+    <div class="modal-container">
+      <DialogPanel class="modal-panel">
+        <div class="modal-toolbar">
+          <div class="modal-button-row">
+            <div class="modal-button-group">
+              <AppButton :icon="FePrinter" class="text-blue-700" @click="handlePrintPreview">
                 印刷
               </AppButton>
-              <AppButton
-                :icon="LuClipboardCopy"
-                :disabled="!canCopy"
-                @click="handleCopy"
-              >
-                <span class="sm:hidden">コピー</span>
-                <span class="hidden sm:inline">クリップボードにコピー</span>
+              <AppButton :icon="LuClipboardCopy" :disabled="!canCopy" @click="handleCopy">
+                <span class="modal-copy-label-sm">コピー</span>
+                <span class="modal-copy-label-md">クリップボードにコピー</span>
               </AppButton>
             </div>
 
-            <div class="ml-auto flex flex-row items-center">
-              <AppButton
-                aria-label="閉じる"
-                class="w-9 px-0"
-                @click="emit('close')"
-              >
-                <FeX
-                  class="h-6 w-6"
-                  aria-hidden="true"
-                />
+            <div class="modal-close-button">
+              <AppButton aria-label="閉じる" class="w-9 px-0" @click="emit('close')">
+                <FeX class="modal-close-icon" aria-hidden="true" />
               </AppButton>
             </div>
           </div>
-          <p
-            v-if="copyError"
-            class="text-sm text-rose-600"
-          >
+          <p v-if="copyError" class="modal-error">
             {{ copyError }}
           </p>
         </div>
 
-        <Toast
-          v-if="toastMessage"
-          :message="toastMessage"
-          :is-visible="toastIsVisible"
-        />
+        <Toast v-if="toastMessage" :message="toastMessage" :is-visible="toastIsVisible" />
 
-        <div class="overflow-auto p-4 pt-0 print:overflow-visible print:p-0">
+        <div class="modal-content">
           <PrintPreviewContent
             ref="printContentRef"
             :form="form"
@@ -133,3 +96,60 @@ const handlePrintPreview = async () => {
     </div>
   </Dialog>
 </template>
+
+<style scoped>
+@reference "tailwindcss";
+
+.modal-dialog {
+  @apply relative z-50 print:static print:z-auto;
+}
+
+.modal-overlay {
+  @apply fixed inset-0 bg-slate-950/60 print:hidden;
+}
+
+.modal-container {
+  @apply fixed inset-0 flex items-center justify-center sm:p-4 print:static print:block print:p-0;
+}
+
+.modal-panel {
+  @apply flex max-h-svh flex-col overflow-hidden bg-slate-100 shadow-2xl sm:max-h-[calc(100vh-2rem)] sm:max-w-5xl sm:rounded-sm;
+  @apply print:max-h-none print:max-w-none print:overflow-visible print:rounded-none print:bg-white print:shadow-none;
+}
+
+.modal-toolbar {
+  @apply flex flex-col gap-3 p-4 print:hidden;
+}
+
+.modal-button-row {
+  @apply flex flex-row items-center gap-2;
+}
+
+.modal-button-group {
+  @apply flex flex-row gap-2;
+}
+
+.modal-copy-label-sm {
+  @apply sm:hidden;
+}
+
+.modal-copy-label-md {
+  @apply hidden sm:inline;
+}
+
+.modal-close-button {
+  @apply ml-auto flex flex-row items-center;
+}
+
+.modal-close-icon {
+  @apply h-6 w-6;
+}
+
+.modal-error {
+  @apply text-sm text-rose-600;
+}
+
+.modal-content {
+  @apply overflow-auto p-4 pt-0 print:overflow-visible print:p-0;
+}
+</style>

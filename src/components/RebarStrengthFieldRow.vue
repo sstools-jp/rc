@@ -1,4 +1,8 @@
 <script setup lang="ts">
+/**
+ * 鉄筋降伏強度の入力行
+ */
+
 import FieldRow from "@/components/FieldRow.vue";
 import FieldInput from "@/components/FieldInput.vue";
 import FieldSelect from "@/components/FieldSelect.vue";
@@ -32,11 +36,7 @@ function handleMaterialChange(value: string) {
 </script>
 
 <template>
-  <FieldRow
-    :label="label"
-    symbol="σsy"
-    unit="N/mm²"
-  >
+  <FieldRow :label="label" symbol="σsy" unit="N/mm²">
     <FieldSelect
       v-if="isMaterialMode"
       :value="form.rebarMaterialName"

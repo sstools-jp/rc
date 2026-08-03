@@ -14,11 +14,8 @@ defineProps<{
 
 <template>
   <SectionCard title="計算結果">
-    <div class="flex w-full flex-col gap-2">
-      <AccordionSection
-        title="中立軸および合成断面力"
-        default-open
-      >
+    <div class="result-panel">
+      <AccordionSection title="中立軸および合成断面力" default-open>
         <ResultCell
           label="中立軸位置"
           symbol="x"
@@ -72,10 +69,7 @@ defineProps<{
         />
       </AccordionSection>
 
-      <AccordionSection
-        title="終局耐力"
-        default-open
-      >
+      <AccordionSection title="終局耐力" default-open>
         <ResultCell
           label="コンクリート終局曲げモーメント"
           symbol="Mc"
@@ -94,10 +88,7 @@ defineProps<{
         />
       </AccordionSection>
 
-      <AccordionSection
-        title="断面積"
-        default-open
-      >
+      <AccordionSection title="断面積" default-open>
         <ResultCell
           label="鉄筋総断面積"
           symbol="As"
@@ -169,10 +160,26 @@ defineProps<{
           :value-width="14"
         />
       </AccordionSection>
-      <div class="text-xs text-slate-500">
-        <IoInformationCircle class="mr-1 inline-block h-5 w-5" />
+      <div class="result-info">
+        <IoInformationCircle class="info-icon" />
         記号をホバーすると算出式が表示されます
       </div>
     </div>
   </SectionCard>
 </template>
+
+<style scoped>
+@reference "tailwindcss";
+
+.result-panel {
+  @apply flex w-full flex-col gap-2;
+}
+
+.result-info {
+  @apply text-xs text-slate-500;
+}
+
+.info-icon {
+  @apply mr-1 inline-block h-5 w-5;
+}
+</style>

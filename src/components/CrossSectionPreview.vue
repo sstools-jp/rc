@@ -3,7 +3,6 @@ import { computed } from "vue";
 import type { FormState } from "@/forms/form-state";
 import type { AnnularSectionResult } from "@/models/annular-section";
 import { parseNumber } from "@/utils/number-format";
-import { cn } from "@/utils/cn";
 
 const props = defineProps<{
   /** 入力フォームの状態 */
@@ -66,10 +65,6 @@ const neutralAxisLine =
 // 描画用パラメータ
 const strokeWidth = 1.5;
 const dashDotLine = `${strokeWidth * 24} ${strokeWidth * 3} ${strokeWidth * 6} ${strokeWidth * 3}`;
-const strokeClassName = cn("stroke-gray-800");
-const concreteClassName = cn("bg-slate-200 fill-slate-200 stroke-gray-800");
-const rebarClassName = cn("bg-blue-700 fill-blue-700");
-const neutralAxisClassName = cn("border-red-600 stroke-red-600");
 
 /** 極座標をデカルト座標に変換する */
 function polarToCartesian(radius: number, angleRad: number): Point {
@@ -141,11 +136,11 @@ const verticalCenterLineDirections = [
 </script>
 
 <template>
-  <div class="w-full space-y-3 p-3">
-    <div class="flex justify-center rounded-xs border border-slate-200 bg-white p-2">
+  <div class="preview-container">
+    <div class="preview-frame">
       <svg
         :viewBox="`${-viewBoxRadius} ${-viewBoxRadius + 20} ${viewBoxRadius * 2} ${viewBoxRadius * 2}`"
-        class="h-full w-full"
+        class="preview-svg"
         role="img"
         aria-label="円環断面のプレビュー"
       >
@@ -159,10 +154,7 @@ const verticalCenterLineDirections = [
             markerHeight="12"
             orient="auto-start-reverse"
           >
-            <path
-              d="M 2 1 L 10 5 L 2 9"
-              class="stroke-linecap-round stroke-linejoin-round fill-none stroke-black"
-            />
+            <path d="M 2 1 L 10 5 L 2 9" class="arrow-path" />
           </marker>
         </defs>
 
@@ -172,7 +164,7 @@ const verticalCenterLineDirections = [
           transform="translate(0 0)"
           fill-rule="evenodd"
           clip-rule="evenodd"
-          :class="concreteClassName"
+          class="concrete-shape"
         />
 
         <!-- 鉄筋位置の中心線 -->
@@ -181,7 +173,7 @@ const verticalCenterLineDirections = [
           cy="0"
           :r="displayRebarRadius"
           :stroke-dasharray="dashDotLine"
-          class="fill-none stroke-gray-600"
+          class="rebar-center-line"
         />
 
         <!-- 鉄筋群 -->
@@ -191,14 +183,11 @@ const verticalCenterLineDirections = [
           :cx="rebar.cx"
           :cy="rebar.cy"
           :r="rebar.r"
-          :class="rebarClassName"
+          class="rebar-shape"
         />
 
         <!-- 外径の中心線 -->
-        <g
-          :class="strokeClassName"
-          aria-hidden="true"
-        >
+        <g class="stroke-shape" aria-hidden="true">
           <line
             v-for="(dir, index) in centerMarkDirections"
             :key="index"
@@ -213,11 +202,7 @@ const verticalCenterLineDirections = [
         </g>
 
         <!-- 中立軸の水平寸法 -->
-        <g
-          v-if="geometryIsValid"
-          :class="strokeClassName"
-          aria-hidden="true"
-        >
+        <g v-if="geometryIsValid" class="stroke-shape" aria-hidden="true">
           <line
             :x1="neutralAxisLine ?? 0"
             :y1="displayOuterRadius * 1.15 + 10"
@@ -258,18 +243,14 @@ const verticalCenterLineDirections = [
             text-anchor="middle"
             font-size="24"
             fill="currentColor"
-            class="font-mono"
+            class="dimension-text"
           >
             x
           </text>
         </g>
 
         <!-- 中立軸 -->
-        <g
-          v-if="neutralAxisLine !== null"
-          :class="neutralAxisClassName"
-          aria-hidden="true"
-        >
+        <g v-if="neutralAxisLine !== null" class="neutral-axis-shape" aria-hidden="true">
           <line
             v-for="(dir, index) in verticalCenterLineDirections"
             :key="index"
@@ -286,7 +267,7 @@ const verticalCenterLineDirections = [
         <!-- 寸法線（外径半径） -->
         <g
           v-if="geometryIsValid"
-          :class="strokeClassName"
+          class="stroke-shape"
           transform="translate(0 0) rotate(-15)"
           aria-hidden="true"
         >
@@ -313,7 +294,7 @@ const verticalCenterLineDirections = [
             text-anchor="middle"
             font-size="24"
             fill="currentColor"
-            class="font-mono"
+            class="dimension-text"
           >
             r
           </text>
@@ -322,7 +303,7 @@ const verticalCenterLineDirections = [
         <!-- 寸法線（鉄筋位置） -->
         <g
           v-if="geometryIsValid"
-          :class="strokeClassName"
+          class="stroke-shape"
           transform="translate(0 0) rotate(-35)"
           aria-hidden="true"
         >
@@ -349,7 +330,7 @@ const verticalCenterLineDirections = [
             text-anchor="middle"
             font-size="24"
             fill="currentColor"
-            class="font-mono"
+            class="dimension-text"
           >
             rs
           </text>
@@ -358,7 +339,7 @@ const verticalCenterLineDirections = [
         <!-- 寸法線（内径半径） -->
         <g
           v-if="geometryIsValid"
-          :class="strokeClassName"
+          class="stroke-shape"
           transform="translate(0 0) rotate(-55)"
           aria-hidden="true"
         >
@@ -385,7 +366,7 @@ const verticalCenterLineDirections = [
             text-anchor="middle"
             font-size="24"
             fill="currentColor"
-            class="font-mono"
+            class="dimension-text"
           >
             r0
           </text>
@@ -393,28 +374,85 @@ const verticalCenterLineDirections = [
       </svg>
     </div>
 
-    <div class="flex gap-3 text-xs text-slate-600">
-      <div class="flex items-center gap-2">
-        <span
-          aria-hidden="true"
-          :class="cn('h-3 w-3 rounded-sm bg-current', concreteClassName)"
-        />
+    <div class="legend">
+      <div class="legend-item">
+        <span aria-hidden="true" class="legend-concrete" />
         <span>コンクリート</span>
       </div>
-      <div class="flex items-center gap-2">
-        <span
-          aria-hidden="true"
-          :class="cn('h-3 w-3 rounded-sm bg-current', rebarClassName)"
-        />
+      <div class="legend-item">
+        <span aria-hidden="true" class="legend-rebar" />
         <span>鉄筋</span>
       </div>
-      <div class="flex items-center gap-2">
-        <span
-          aria-hidden="true"
-          :class="cn('h-4 w-0 border-l-2 border-dashed border-t-current', neutralAxisClassName)"
-        />
+      <div class="legend-item">
+        <span aria-hidden="true" class="legend-neutral-axis" />
         <span>中立軸</span>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+@reference "tailwindcss";
+
+.preview-container {
+  @apply w-full space-y-3 p-3;
+}
+
+.preview-frame {
+  @apply flex justify-center rounded-xs border border-slate-200 bg-white p-2;
+}
+
+.preview-svg {
+  @apply h-full w-full;
+}
+
+.arrow-path {
+  @apply fill-none stroke-black;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.concrete-shape {
+  @apply bg-slate-200 fill-slate-200 stroke-gray-800;
+}
+
+.rebar-center-line {
+  @apply fill-none stroke-gray-600;
+}
+
+.rebar-shape {
+  @apply bg-blue-700 fill-blue-700;
+}
+
+.stroke-shape {
+  @apply stroke-gray-800;
+}
+
+.neutral-axis-shape {
+  @apply border-red-600 stroke-red-600;
+}
+
+.dimension-text {
+  @apply font-mono;
+}
+
+.legend {
+  @apply flex gap-3 text-xs text-slate-600;
+}
+
+.legend-item {
+  @apply flex items-center gap-2;
+}
+
+.legend-concrete {
+  @apply h-3 w-3 rounded-sm bg-slate-200 fill-slate-200 stroke-gray-800;
+}
+
+.legend-rebar {
+  @apply h-3 w-3 rounded-sm bg-blue-700 fill-blue-700;
+}
+
+.legend-neutral-axis {
+  @apply h-4 w-0 border-l-2 border-dashed border-red-600 stroke-red-600;
+}
+</style>
